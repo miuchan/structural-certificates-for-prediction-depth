@@ -2,6 +2,8 @@
 
 本项目用 Lean 4 形式化动力系统预测的电路深度。主要研究实例是冻结控制的一侧元胞自动机。控制字可随位置任意变化，数据轨在固定控制配置下线性演化。项目用路径计数把预测化为前缀统计与组合系数的奇偶性，并构造了对数空间统一 NC¹ 电路族。
 
+独立论文给出模型、编码、精确定理、证明思路和适用边界。[论文 PDF](paper/structural-certificates.pdf) · [Typst 源稿](paper/structural-certificates.typ) · [文献对照](docs/literature.md)
+
 ## 冻结控制规则族的深度分类
 
 固定控制字宽 $q$ 和等待、传输两个控制函数。每次预测显式给出格点 $0,\ldots,T$ 的控制字和数据位，因此合法输入长度为 $n=(q+1)(T+1)$，由长度确定时间 $T$。下表的下界覆盖扇入至多二、允许任意布线和共享的电路，上界由实际 De Morgan 电路给出。
@@ -13,7 +15,11 @@
 | 传输函数非常值，或传输恒开且等待函数非常值 | $\Theta(\log(T+1))$。下界来自至少 $T+1$ 个本质输入位，包含 AND/OR 控制实例。 |
 | 传输与等待均恒开 | 若 $p$ 是 $T$ 的二进制展开中 1 的个数，则深度介于 $p$ 与 $3p$ 之间。在 $T=2^r$ 时至多三层，在 $T=2^r-1$ 时至少 $r$ 层。 |
 
-`classify` 枚举有限控制字并返回所属分支，`classify_eq_iff` 证明结果与表中的条件等价。`uniform_depth_classification` 为每对固定控制函数给出一个对数空间统一的多项式规模电路族，实现表中的分支上界，包括齐次 Pascal 规则的 $`3p`$ 层上界。语言属于统一 NC⁰ 当且仅当规则落在表中前两类。[冻结控制预测的数学论证](docs/frozen-pascal.md)
+`classify` 按前缀遍历有限控制字，遇到反例就结束当前常值检验，无需构造完整控制字列表。穷举检验仍可能访问 $`2^q`$ 个控制字。`classify_eq_iff` 证明结果与表中的条件等价。`uniform_depth_classification` 为每对固定控制函数给出一个对数空间统一的多项式规模电路族，实现表中的分支上界，包括齐次 Pascal 规则的 $`3p`$ 层上界。语言属于统一 NC⁰ 当且仅当规则落在表中前两类。[冻结控制预测的数学论证](docs/frozen-pascal.md)
+
+## 移动控制轨的精确深度
+
+固定 $`u,v\in\{0,1\}`$，每步令 $`c'_i=c_{i+u}`$、$`d'_i=c_i\land d_{i+v}`$。预测输入是 $`0,\ldots,T`$ 上显式给出的两轨位串。零时刻直接读取数据位，深度为零。正时刻同速只读取一个初始控制位和一个数据位，精确深度为 1。异速则读取 $`T`$ 个初始控制位及一个数据位，精确深度为 $`\lceil\log_2(T+1)\rceil`$。Lean 构造了线性门数的 AND 树，并对允许共享的二输入电路证明匹配下界。这个逐时刻结果说明，控制轨一旦移动，即使数据从不跳跃也可能需要对数深度。[移动控制的语义与深度定理](PredictionDepth/TransportedControl.lean)
 
 ## 形式化基础设施
 
@@ -29,6 +35,13 @@ lake exe cache get  # 可选，下载依赖的构建缓存
 ```
 
 `scripts/check.sh` 检查默认入口覆盖、执行严格构建，再运行传递公理审计及负向回归测试。审计按声明所属的项目模块选择检查对象，只允许 Lean 的 `propext`、`Classical.choice`、`Quot.sound`。GitHub Actions 对触发运行的提交执行同一脚本。[验证流程](docs/verification.md)
+
+论文使用 Typst 0.15.1 和编译器内置字体。从仓库根目录重建 PDF。
+
+```sh
+typst compile --ignore-system-fonts --creation-timestamp 1794268800 \
+  paper/structural-certificates.typ paper/structural-certificates.pdf
+```
 
 ## 核心定理与代码
 
@@ -51,6 +64,7 @@ lake exe cache get  # 可选，下载依赖的构建缓存
 | 冻结控制的一侧规则族 | `FrozenPascal/Semantics.lean` 的 `iterate_data` 和 `FrozenPascal/UniformLanguage.lean` 的 `predictionLanguage_mem_uniformNC_one` |
 | 冻结控制的深度分类 | `FrozenPascal/Classification.lean` 的 `bounded_prediction_depth_iff` 和 `varyingGuard_prediction_depth_lower_bound`，`FrozenPascal/HomogeneousPascal.lean` 的 `pascalSupport_card` 及二进制位数深度界 |
 | 可执行分类器与统一深度分类 | `FrozenPascal/Classification.lean` 的 `classify_eq_iff`，`FrozenPascal/UniformClassification.lean` 的 `uniform_depth_classification` 和 `predictionLanguage_mem_uniformNC_zero_iff` |
+| 移动控制轨的本质输入与精确深度 | `TransportedControl.lean` 的 `iterate_data_true_iff`、`essential_prediction_iff`、`exact_prediction_depth` 和 `constant_depth_iff` |
 | 可执行边界与实例检查 | `Examples.lean` |
 
 ### A：快速可组合表示
