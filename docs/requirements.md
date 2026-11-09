@@ -27,6 +27,7 @@
 | 输入依赖计数方法的局限 | `dependency_method_limit` | 已实现 |
 | 零时刻、空输入、单输入、具体线性实例 | `Examples` | 已实现 |
 | 冻结控制的非线性规则族、对数深度与统一 NC¹ | `FrozenPascal.GuardRules`、`FrozenPascal.UniformLanguage`、`FrozenPascal.LowerBound` | Lean 4.36 编译和公理审计通过 |
+| 冻结控制族的常数深度充要条件及逐时刻分类 | `FrozenPascal/Classification.lean` 的 `bounded_prediction_depth_iff` 和可变控制下界，`FrozenPascal/HomogeneousPascal.lean` 的二进制位数深度界 | 见[验证记录](verification.md) |
 | 全项目严格构建及传递公理审计 | `scripts/check.sh`、`Audit.lean` | 见[验证记录](verification.md) |
 
 术语采用“结构性判据（Structural Criteria）”；具体包含数学数据及证明的结构使用“见证（Witness）”。Certificate 本身是规范的理论计算机术语，这一命名选择不表示原术语错误，也不自动宣称所有见证存在统一多项式时间验证算法。

@@ -32,6 +32,8 @@ import PredictionDepth.Complexity.GraphCircuitCode
 import PredictionDepth.Complexity.NCClosure
 import PredictionDepth.Complexity.OutputNormalization
 import PredictionDepth.Complexity.UniformComposition
+import PredictionDepth.FrozenPascal.Classification
+import PredictionDepth.FrozenPascal.HomogeneousPascal
 import PredictionDepth.FrozenPascal.LowerBound
 import PredictionDepth.FrozenPascal.UniformLanguage
 

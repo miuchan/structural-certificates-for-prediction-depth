@@ -9,12 +9,14 @@
 脚本依次检查默认入口的模块覆盖、运行 `lake build --wfail`，并审计项目声明的传递公理依赖。本次检查退出码为零。
 
 ```text
-Entry point covers all 89 project modules.
-Build completed successfully (4952 jobs).
-Audited 2961 project declarations: only propext, Classical.choice, Quot.sound.
+Entry point covers all 91 project modules.
+Build completed successfully (4962 jobs).
+Audited 3023 project declarations: only propext, Classical.choice, Quot.sound.
 ```
 
-构建任务数包含依赖。声明数包含定义、定理和 Lean 生成的辅助声明。
+构建任务数包含依赖。声明数包含定义、定理和 Lean 生成的辅助声明。另在临时目录中复用固定的第三方依赖产物，从空的项目构建目录重编译了全部项目模块，得到相同的检查结果。
+
+审计按声明的定义模块选取对象。在临时构建中，将一个传递依赖未批准公理的定理放进项目模块的其他命名空间，审计以非零状态退出并指出该定理及其公理依赖。
 
 ## 数学验收
 
@@ -24,5 +26,6 @@ Audited 2961 project declarations: only propext, Classical.choice, Quot.sound.
 - OR 实例具有已证明的状态语义、有限输入编码、实际统一生成器、固定多项式预算、精确最优深度及任意共享 De Morgan 电路的匹配下界；时间零被覆盖。
 - 二元域矩阵实例使用实际 XOR/AND 电路，有具体深度、门数和完整描述规模界。几何传播下界明确限制预测器自身的局域性。
 - 冻结控制规则族覆盖任意初始控制分布的系数公式、路径编译与解码、对数深度上界、对数空间统一生成器，以及 AND/OR 规则的匹配下界。模型和适用范围见[冻结控制规则族](frozen-pascal.md)。
+- 冻结控制深度分类给出了所有时刻共享一个常数深度界的充要条件。可变控制情形有二输入门的对数深度下界，齐次 Pascal 情形的逐时刻深度界由时刻的二进制置位数决定。常数深度和 Pascal 专用电路都有显式门数界。
 
 独立审查另行检查了实际工作空间计费、输出只写、有限控制、变长输出、规范时间位串、路径条件与全局条件的区别，以及同一电路族同时满足统一性、规模和深度要求。项目使用的逻辑基础与第三方编译产物信任边界见 [依赖说明](dependencies.md)。

@@ -30,6 +30,6 @@
 
 ## 检查的含义
 
-`scripts/check_imports.py` 要求默认入口覆盖全部项目证明文件，防止未导入的新模块漏过审计。`lake build` 编译全部项目模块。`Audit.lean` 逐一检查项目声明的传递公理依赖，只接受 `propext`、`Classical.choice`、`Quot.sound`，拒绝 `sorryAx` 或其他公理。
+`scripts/check_imports.py` 要求默认入口覆盖全部项目证明文件。`lake build` 编译全部项目模块。`Audit.lean` 按定义模块选取项目声明，涵盖 Lean 在其他命名空间生成的辅助声明。审计逐一检查传递公理依赖，只接受 `propext`、`Classical.choice`、`Quot.sound`。
 
 Mathlib 与上游库可使用缓存加快构建。导入的编译产物与任何 Lean 依赖一样属于构建信任基础；需要独立重编译时，可以清理依赖构建产物和关闭缓存，按照固定源码版本重建。公理审计检查逻辑依赖，不能单独发现数学定义选错的问题，因此项目还保留源文档、假设说明和逐项要求清单。

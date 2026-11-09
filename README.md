@@ -1,20 +1,34 @@
 # 动力系统预测深度的结构性判据
 
-本项目用 Lean 4 形式化动力系统的预测深度，证明快速预测、模拟归约和信息依赖下界三条结构性判据。实例包括 OR 元胞自动机、二元域线性系统和冻结控制的非线性元胞自动机。
+本项目用 Lean 4 形式化动力系统预测的电路深度。主要研究实例是冻结控制的一侧元胞自动机。控制字可随位置任意变化，数据轨在固定控制配置下线性演化。项目用路径计数把预测化为前缀统计与组合系数的奇偶性，并构造了对数空间统一 NC¹ 电路族。
 
-项目包含三个核心判据的证明，以及具体机器定义下的 logspace 复合闭包、CVP 的 P 完备性、统一 NC 的定义与归约闭包。所有项目模块均由默认入口覆盖；构建和传递公理依赖检查通过 `scripts/check.sh` 复现。逐项范围见 [要求清单](docs/requirements.md)，机器模型与依赖见 [说明](docs/dependencies.md)，最终检查结果见 [验证记录](docs/verification.md)。
+## 冻结控制规则族的深度分类
+
+固定控制字宽 $q$ 和等待、传输两个控制函数。每次预测显式给出格点 $0,\ldots,T$ 的控制字和数据位，因此合法输入长度为 $n=(q+1)(T+1)$，由长度确定时间 $T$。下表的下界覆盖扇入至多二、允许任意布线和共享的电路，上界由实际 De Morgan 电路给出。
+
+| 控制函数 | 预测深度 |
+| --- | --- |
+| 传输恒关 | 常数深度。正时刻只读原点的等待标志和数据位。 |
+| 传输恒开、等待恒关 | 深度零。直接读第 $T$ 格的数据位。 |
+| 传输函数非常值，或传输恒开且等待函数非常值 | $\Theta(\log(T+1))$。下界来自至少 $T+1$ 个本质输入位，包含 AND/OR 控制实例。 |
+| 传输与等待均恒开 | 若 $p$ 是 $T$ 的二进制展开中 1 的个数，则深度介于 $p$ 与 $3p$ 之间。在 $T=2^r$ 时至多三层，在 $T=2^r-1$ 时至少 $r$ 层。 |
+
+`bounded_prediction_depth_iff` 证明，存在覆盖所有时刻的常数深度界，当且仅当规则属于表中前两类。表中的细化界针对固定输入窗口，统一 NC¹ 定理由同一个对数空间生成器覆盖所有合法长度。[冻结控制预测的数学论证](docs/frozen-pascal.md)
+
+## 形式化基础设施
+
+三个判据分别把有资源界的原语电路编译为预测器（A），把具体模拟见证转化为复杂性下界（B），以及把本质输入数转化为有界扇入深度下界（C）。标准层连接具体图灵机、CVP 完备性和统一 NC 的归约闭包。OR 元胞自动机检验精确深度和几何约束，二元域矩阵实例检验组合成本。逐项范围、机器模型与构建结果分别见[要求清单](docs/requirements.md)、[依赖说明](docs/dependencies.md)和[验证记录](docs/verification.md)。
 
 ## 复现
 
 当前版本固定 Lean `v4.36.0-rc2`，并通过 `lake-manifest.json` 固定全部依赖。标准复杂性基础来自 [cslib-frontier](https://github.com/cslib-community/cslib-frontier/tree/3c44ce0b2e9d39041ebd662cf65edf5c03b00e8d)，提交为 `3c44ce0b2e9d39041ebd662cf65edf5c03b00e8d`；其 CSLib、Mathlib 版本由该提交的依赖图确定。
 
 ```sh
-lake update
-lake exe cache get
+lake exe cache get  # 可选，下载依赖的构建缓存
 ./scripts/check.sh
 ```
 
-`scripts/check.sh` 构建默认库并运行 `Audit.lean`。审计递归检查每个 `PredictionDepth` 声明的公理依赖，只允许 Lean 的 `propext`、`Classical.choice`、`Quot.sound`，拒绝 `sorryAx` 及其他公理。缓存用于加快依赖构建；它不代替项目源码的编译，也不代替审查定理陈述是否符合数学目标。
+`scripts/check.sh` 检查默认入口覆盖、执行严格构建，再运行 `Audit.lean`。审计按声明所属的项目模块选择检查对象，递归检查其公理依赖，只允许 Lean 的 `propext`、`Classical.choice`、`Quot.sound`。依赖缓存只加快构建。定理陈述与数学模型的对应关系可通过下表定位并审查。
 
 ## 核心定理与代码
 
@@ -34,7 +48,8 @@ lake exe cache get
 | 标准 NC 闭包与条件性不可快进 | `Complexity/NCClosure.lean`：`uniformNC_closed_logspace`、`SimulationWitness.prediction_not_uniformNC` |
 | 并行可达性、统一 NC² 与流式生成 | `Complexity/Reachability.lean`、`UniformReachability.lean`、`LogspaceBatch.lean` |
 | 信息依赖计数方法的界限 | `DependencyGrowth.lean`：`dependency_method_limit` |
-| 冻结控制的一侧非线性规则族 | `FrozenPascal/`，见[系数公式、深度界与文献对照](docs/frozen-pascal.md) |
+| 冻结控制的一侧规则族 | `FrozenPascal/Semantics.lean` 的 `iterate_data` 和 `FrozenPascal/UniformLanguage.lean` 的 `predictionLanguage_mem_uniformNC_one` |
+| 冻结控制的深度分类 | `FrozenPascal/Classification.lean` 的 `bounded_prediction_depth_iff` 和 `varyingGuard_prediction_depth_lower_bound`，`FrozenPascal/HomogeneousPascal.lean` 的 `pascalSupport_card` 及二进制位数深度界 |
 | 可执行边界与实例检查 | `Examples.lean` |
 
 ### A：快速可组合表示
@@ -119,6 +134,8 @@ F^T(x)_0=\bigvee_{j=-T}^{T}x_j,
 - `Nat.clog` 给出离散的上取整对数，统一处理零/单输入；涉及实对数的渐近解释须在正参数范围使用。
 - `intrinsicDepth` 先固定输入长度、规模常数、规模指数和整个电路族的可接受性；无可接受族时取无穷。逐点取下确界可能在不同时间选择不同电路族，渐近算法结论通过 `RealizesProfile` 要求同一个族实现整个深度曲线。
 - 组合式 `BinaryCircuit.depth` 是经结构证明的深度上界；上下界匹配时才宣称最优值。
-- 项目证明的范围是三个充分判据及其具体实例。对规则族给出完整的复杂性分类、在一般电路模型中证明超对数深度下界，以及将结论推广到哈密顿量系统，属于进一步的研究问题。
+- A、B、C 是充分判据。Lean 检查调用者提供的构造和语义证明。对一般规则自动寻找见证仍需另行给出算法。
+- B 的困难性结论需要具体系统的完整模拟见证，P 完备性还需要目标语言属于 P。由类分离假设推出的结论是统一 NC 非成员资格。
+- C 在多项式大小的光锥中至多给出对数级的计数下界。冻结控制族的下界衡量二输入电路的深度。要证明 NC¹ 完备性，还需给出适当归约下的 NC¹ 困难性。
 
 第三方复杂性基础已纳入模型与传递公理依赖审查。文献链接、库名和绿色构建都不能替代对定义与假设的检查；模型细节与审计范围保存在项目文档中。
