@@ -1,0 +1,13 @@
+name = "prediction_depth"
+version = "0.1.0"
+defaultTargets = ["PredictionDepth"]
+
+[[require]]
+name = "cslib-frontier"
+git = "https://github.com/cslib-community/cslib-frontier.git"
+rev = "3c44ce0b2e9d39041ebd662cf65edf5c03b00e8d"
+
+[[lean_lib]]
+name = "PredictionDepth"
+allowNonModules = true
+globs = ["PredictionDepth", "PredictionDepth.+"]
