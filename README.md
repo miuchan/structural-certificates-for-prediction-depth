@@ -13,7 +13,7 @@
 | 传输函数非常值，或传输恒开且等待函数非常值 | $\Theta(\log(T+1))$。下界来自至少 $T+1$ 个本质输入位，包含 AND/OR 控制实例。 |
 | 传输与等待均恒开 | 若 $p$ 是 $T$ 的二进制展开中 1 的个数，则深度介于 $p$ 与 $3p$ 之间。在 $T=2^r$ 时至多三层，在 $T=2^r-1$ 时至少 $r$ 层。 |
 
-`bounded_prediction_depth_iff` 证明，存在覆盖所有时刻的常数深度界，当且仅当规则属于表中前两类。表中的细化界针对固定输入窗口，统一 NC¹ 定理由同一个对数空间生成器覆盖所有合法长度。[冻结控制预测的数学论证](docs/frozen-pascal.md)
+`classify` 枚举有限控制字并返回所属分支，`classify_eq_iff` 证明结果与表中的条件等价。`uniform_depth_classification` 为每对固定控制函数给出一个对数空间统一的多项式规模电路族，实现表中的分支上界，包括齐次 Pascal 规则的 $`3p`$ 层上界。语言属于统一 NC⁰ 当且仅当规则落在表中前两类。[冻结控制预测的数学论证](docs/frozen-pascal.md)
 
 ## 形式化基础设施
 
@@ -28,7 +28,7 @@ lake exe cache get  # 可选，下载依赖的构建缓存
 ./scripts/check.sh
 ```
 
-`scripts/check.sh` 检查默认入口覆盖、执行严格构建，再运行 `Audit.lean`。审计按声明所属的项目模块选择检查对象，递归检查其公理依赖，只允许 Lean 的 `propext`、`Classical.choice`、`Quot.sound`。依赖缓存只加快构建。定理陈述与数学模型的对应关系可通过下表定位并审查。
+`scripts/check.sh` 检查默认入口覆盖、执行严格构建，再运行传递公理审计及负向回归测试。审计按声明所属的项目模块选择检查对象，只允许 Lean 的 `propext`、`Classical.choice`、`Quot.sound`。GitHub Actions 对触发运行的提交执行同一脚本。[验证流程](docs/verification.md)
 
 ## 核心定理与代码
 
@@ -50,6 +50,7 @@ lake exe cache get  # 可选，下载依赖的构建缓存
 | 信息依赖计数方法的界限 | `DependencyGrowth.lean`：`dependency_method_limit` |
 | 冻结控制的一侧规则族 | `FrozenPascal/Semantics.lean` 的 `iterate_data` 和 `FrozenPascal/UniformLanguage.lean` 的 `predictionLanguage_mem_uniformNC_one` |
 | 冻结控制的深度分类 | `FrozenPascal/Classification.lean` 的 `bounded_prediction_depth_iff` 和 `varyingGuard_prediction_depth_lower_bound`，`FrozenPascal/HomogeneousPascal.lean` 的 `pascalSupport_card` 及二进制位数深度界 |
+| 可执行分类器与统一深度分类 | `FrozenPascal/Classification.lean` 的 `classify_eq_iff`，`FrozenPascal/UniformClassification.lean` 的 `uniform_depth_classification` 和 `predictionLanguage_mem_uniformNC_zero_iff` |
 | 可执行边界与实例检查 | `Examples.lean` |
 
 ### A：快速可组合表示

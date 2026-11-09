@@ -6,17 +6,20 @@
 ./scripts/check.sh
 ```
 
-脚本依次检查默认入口的模块覆盖、运行 `lake build --wfail`，并审计项目声明的传递公理依赖。本次检查退出码为零。
+脚本依次检查默认入口的模块覆盖、运行 `lake build --wfail`、审计项目声明的传递公理依赖，并运行负向回归测试。
 
 ```text
-Entry point covers all 91 project modules.
-Build completed successfully (4962 jobs).
-Audited 3023 project declarations: only propext, Classical.choice, Quot.sound.
+Entry point covers all 95 project modules.
+Build completed successfully (4970 jobs).
+Audited 3194 project declarations: only propext, Classical.choice, Quot.sound.
+Audit regression passed: AuditRegressionExternal.unexpectedTheorem transitively depends on unapproved axiom AuditRegressionDependency.unexpectedOracle.
 ```
 
 构建任务数包含依赖。声明数包含定义、定理和 Lean 生成的辅助声明。另在临时目录中复用固定的第三方依赖产物，从空的项目构建目录重编译了全部项目模块，得到相同的检查结果。
 
-审计按声明的定义模块选取对象。在临时构建中，将一个传递依赖未批准公理的定理放进项目模块的其他命名空间，审计以非零状态退出并指出该定理及其公理依赖。
+审计按声明的定义模块选取对象。`scripts/check_audit.py` 在临时目录编译一个项目定理。该定理位于其他命名空间，且经由一个中间定理依赖外部公理。回归测试要求生产审计脚本以非零状态退出并报告指定定理及公理。
+
+[GitHub Actions 工作流](../.github/workflows/lean.yml) 在 Ubuntu 上运行同一脚本。推送事件检查推送的提交，拉取请求事件检查 GitHub 生成的合并提交。工作流核对检出的 SHA 和触发 SHA，并在成功时把 SHA 写入运行摘要。可用 `gh run list --commit <SHA>` 查找对应的公开记录。
 
 ## 数学验收
 
@@ -27,5 +30,6 @@ Audited 3023 project declarations: only propext, Classical.choice, Quot.sound.
 - 二元域矩阵实例使用实际 XOR/AND 电路，有具体深度、门数和完整描述规模界。几何传播下界明确限制预测器自身的局域性。
 - 冻结控制规则族覆盖任意初始控制分布的系数公式、路径编译与解码、对数深度上界、对数空间统一生成器，以及 AND/OR 规则的匹配下界。模型和适用范围见[冻结控制规则族](frozen-pascal.md)。
 - 冻结控制深度分类给出了所有时刻共享一个常数深度界的充要条件。可变控制情形有二输入门的对数深度下界，齐次 Pascal 情形的逐时刻深度界由时刻的二进制置位数决定。常数深度和 Pascal 专用电路都有显式门数界。
+- 可执行分类器的返回值与四种语义条件等价。统一分类总定理在同一个实际生成的电路族上证明语言正确性、多项式门数和分支深度上界，并给出标准统一 NC⁰ 的成员资格充要条件。
 
 独立审查另行检查了实际工作空间计费、输出只写、有限控制、变长输出、规范时间位串、路径条件与全局条件的区别，以及同一电路族同时满足统一性、规模和深度要求。项目使用的逻辑基础与第三方编译产物信任边界见 [依赖说明](dependencies.md)。

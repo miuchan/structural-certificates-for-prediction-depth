@@ -52,9 +52,7 @@ CVP 使用合法实例类型不会把目标结论弱化为 promise 问题：其�
 
 这些接口假设只属于通用辅助层；标准 P-hard/P-complete 结论应使用 `StandardComplexity.SimulationWitness` 的定理，那里已实例化实际对数空间机器与已证明的 CVP 完备性。所有具体系统的义务均出现在 Lean 类型中，可通过 `#check` 逐项检查。
 
-## 术语和文献
-
-“Certificate”是理论计算机科学中的规范用语，并非不合规范。Wigderson 在 *Mathematics and Computation* 第 3.3 节将可验证的成员资格证明称为 witness 或 certificate。这里采用 `SimulationWitness`（模拟见证），强调它包含编码、资源界和语义证明；没有额外声称所有这种见证都具有统一的多项式时间检查器。[作者提供的书稿](https://www.math.ias.edu/files/Book-online-Aug0619.pdf)
+## 参考文献
 
 CVP 的对数空间 P 完备性可追溯到 Richard E. Ladner，*The Circuit Value Problem is Log Space Complete for P*，SIGACT News 7(1), 18–20, 1975。[作者论文目录](https://homes.cs.washington.edu/~ladner/papers.html)
 
