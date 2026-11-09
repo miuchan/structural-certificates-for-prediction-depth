@@ -73,7 +73,7 @@ AND/OR 控制可分别取 $`a_{\rm on}=(1,1)`$ 和 $`a_{\rm off}=(1,0)`$。结�
 
 ## 按控制函数分类
 
-`bounded_prediction_depth_iff` 给出了有界深度的充要条件。固定两个控制函数后，存在一族对所有初值正确、且在所有时刻共用一个常数深度界的 De Morgan 电路，当且仅当规则始终禁止传输，或始终传输且始终禁止等待。枚举 $`2^q`$ 个控制字的函数值即可判定这个条件。 [有界深度充要条件](../PredictionDepth/FrozenPascal/Classification.lean)
+`bounded_prediction_depth_iff` 给出了有界深度的充要条件。固定两个控制函数后，存在一族对所有初值正确、且在所有时刻共用一个常数深度界的 De Morgan 电路，当且仅当规则始终禁止传输，或始终传输且始终禁止等待。`classify` 枚举 $`2^q`$ 个控制字并返回下表中的一个分支，`classify_eq_iff` 验证返回值和对应语义条件等价。枚举开销取决于规则描述中的 $`q`$。例如固定 $`s\equiv1`$ 时，判定常数深度等价于判定控制电路 $`h`$ 是否不可满足。 [分类器及有界深度充要条件](../PredictionDepth/FrozenPascal/Classification.lean)
 
 逐时刻的深度可进一步分成四类。下界适用于任意扇入至多为二的布尔门，上界由 De Morgan 电路实现。$`T=0`$ 时各类规则都可直接输出 $`x_0(0)`$。`guard_depth_cases` 验证四种情况覆盖全部固定控制函数。 [规则分类](../PredictionDepth/FrozenPascal/Classification.lean)
 
@@ -86,10 +86,22 @@ AND/OR 控制可分别取 $`a_{\rm on}=(1,1)`$ 和 $`a_{\rm off}=(1,0)`$。结�
 
 若 $`h`$ 非常值，把数据位固定为仅 $`x_T(0)=1`$。输出为 $`e_T`$，因为最远输入只能沿全移动路径到达原点。布尔超立方体上，任意两个控制字之间都有逐位翻转的路径，因此非常值的 $`h`$ 必在某条边上改变取值。对前 $`T`$ 格分别利用这样一条边，固定其他格点使边通行，即可见每格至少有一个本质控制位。令所有边通行还可见 $`x_T(0)`$ 是本质输入。于是深度至少为 $`\lceil\log_2(T+1)\rceil`$。若 $`h\equiv 1`$ 且 $`s`$ 非常值，则前节的奇偶校验限制直接给出同一个下界。 [两种变化情形的统一下界](../PredictionDepth/FrozenPascal/Classification.lean)
 
-若两个函数恒为 $`1`$，系数化为 $`\binom{T}{k}\bmod 2`$。令 $`p=\operatorname{popcount}(T)`$ 表示 $`T`$ 的二进制置位数。按 Lucas 位测试，奇系数对应的 $`k`$ 恰是 $`T`$ 的所有子掩码，每个置位独立决定取或不取。因此有 $`2^p`$ 个本质数据位，给出 $`p`$ 层的下界。Lean 构造只对这些数据位做平衡 XOR，深度至多 $`3p`$，门数为 $`5(2^p-1)`$。若 XOR 可作为原生二输入门，则最优深度恰为 $`p`$。例如 $`T=2^m`$ 时只异或两位，而 $`T=2^m-1`$ 时异或整个窗口。上述专用电路的资源界按时刻给出，统一 NC¹ 成员资格由前面的通用构造给出。 [齐次规则的精细深度界](../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [经典奇系数计数，见 Rowland §1](https://arxiv.org/pdf/1001.1783)
+门的扇入决定了这个下界的适用范围。例如 $`s\equiv0, h(a)=a`$ 时，预测就是 $`x_T(0)\land a_0\land\cdots\land a_{T-1}`$。二输入门需要对数深度，允许无界扇入时一个 AND 门即可完成。
+
+若两个函数恒为 $`1`$，系数化为 $`\binom{T}{k}\bmod 2`$。令 $`p=\operatorname{popcount}(T)`$ 表示 $`T`$ 的二进制置位数。按 Lucas 位测试，奇系数对应的 $`k`$ 恰是 $`T`$ 的所有子掩码，每个置位独立决定取或不取。因此有 $`2^p`$ 个本质数据位，给出 $`p`$ 层的下界。逐时刻的平衡 XOR 构造深度至多 $`3p`$，门数为 $`5(2^p-1)`$。若 XOR 可作为原生二输入门，则最优深度恰为 $`p`$。在 $`T=2^r-1`$ 时至少需要 $`r`$ 层，紧接着的 $`T=2^r`$ 只需异或两位。这给出了逐时刻深度随时间下降的例子。 [齐次规则的精细深度界](../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [经典奇系数计数，见 Rowland §1](https://arxiv.org/pdf/1001.1783)
+
+## 统一的分类定理
+
+`classifiedPrediction` 按固定规则的分类结果选定生成器。规则在电路族定义时固定，生成器随输入长度变化。无传输和纯移位生成器输出原专用电路的完整编码，分别保留常数深度和零门的界。可变控制规则沿用通用路径电路。齐次 Pascal 生成器扫描 $`k\le T`$，用子掩码测试流式输出奇系数的接线，归约电路只处理这些输入。 [无传输和移位生成器](../PredictionDepth/FrozenPascal/UniformLocal.lean) · [Pascal 生成器](../PredictionDepth/FrozenPascal/UniformHomogeneous.lean)
+
+Pascal 归约使用 $`p`$ 轮固定宽度的并行 XOR，每轮三层 De Morgan 门。这样可直接流式串接各轮输出，得到 $`3p`$ 深度上界及 $`5p2^p`$ 个门。由于 $`2^p\le T+1`$，门数至多按 $`T\log(T+2)`$ 增长。前面的逐时刻平衡树有更小的门数，统一总定理采用固定宽度构造。 [XOR 归约及编码](../PredictionDepth/FrozenPascal/UniformXor.lean)
+
+`uniform_depth_classification` 对每对固定控制函数给出一个决定整个预测语言的电路族，同时证明实际 logspace 统一性、多项式门数、关于长度的对数深度和合法时刻的分支深度界。分支下界对所有决定该语言的电路族成立。空串和其他非法长度都由同一统一族拒绝。`predictionLanguage_mem_uniformNC_zero_iff` 将常数深度条件提升为标准统一 NC⁰ 的成员资格充要条件。 [统一分类总定理](../PredictionDepth/FrozenPascal/UniformClassification.lean)
 
 ## 文献对照
 
-Moore 与 Pnin 在 *Physica D* 的论文中用时间区间分治求非自治加性元胞自动机的传递系数，允许这些系数同时随时间和位置变化。其 Lemma 1 的算法在二输入门下给出 $`O(\log^2 T)`$ 深度。Theorem 1 再处理由另一条轨控制这些系数的拟直积结构。这里的冻结控制属于该模型的特例，控制轨在任意时刻都等于初值。本例的 $`O(\log T)`$ 界优于把该通用分治算法直接用于这一特例所得的保证。该论文也已用 Pascal 系数处理空间齐次的加性规则。这里的统一上界处理空间上任意变化的冻结控制，其文献优先权仍待核对。 [Moore 与 Pnin，§3](https://arxiv.org/pdf/patt-sol/9701008) · [作者的出版记录](https://sites.santafe.edu/~moore/pubs/semi.html)
+Moore 与 Pnin 在 *Physica D* 的论文中用时间区间分治求非自治加性元胞自动机的传递系数，允许这些系数同时随时间和位置变化。其 Lemma 1 的算法在二输入门下给出 $`O(\log^2 T)`$ 深度。Theorem 1 再处理由另一条轨控制这些系数的拟直积结构。对于空间齐次加性规则，该论文已说明可在对数空间生成 Pascal 行，并在允许无界扇入模加门时得到统一 ACC⁰。奇系数计数也早已由 Glaisher 给出，Rowland 回顾了它与 Lucas 定理的关系。 [Moore 与 Pnin，§3](https://arxiv.org/pdf/patt-sol/9701008) · [Rowland，§1](https://arxiv.org/pdf/1001.1783)
 
 固定控制后，数据演化是上双对角线性算子。对角元为 $`s(a_i)`$，超对角元为 $`h(a_i)`$。Higham 的 Theorem 6.1 给出复数域上双对角矩阵函数的乘积与差商公式。对于幂函数，相应的差商是完全齐次对称多项式。把对角变量取为 $`0`$ 或 $`1`$ 后，该多项式只计数总次数为 $`T-k`$ 且支撑在允许等待位置的单项式，从而得到同一个多重组合系数。这里用路径计数在 $`\mathbb F_2`$ 中直接证明该特化，进而控制并行资源并验证统一构造。 [Higham，定理 6.1](https://doi.org/10.13001/ela.2024.8297)
+
+本项目把空间上任意变化、时间上固定的一侧控制特化接到机器级统一 NC¹ 上界和四分支深度分类。这里的 $`O(\log T)`$ 界与 Moore–Pnin 的一般分治保证比较。针对这一精确规则族的统一上界和完整分类，现有对照尚不足以确定文献优先权。

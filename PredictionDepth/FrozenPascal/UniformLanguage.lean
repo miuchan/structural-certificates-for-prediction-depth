@@ -16,29 +16,75 @@ def predictionLanguage (stay hop : Gates q 1) : Set (List Bool) :=
     ofBoolRing (((step (guard stay) (guard hop))^[T]
       (decodeRaw (BitString.ofList (RawWidth q (T + 1)) x))).2 0) = true}
 
-theorem predictionLanguage_eq_liftLanguage (W : WeightBasis) (stay hop : Gates q 1) :
-    UniformGuards.liftLanguage (uniformGuardedPrediction W stay hop) =
-      predictionLanguage stay hop := by
-  ext x
-  change evaluateFamily (UniformGuards.lift (uniformGuardedPrediction W stay hop)) x = true ↔ _
+/-- Correctness on sampled configurations lifts to a total language decider,
+with invalid lengths rejected by the standard length wrapper. -/
+theorem lift_decides_predictionLanguage (stay hop : Gates q 1)
+    (P : ∀ T, Gates (RawWidth q (T + 1)) 1)
+    (hcorrect : ∀ (T : ℕ) (x : Config (FastComposition.Bits q)),
+      (P T).eval interpretation (rawSample x (T + 1)) 0 =
+        ofBoolRing (((step (guard stay) (guard hop))^[T] x).2 0)) :
+    FamilyDecides (UniformGuards.lift P) (predictionLanguage stay hop) := by
+  intro x
   have he (T : ℕ) (h : x.length = RawWidth q (T + 1)) :
-      evaluateFamily (UniformGuards.lift (uniformGuardedPrediction W stay hop)) x =
+      evaluateFamily (UniformGuards.lift P) x =
         ofBoolRing (((step (guard stay) (guard hop))^[T]
           (decodeRaw (BitString.ofList (RawWidth q (T + 1)) x))).2 0) := by
-    rw [evaluateFamily, h, UniformGuards.lift_at_time, uniformGuardedPrediction_eval]
+    rw [evaluateFamily, h, UniformGuards.lift_at_time]
+    simpa only [rawSample_decodeRaw] using
+      hcorrect T (decodeRaw (BitString.ofList (RawWidth q (T + 1)) x))
+  symm
   constructor
   · intro hx
     by_cases h : UniformGuards.ValidLength q x.length
     · let T := UniformGuards.timeOfLength q x.length
       have hw : x.length = RawWidth q (T + 1) := (UniformGuards.rawWidth_timeOfLength h).symm
       exact ⟨T, hw, (he T hw).symm.trans hx⟩
-    · have hbad := UniformGuards.lift_invalid_eval (uniformGuardedPrediction W stay hop) h
+    · have hbad := UniformGuards.lift_invalid_eval P h
         (BitString.ofList x.length x)
-      change evaluateFamily (UniformGuards.lift (uniformGuardedPrediction W stay hop)) x = false at hbad
+      change evaluateFamily (UniformGuards.lift P) x = false at hbad
       rw [hbad] at hx
       cases hx
   · rintro ⟨T, h, hx⟩
     exact (he T h).trans hx
+
+/-- Every decider for the word language predicts the sampled configuration
+at the circuit indexed by its window length. -/
+theorem predictionLanguage_correct_at_time (stay hop : Gates q 1)
+    (F : BooleanCircuitFamily) (hF : FamilyDecides F (predictionLanguage stay hop))
+    (T : ℕ) (x : Config (FastComposition.Bits q)) :
+    (F (RawWidth q (T + 1))).eval interpretation (rawSample x (T + 1)) 0 =
+      ofBoolRing (((step (guard stay) (guard hop))^[T] x).2 0) := by
+  let word := List.ofFn (rawSample x (T + 1))
+  have hlen : word.length = RawWidth q (T + 1) := List.length_ofFn
+  have hwindow :
+      ofBoolRing (((step (guard stay) (guard hop))^[T]
+        (decodeRaw (rawSample x (T + 1)))).2 0) =
+        ofBoolRing (((step (guard stay) (guard hop))^[T] x).2 0) := by
+    rw [← guardedPrediction_correct stay hop (decodeRaw (rawSample x (T + 1))) T,
+      rawSample_decodeRaw, guardedPrediction_correct stay hop x T]
+  have hword : word ∈ predictionLanguage stay hop ↔
+      ofBoolRing (((step (guard stay) (guard hop))^[T] x).2 0) = true := by
+    constructor
+    · rintro ⟨U, hU, hy⟩
+      have htime := congrArg (UniformGuards.timeOfLength q) (hU.symm.trans hlen)
+      simp only [UniformGuards.timeOfLength_rawWidth] at htime
+      subst U
+      simpa only [word, BitString.ofList_ofFn, hwindow] using hy
+    · intro hx
+      exact ⟨T, hlen, by simpa only [word, BitString.ofList_ofFn, hwindow] using hx⟩
+  have heval : evaluateFamily F word =
+      (F (RawWidth q (T + 1))).eval interpretation (rawSample x (T + 1)) 0 := by
+    rw [evaluateFamily, hlen]
+    simp only [word, BitString.ofList_ofFn]
+  rw [← heval]
+  exact Bool.eq_iff_iff.mpr ((hF word).symm.trans hword)
+
+theorem predictionLanguage_eq_liftLanguage (W : WeightBasis) (stay hop : Gates q 1) :
+    UniformGuards.liftLanguage (uniformGuardedPrediction W stay hop) =
+      predictionLanguage stay hop := by
+  ext x
+  exact (lift_decides_predictionLanguage stay hop _ (fun T y =>
+    uniformGuardedPrediction_correct W stay hop y T) x).symm
 
 private theorem clog_succ_bound (r : ℕ) (hr : 1 ≤ r) : Nat.clog 2 (r + 1) ≤ Nat.clog 2 r + 1 := by
   apply Nat.clog_le_of_le_pow

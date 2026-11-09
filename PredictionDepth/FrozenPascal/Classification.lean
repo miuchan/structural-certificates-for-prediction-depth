@@ -96,16 +96,73 @@ theorem shiftPrediction_correct (stay hop : Gates q 1)
 def GuardVaries (g : Gates q 1) : Prop :=
   ∃ off on, guard g off = false ∧ guard g on = true
 
-private theorem guard_cases (g : Gates q 1) :
-    (∀ a, guard g a = false) ∨ (∀ a, guard g a = true) ∨ GuardVaries g := by
-  classical
-  by_cases hOff : ∀ a, guard g a = false
-  · exact Or.inl hOff
-  · by_cases hOn : ∀ a, guard g a = true
-    · exact Or.inr (Or.inl hOn)
-    · obtain ⟨off, hoff⟩ := not_forall.mp hOn
-      obtain ⟨on, hon⟩ := not_forall.mp hOff
-      exact Or.inr (Or.inr ⟨off, on, by simpa using hoff, by simpa using hon⟩)
+private theorem guardVaries_iff (g : Gates q 1) :
+    GuardVaries g ↔ (¬ ∀ a, guard g a = false) ∧ (¬ ∀ a, guard g a = true) := by
+  simp only [GuardVaries, not_forall, Bool.not_eq_false, Bool.not_eq_true]
+  constructor
+  · rintro ⟨off, on, hoff, hon⟩
+    exact ⟨⟨on, hon⟩, ⟨off, hoff⟩⟩
+  · rintro ⟨⟨on, hon⟩, ⟨off, hoff⟩⟩
+    exact ⟨off, on, hoff, hon⟩
+
+/-- The four depth regimes of a pair of fixed control guards. -/
+inductive DepthRegime where
+  | noHop
+  | shift
+  | varying
+  | pascal
+  deriving DecidableEq, Repr
+
+/-- Semantic guard conditions for each classification result. -/
+def RegimeCondition (stay hop : Gates q 1) : DepthRegime → Prop
+  | .noHop => ∀ a, guard hop a = false
+  | .shift => (∀ a, guard stay a = false) ∧ (∀ a, guard hop a = true)
+  | .varying => GuardVaries hop ∨ (∀ a, guard hop a = true) ∧ GuardVaries stay
+  | .pascal => (∀ a, guard stay a = true) ∧ (∀ a, guard hop a = true)
+
+private def controlWords : (q : ℕ) → List (Bits q)
+  | 0 => [Fin.elim0]
+  | q + 1 =>
+    let tails := controlWords q
+    tails.map (Fin.cons false) ++ tails.map (Fin.cons true)
+
+private theorem mem_controlWords (q : ℕ) (a : Bits q) : a ∈ controlWords q := by
+  induction q with
+  | zero =>
+    have h : a = Fin.elim0 := funext fun i => i.elim0
+    simp [controlWords, h]
+  | succ q ih =>
+    simp only [controlWords, List.mem_append, List.mem_map]
+    have ha := Fin.cons_self_tail a
+    cases h : a 0
+    · exact Or.inl ⟨Fin.tail a, ih _, by simpa only [h] using ha⟩
+    · exact Or.inr ⟨Fin.tail a, ih _, by simpa only [h] using ha⟩
+
+private def guardIsConstant (g : Gates q 1) (b : Bool) : Bool :=
+  (controlWords q).all (fun a => guard g a == b)
+
+private theorem guardIsConstant_spec (g : Gates q 1) (b : Bool) :
+    guardIsConstant g b = true ↔ ∀ a, guard g a = b := by
+  simp [guardIsConstant, List.all_eq_true, mem_controlWords]
+
+/-- Classify a fixed rule by evaluating its guards on the finite control alphabet. -/
+def classify (stay hop : Gates q 1) : DepthRegime :=
+  if guardIsConstant hop false then .noHop
+  else if guardIsConstant hop true then
+    if guardIsConstant stay false then .shift
+    else if guardIsConstant stay true then .pascal
+    else .varying
+  else .varying
+
+theorem classify_eq_iff (stay hop : Gates q 1) (regime : DepthRegime) :
+    classify stay hop = regime ↔ RegimeCondition stay hop regime := by
+  unfold classify
+  split_ifs <;> simp only [guardIsConstant_spec] at * <;> cases regime <;>
+    simp_all [RegimeCondition, guardVaries_iff]
+
+theorem classify_correct (stay hop : Gates q 1) :
+    RegimeCondition stay hop (classify stay hop) :=
+  (classify_eq_iff stay hop _).mp rfl
 
 /-- Every fixed guard pair falls into the local-only, shift, logarithmic,
 or homogeneous Pascal regime, respectively. -/
@@ -114,13 +171,13 @@ theorem guard_depth_cases (stay hop : Gates q 1) :
     ((∀ a, guard stay a = false) ∧ (∀ a, guard hop a = true)) ∨
     (GuardVaries hop ∨ (∀ a, guard hop a = true) ∧ GuardVaries stay) ∨
     ((∀ a, guard stay a = true) ∧ (∀ a, guard hop a = true)) := by
-  rcases guard_cases hop with hHop | hHop | hHop
-  · exact Or.inl hHop
-  · rcases guard_cases stay with hStay | hStay | hStay
-    · exact Or.inr (Or.inl ⟨hStay, hHop⟩)
-    · exact Or.inr (Or.inr (Or.inr ⟨hStay, hHop⟩))
-    · exact Or.inr (Or.inr (Or.inl (Or.inr ⟨hHop, hStay⟩)))
-  · exact Or.inr (Or.inr (Or.inl (Or.inl hHop)))
+  have h := classify_correct stay hop
+  generalize classify stay hop = regime at h
+  cases regime with
+  | noHop => exact Or.inl h
+  | shift => exact Or.inr (Or.inl h)
+  | varying => exact Or.inr (Or.inr (Or.inl h))
+  | pascal => exact Or.inr (Or.inr (Or.inr h))
 
 private theorem guard_essential (g : Gates q 1) (off on : Bits q)
     (hOff : guard g off = false) (hOn : guard g on = true) :
