@@ -58,6 +58,8 @@ To rebuild all four editions, place the static SC and JP Regular and Bold OTFs i
 ./scripts/build-papers.sh /path/to/cjk-fonts
 ```
 
+GitHub Actions rebuilds all four editions from the checked-out revision. Use a full commit SHA in the PDF and source links to cite the exact revision. [Paper rebuild and permalinks](docs/verification.md#paper-rebuild)
+
 ## Core theorems and code
 
 | Result | Module and main declarations |

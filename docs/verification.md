@@ -36,3 +36,9 @@ The GitHub Actions workflow runs the same script on Ubuntu. Push events check th
 - The transported-control model derives the finite-window conjunction from synchronous evolution on the infinite lattice, identifies the essential inputs exactly, and attains optimal depth with a linear-size construction. The lower bound covers binary networks with sharing. This is a per-time circuit result. [Lean theorems](../PredictionDepth/TransportedControl.lean)
 
 An independent review also checked work-space accounting, append-only output, finite control, variable output length, canonical time encodings, the distinction between path and global conditions, and whether a single family witnesses uniformity, size, and depth. [Logical foundations and trust boundaries](dependencies.md)
+
+## Paper rebuild
+
+The `Rebuild paper PDFs` job uses Typst 0.15.1 and the static Simplified Chinese and Japanese fonts from Noto Serif CJK 2.003. It runs `scripts/build-papers.sh` for all four editions, records the output checksums in the log, and records the checked-out commit SHA in the run summary. The script fixes the PDF creation timestamp and uses the specified fonts and the fonts bundled with Typst. [Local rebuild instructions](../README.md#reproduction) · [GitHub Actions workflow](../.github/workflows/lean.yml)
+
+To cite or reproduce a specific edition, open the PDF on GitHub and press `y` to replace the branch name with the full commit SHA. The same SHA identifies the corresponding Typst source and Lean code. Use `gh run list --commit <SHA>` to find the checks for that revision. [GitHub guide to file permalinks](https://docs.github.com/en/repositories/working-with-files/using-files/getting-permanent-links-to-files)

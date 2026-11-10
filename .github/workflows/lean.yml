@@ -28,3 +28,50 @@ jobs:
           ./scripts/check.sh
           git diff --exit-code HEAD -- lean-toolchain lakefile.toml lake-manifest.json
           printf 'Strict build and axiom checks passed for `%s`.\n' "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+  papers:
+    name: Rebuild paper PDFs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Install Typst 0.15.1 and Noto Serif CJK 2.003
+        shell: bash
+        run: |
+          typst_target=typst-x86_64-unknown-linux-musl
+          typst_archive="$RUNNER_TEMP/$typst_target.tar.xz"
+          curl -fsSL --retry 3 -o "$typst_archive" \
+            "https://github.com/typst/typst/releases/download/v0.15.1/$typst_target.tar.xz"
+          printf '%s  %s\n' a6d077d0a95eed5a2eba715b2dae06be954f624ccbf85758a03f389ded33118c \
+            "$typst_archive" | sha256sum --check
+          tar -xJf "$typst_archive" -C "$RUNNER_TEMP"
+          printf '%s\n' "$RUNNER_TEMP/$typst_target" >> "$GITHUB_PATH"
+
+          font_source=https://raw.githubusercontent.com/notofonts/noto-cjk/9b0f1436e455d902de067a2501422e5dc71ad16b/Serif/OTF
+          font_dir="$RUNNER_TEMP/paper-fonts"
+          mkdir -p "$font_dir"
+          for weight in Regular Bold; do
+            curl -fsSL --retry 3 -o "$font_dir/NotoSerifCJKsc-$weight.otf" \
+              "$font_source/SimplifiedChinese/NotoSerifCJKsc-$weight.otf"
+            curl -fsSL --retry 3 -o "$font_dir/NotoSerifCJKjp-$weight.otf" \
+              "$font_source/Japanese/NotoSerifCJKjp-$weight.otf"
+          done
+      - name: Compile all four editions
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          typst --version
+          paper_build=$(mktemp -d "$RUNNER_TEMP/paper-build.XXXXXXXX")
+          mkdir "$paper_build/scripts" "$paper_build/paper"
+          cp scripts/build-papers.sh "$paper_build/scripts/"
+          cp paper/*.typ paper/references.bib "$paper_build/paper/"
+          cd "$paper_build"
+          ./scripts/build-papers.sh "$RUNNER_TEMP/paper-fonts"
+          pdfs=(paper/structural-certificates{,.zh-CN,.ja,.eo}.pdf)
+          for pdf in "${pdfs[@]}"; do
+            test -s "$pdf"
+          done
+          sha256sum "${pdfs[@]}"
+          printf 'All four paper PDFs rebuilt for `%s`.\n' "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"

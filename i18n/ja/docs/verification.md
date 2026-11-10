@@ -23,6 +23,8 @@ Audit regression passed: AuditRegressionExternal.unexpectedTheorem transitively 
 
 [GitHub Actions ワークフロー](../../../.github/workflows/lean.yml) は Ubuntu で同じスクリプトを実行する。push イベントでは push されたコミットを、プルリクエストイベントでは GitHub が生成するマージコミットを検査する。ワークフローはチェックアウトした SHA とイベントの SHA が一致することを確認し、成功時には実行の概要に SHA を記録する。対応する公開記録は `gh run list --commit <SHA>` で検索できる。
 
+`Rebuild paper PDFs` ジョブは Typst 0.15.1 と Noto Serif CJK 2.003 で四言語の PDF を再ビルドし、チェックサムをログに、コミットの SHA を実行の概要に記録する。GitHub で PDF を開いて `y` を押すと、そのコミットへの固定リンクが得られる。同じ完全な SHA で、対応する Typst ソースと Lean コードも参照できる。[ローカルでの再ビルド手順](../README.md) · [GitHub の固定リンク](https://docs.github.com/ja/repositories/working-with-files/using-files/getting-permanent-links-to-files)
+
 ## 数学的な検証項目
 
 - A の有限回路構成、経路上だけの局所条件、任意の大域状態空間、一様生成器、コスト条件に基づく NC への所属には、いずれも対応する Lean の証明がある。一様コンパイラの正規化に伴うコピーゲートのコストを明示的に数える。大きな時刻を二進符号化した場合にも、実際の入力長に関する深さ条件を課す。
