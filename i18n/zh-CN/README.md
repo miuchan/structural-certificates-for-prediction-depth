@@ -25,7 +25,7 @@ Amamiya Miu 的阶段论文研究一类冻结控制的单侧元胞自动机。�
 
 控制轨统一平移时也可保留等待和传输两条分支。Lean 验证了反射后的移动坐标系把规则化为冻结控制，并交换等待、传输函数。对有限窗口重接输入线即可复用冻结预测电路，门数相同，深度至多相同。 [移动坐标系与有限窗口布线](../../PredictionDepth/TransportedBranching.lean)
 
-当 $`c'_i=c_i\oplus c_{i+1}`$、$`x'_i=c_ix_i\oplus x_{i+1}`$ 时，冻结前缀计数不足以恢复系数。Lean 验证了一个有序的系数公式。第 $`T`$ 个数据位的系数为 1。对 $`k<T`$，系数等于共享的 Pascal 奇偶值 $`Q_T=c_0(T)\oplus c_T(0)`$ 乘以控制后缀 $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ 全零的指示值。论文用平衡归约证明了线性门数和对数深度，并给出匹配的对数下界。 [Lean 系数公式](../../PredictionDepth/AdditiveBranching.lean) · [论文中的电路界](../../paper/structural-certificates.zh-CN.pdf)
+当 $`c'_i=c_i\oplus c_{i+1}`$、$`x'_i=c_ix_i\oplus x_{i+1}`$ 时，冻结前缀计数不足以恢复系数。Lean 验证了一个有序的系数公式。第 $`T`$ 个数据位的系数为 1。对 $`k<T`$，系数等于共享的 Pascal 奇偶值 $`Q_T=c_0(T)\oplus c_T(0)`$ 乘以控制后缀 $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ 全零的指示值。Lean 验证了通用有序区块编译器生成的三位摘要预测器。该对数空间统一电路族具有线性门数和对数深度。对任意布线、门扇入至多为二的正确电路，Lean 还证明了 $`\lceil\log_2(T+1)\rceil`$ 的深度下界。 [Lean 系数公式](../../PredictionDepth/AdditiveBranching.lean) · [统一预测器](../../PredictionDepth/AdditiveBranching/Summary.lean) · [深度下界](../../PredictionDepth/AdditiveBranching/LowerBound.lean)
 
 ## 形式化基础设施
 
@@ -40,7 +40,7 @@ lake exe cache get  # 可选，下载依赖的构建缓存
 ./scripts/check.sh
 ```
 
-`scripts/check.sh` 检查默认入口覆盖、执行严格构建，再运行传递公理审计及负向回归测试。审计按声明所属的项目模块选择检查对象，只允许 Lean 的 `propext`、`Classical.choice`、`Quot.sound`。GitHub Actions 对触发运行的提交执行同一脚本。[验证流程](docs/verification.md)
+`scripts/check.sh` 执行严格构建，再核对已编译入口的传递导入范围，运行公理审计及两项检查各自的回归测试。审计按声明所属的项目模块选择检查对象，只允许 Lean 的 `propext`、`Classical.choice`、`Quot.sound`。GitHub Actions 对触发运行的提交执行同一脚本。[验证流程](docs/verification.md)
 
 英文论文使用 Typst 0.15.1 和编译器内置字体。从仓库根目录重建英文 PDF。
 

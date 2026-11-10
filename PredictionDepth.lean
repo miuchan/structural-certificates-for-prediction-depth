@@ -43,6 +43,7 @@ import PredictionDepth.TransportedBranching
 import PredictionDepth.AdditiveBranching
 import PredictionDepth.Complexity.BlockSummary
 import PredictionDepth.AdditiveBranching.Summary
+import PredictionDepth.AdditiveBranching.LowerBound
 import PredictionDepth.ORAutomaton.Summary
 
 /-! Structural criteria for prediction depth: all checked core modules. -/

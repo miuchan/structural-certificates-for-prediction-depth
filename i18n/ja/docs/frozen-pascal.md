@@ -108,7 +108,7 @@ Pascal 規則の集約では、固定幅の並列 XOR を $`p`$ ラウンド実�
 
 制御トラックが一様に移動する場合も、滞留と移動の二分岐を扱える。Lean では、移動に合わせて座標を反転すると制御が凍結し、滞留関数と移動関数が入れ替わることを検証した。有限窓の入力を配線し直すことで、ゲート数を保ち、深さを増やさずに凍結制御の予測回路を再利用できる。 [移動座標系と有限窓の配線](../../../PredictionDepth/TransportedBranching.lean)
 
-$`c'_i=c_i\oplus c_{i+1}`$、$`x'_i=c_ix_i\oplus x_{i+1}`$ の場合、凍結制御で用いる接頭辞の集計だけでは係数を復元できない。Lean では順序を反映する係数公式を検証した。第 $`T`$ データビットの係数は 1 である。$`k<T`$ での係数は共通の Pascal パリティ $`Q_T=c_0(T)\oplus c_T(0)`$ と、制御の接尾辞 $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ がすべてゼロであることの指示値との積になる。論文では、平衡木で線形ゲート数と対数深さを実現し、同じオーダーの深さの下界も示す。 [Lean による係数公式](../../../PredictionDepth/AdditiveBranching.lean) · [論文の回路深さとサイズの証明](../../../paper/structural-certificates.ja.pdf)
+$`c'_i=c_i\oplus c_{i+1}`$、$`x'_i=c_ix_i\oplus x_{i+1}`$ の場合、凍結制御で用いる接頭辞の集計だけでは係数を復元できない。Lean では順序を反映する係数公式を検証した。第 $`T`$ データビットの係数は 1 である。$`k<T`$ での係数は共通の Pascal パリティ $`Q_T=c_0(T)\oplus c_T(0)`$ と、制御の接尾辞 $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ がすべてゼロであることの指示値との積になる。Lean は、共通の順序付きブロック要約コンパイラで生成した 3 ビット要約の予測器を検証した。この回路族は対数空間一様で、ゲート数が線形、深さが対数である。任意の配線を許しファンインを高々 2 とする正しい回路について、Lean は深さの下界 $`\lceil\log_2(T+1)\rceil`$ も証明する。 [Lean による係数公式](../../../PredictionDepth/AdditiveBranching.lean) · [一様予測器](../../../PredictionDepth/AdditiveBranching/Summary.lean) · [深さの下界](../../../PredictionDepth/AdditiveBranching/LowerBound.lean)
 
 ## 適用範囲と形式化の索引
 

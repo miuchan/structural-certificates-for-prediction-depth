@@ -32,6 +32,6 @@
 
 ## 检查的含义
 
-`scripts/check_imports.py` 要求默认入口覆盖全部项目证明文件。`lake build` 编译全部项目模块。`Audit.lean` 按定义模块选取项目声明，涵盖 Lean 在其他命名空间生成的辅助声明。审计逐一检查传递公理依赖，只接受 `propext`、`Classical.choice`、`Quot.sound`。
+`lake build` 编译全部项目模块。之后，`scripts/check_imports.py` 将项目证明文件清单与 Lean 加载已编译入口后报告的传递导入模块集合对照。`Audit.lean` 按定义模块选取项目声明，涵盖 Lean 在其他命名空间生成的辅助声明。审计逐一检查传递公理依赖，只接受 `propext`、`Classical.choice`、`Quot.sound`。
 
 固定的 Lean 工具链及其内核是验证信任基础的一部分。导入 Mathlib 缓存时，缓存中的编译产物也进入信任范围。在全新克隆中禁用 Lake 缓存并从固定版本的依赖源码重建，可以消除对预编译依赖缓存的信任。公理审计检查逻辑依赖。要确认形式定义和假设是否表达所讨论的预测问题，还需另行核对定理陈述。[构建证据与复核流程](verification.md) · [形式化范围](requirements.md)

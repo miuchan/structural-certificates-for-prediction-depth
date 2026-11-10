@@ -25,7 +25,7 @@ Fiksu $`u,v\in\{0,1\}`$. Ĉiu paŝo aplikas $`c'_i=c_{i+u}`$ kaj $`d'_i=c_i\land
 
 Kun unuforme ŝoviĝanta rega trako oni povas konservi ambaŭ branĉojn por restado kaj salto. Lean kontrolas, ke speguli la koordinatojn laŭ la moviĝo fiksas la regadon kaj interŝanĝas la du gardojn. Rekonekti la enirojn de la finia fenestro ebligas reuzi la prognozan cirkviton por fiksita regado kun la sama nombro da pordegoj kaj sen pligrandigo de la profundo. [Moviĝanta referenca kadro kaj fenestra drataro](../../PredictionDepth/TransportedBranching.lean)
 
-Por $`c'_i=c_i\oplus c_{i+1}`$ kaj $`x'_i=c_ix_i\oplus x_{i+1}`$, la prefiksaj nombroj de la fiksa modelo ne determinas la koeficientojn. La koeficiento de datumbito $`T`$ estas 1. Por $`k<T`$ ĝi estas la komuna Pascal-pareco $`Q_T=c_0(T)\oplus c_T(0)`$ multiplikita per la indikilo, ke la rega sufikso $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ estas tutnula. Lean kontrolas la koeficientan formulon. En la artikolo, ekvilibra redukto donas linearan pordegonombron kaj logaritman profundon, kun kongrua logaritma malsupra baro. [Lean-formulo](../../PredictionDepth/AdditiveBranching.lean) · [Pruvo de la cirkvitaj baroj](../../paper/structural-certificates.eo.pdf)
+Por $`c'_i=c_i\oplus c_{i+1}`$ kaj $`x'_i=c_ix_i\oplus x_{i+1}`$, la prefiksaj nombroj de la fiksa modelo ne determinas la koeficientojn. La koeficiento de datumbito $`T`$ estas 1. Por $`k<T`$ ĝi estas la komuna Pascal-pareco $`Q_T=c_0(T)\oplus c_T(0)`$ multiplikita per la indikilo, ke la rega sufikso $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ estas tutnula. Lean kontrolas la koeficientan formulon. Lean kontrolas la prognozilon, kiun la komuna kompililo de ordigitaj blokresumoj generas el tri-bita resumo. La cirkvitfamilio estas logspac-unuforma, kun lineara nombro da pordegoj kaj logaritma profundo. Por ĝustaj cirkvitoj kun arbitra drataro kaj maksimume du eniroj ĉe ĉiu pordego, Lean ankaŭ pruvas la malsupran profundobaron $`\lceil\log_2(T+1)\rceil`$. [Lean-formulo](../../PredictionDepth/AdditiveBranching.lean) · [Unuforma prognozilo](../../PredictionDepth/AdditiveBranching/Summary.lean) · [Malsupra profundobaro](../../PredictionDepth/AdditiveBranching/LowerBound.lean)
 
 ## Formaliga infrastrukturo
 
@@ -40,7 +40,7 @@ lake exe cache get  # Nedevige, por elŝuti la kompilkaŝmemoron de dependecoj.
 ./scripts/check.sh
 ```
 
-`scripts/check.sh` kontrolas la kovradon de la defaŭlta enirmodulo, faras striktan kompiladon kaj poste kontrolas transitivajn aksiomajn dependecojn kaj rulas negativan regresian teston. La kontrolo elektas deklarojn laŭ la projekto-modulo en kiu ili estas difinitaj kaj permesas nur `propext`, `Classical.choice` kaj `Quot.sound`. GitHub Actions rulas la saman skripton por la enmeto, kiu ekigas la laborfluon. [Kontrolprocedo](docs/verification.md)
+`scripts/check.sh` unue faras striktan kompiladon, poste kontrolas la transitivajn importojn de la kompilita enirmodulo kaj la aksiomajn dependecojn, kaj rulas la regresiajn testojn de ambaŭ kontroloj. La kontrolo elektas deklarojn laŭ la projekto-modulo en kiu ili estas difinitaj kaj permesas nur `propext`, `Classical.choice` kaj `Quot.sound`. GitHub Actions rulas la saman skripton por la enmeto, kiu ekigas la laborfluon. [Kontrolprocedo](docs/verification.md)
 
 La angla artikolo uzas Typst 0.15.1 kaj la tiparojn enkonstruitajn en la kompililo. Por rekrei la anglan PDF-dosieron, rulu jenon el la deponeja radiko.
 

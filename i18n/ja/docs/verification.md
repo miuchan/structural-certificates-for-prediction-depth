@@ -8,11 +8,11 @@
 ./scripts/check.sh
 ```
 
-スクリプトは既定のエントリーポイントの網羅性を検査し、`lake build --wfail`、プロジェクト宣言の推移的な公理依存の監査、負例による回帰テストを順に実行する。
+スクリプトはまず `lake build --wfail` を実行し、Lean が読み込んだコンパイル済みエントリーポイントの推移的なインポート範囲を調べ、最後にプロジェクト宣言の推移的な公理依存を監査する。インポートの回帰テストは、通常および入れ子のブロックコメント内の記述を除外し、実際の直接・間接インポートを数えることを確かめる。公理監査には別の負例を用いる。
 
-## 現在のローカル検証
+## 過去のローカル検証
 
-macOS での現在の検証は、斉次 Pascal 規則の最小深さと新しい二つの分岐制御モジュールを含む。入口はプロジェクトの 99 モジュールを網羅し、厳格なビルドは 5,008 件のジョブを完了した。3,383 件の宣言の公理監査で使われた公理は `propext`、`Classical.choice`、`Quot.sound` のみで、負例による回帰テストも通過した。
+この macOS での検証は、斉次 Pascal 規則の最小深さと二つの分岐制御モジュールを対象とした。入口はプロジェクトの 99 モジュールを網羅し、厳格なビルドは 5,008 件のジョブを完了した。3,383 件の宣言の公理監査で使われた公理は `propext`、`Classical.choice`、`Quot.sound` のみで、負例による回帰テストも通過した。
 
 ## 記録済みの基準コミット
 
@@ -68,7 +68,7 @@ git diff --exit-code HEAD -- lean-toolchain lakefile.toml lake-manifest.json
 - 移動制御モデルでは、無限格子上の同期発展から有限窓上の論理積を導出し、本質的入力を正確に特徴づける。ゲート数が線形の構成が最小深さを達成し、一致する下界は共有を許す二入力ネットワークにも適用できる。結果は時刻ごとの回路モデルで成り立つ。[Lean の定理](../../../PredictionDepth/TransportedControl.lean)
 - 斉次 Pascal 規則の時刻ごとの最小深さは、二入力 XOR が使える場合に $`p`$、NOT を一層と数えるド・モルガン回路では $`p=0`$ でゼロ、$`p>0`$ で $`2p+1`$ である。一様生成器は別の構成で深さの上界 $`3p`$ を実現する。 [二入力 XOR の定理](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [ド・モルガン回路の定理](../../../PredictionDepth/FrozenPascal/PascalExactDepth.lean) · [一様生成器](../../../PredictionDepth/FrozenPascal/UniformHomogeneous.lean)
 - 一様に移動する制御で二つのデータ分岐を保つとき、移動座標系で制御が凍結することと、制御関数の交換を伴う有限窓の配線を Lean で検証した。時刻ごとの回路の再利用でゲート数は等しく、深さは増えない。 [移動座標系と資源の上界](../../../PredictionDepth/TransportedBranching.lean)
-- 加法的制御を持つ分岐規則では、同期反復から共通の Pascal パリティと全ゼロ接尾辞による係数公式を Lean で導いた。線形ゲート数と同じオーダーの対数深さの上下界は論文で証明する。 [加法的制御の反復定理](../../../PredictionDepth/AdditiveBranching.lean) · [論文の証明](../../../paper/structural-certificates.ja.pdf)
+- 加法的制御を持つ分岐規則では、同期反復から共通の Pascal パリティと全ゼロ接尾辞による係数公式を Lean で導いた。Lean は 3 ビット要約の予測器について、一様生成、線形サイズ、対数深さを検証し、ファンインが高々 2 の場合に同じオーダーの下界を証明する。 [加法的制御の反復定理](../../../PredictionDepth/AdditiveBranching.lean) · [一様予測器](../../../PredictionDepth/AdditiveBranching/Summary.lean) · [深さの下界](../../../PredictionDepth/AdditiveBranching/LowerBound.lean)
 
 定理の主張をレビューする際は、標準機械モデルと照らし合わせて作業空間の計上、有限制御、追記専用出力、可変長出力を確認する。クエリと時刻の符号化、A の経路局所的な仮定、B が明示的に使う計算量クラスの分離仮定も確認する。凍結制御では、正しさ、一様性、サイズ、場合ごとの深さ上界が同じ回路族で成り立ち、下界は対象となるすべての予測器に及ぶことを確認する。移動制御では有限窓への射影と時刻ごとの回路深さ界の適用範囲を確認する。[機械モデル](dependencies.md) · [形式化の範囲](requirements.md)
 

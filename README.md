@@ -34,7 +34,7 @@ With both stay and hop branches available, uniformly translating the controls al
 
 ## Reusable block summary certificates
 
-The ordered summary compiler turns fixed-width leaf summaries, an associative merge with identity, and a readout into a single circuit family. Its resource bounds include preprocessing, the context circuit, and copy gates. For additive control, a three-bit summary and the final data wire give a verified linear-size, logarithmic-depth uniform predictor. The existing OR model uses the same compiler with a one-bit summary. Its finite local recognizer checks a supplied scan template and yields a proof for every word length. [Certificate obligations and limits](docs/requirements.md#ordered-block-summary-certificates) · [Additive predictor](PredictionDepth/AdditiveBranching/Summary.lean) · [OR predictor](PredictionDepth/ORAutomaton/Summary.lean)
+The ordered summary compiler turns fixed-width leaf summaries, an associative merge with identity, and a readout into a single circuit family. Its resource bounds include preprocessing, the context circuit, and copy gates. For additive control, a three-bit summary and the final data wire give a verified linear-size, logarithmic-depth uniform predictor. Fixing the initial controls to obtain data parity gives the verified lower bound $\lceil\log_2(T+1)\rceil$ for arbitrary fan-in-two Boolean gates. The existing OR model uses the same compiler with a one-bit summary. Its finite local recognizer checks a supplied scan template and yields a proof for every word length. [Certificate obligations and limits](docs/requirements.md#ordered-block-summary-certificates) · [Additive predictor](PredictionDepth/AdditiveBranching/Summary.lean) · [Additive lower bound](PredictionDepth/AdditiveBranching/LowerBound.lean) · [OR predictor](PredictionDepth/ORAutomaton/Summary.lean)
 
 ## Formal infrastructure
 
@@ -49,7 +49,7 @@ lake exe cache get  # Optional dependency build cache
 ./scripts/check.sh
 ```
 
-`scripts/check.sh` checks coverage of the default entry point, runs a strict build, audits transitive axiom dependencies, and runs a negative regression test. The audit selects declarations by their defining project module and permits only Lean's `propext`, `Classical.choice`, and `Quot.sound`. GitHub Actions runs the same script for the triggering commit. [Verification procedure](docs/verification.md)
+`scripts/check.sh` runs a strict build, checks the compiled entry point's import closure against the proof files, and audits transitive axiom dependencies. The coverage and axiom checks each have a regression test. The audit selects declarations by their defining project module and permits only Lean's `propext`, `Classical.choice`, and `Quot.sound`. GitHub Actions runs the same script for the triggering commit. [Verification procedure](docs/verification.md)
 
 Use Typst 0.15.1 to rebuild the English PDF from the repository root with bundled fonts.
 

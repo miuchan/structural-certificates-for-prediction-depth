@@ -15,7 +15,7 @@
 #set math.equation(numbering: "(1)", supplement: [Ekvacio])
 #show heading.where(level: 1): set block(above: 1.2em, below: 0.65em)
 #show heading.where(level: 2): set block(above: 1em, below: 0.5em)
-#show bibliography: set text(size: 10pt)
+#show bibliography: set text(size: 9.5pt)
 
 #let theorem(name, body) = figure(
   kind: "theorem",
@@ -57,9 +57,11 @@ bazo de De Morgan estas $2p(T)+1$, kie $p(T)$ nombras la unubitojn de
 $T$. La kontrolita unuforma generilo uzas profundon maksimume $3p(T)$. Por struktura komparo ni
 solvas apartan unuvojan modelon kun transportata regado. Je pozitiva
 tempo ĝia profundo estas unu ĉe egalaj rapidoj kaj precize
-$ceil(log_2(T+1))$ ĉe malsamaj rapidoj. Lean 4 kontrolas la klasifikon,
-la ligon inter dinamiko kaj finia prognozo, kaj la cirkvitajn barojn kaj
-generilojn por la reguloj kun fiksita regado.
+$ceil(log_2(T+1))$ ĉe malsamaj rapidoj. Por branĉa regulo kun adicia
+regado, tribita ordigita resumo donas unuforman prognozilon kun lineara
+grando kaj kongruajn logaritmajn profundobarojn. Lean 4 kontrolas tiujn
+barojn, la klasifikon de la fiksitaj reguloj, la Pascal-optimumon kaj
+la unuformajn cirkvitgenerilojn.
 
 *Ŝlosilvortoj.* Ĉelaj aŭtomatoj, cirkvita profundo, logspaca unuformeco, Lean 4.
 ]
@@ -83,7 +85,10 @@ finpunkto per du prefiksaj statistikoj. Duuma provo pri adicio sen reteno
 montras kiuj koeficientoj restas post nuligo (@uniform-construction).
 Kiel strukturan komparon ni ankaŭ solvas apartan unuvojan regulon kun
 transportata regado (@transport-depth). Tie la relativa rapido determinas
-kiom da malsamaj komencaj regbitoj la vojo renkontas.
+kiom da malsamaj komencaj regbitoj la vojo renkontas. La branĉaj
+ekzemploj montras kiel transdoni prognozilon per koordinatŝanĝo kaj
+kompili alian resumon kiam la fiksitaj statistikoj malsukcesas
+(@branching-boundary).
 
 = Antaŭpreparoj
 
@@ -392,18 +397,21 @@ $a_(T-1)(0),dots,a_0(0)$ kaj unu kompletigan vorton. Neniu resto povas
 okazi ĉe la lasta virtuala ĉelo, do la kompletiga vorto ne influas la
 rezulton. La du prefiksaj statistikoj plu funkcias en tiu sistemo, kun
 interŝanĝitaj roloj de restado kaj salto. Lean kontrolas la
-koordinatŝanĝon kaj la cirkvitan redukton je ĉiu tempo, inkluzive de
-la nova enira drataro.
+koordinatŝanĝon kaj la redukton kun nulprofunda enira drataro kaj
+identa eligo. Ĝia logspaca generilo transdonas la suprajn barojn
+de la fiksita regulo al la transportata regulo.
 
 *Adicia regdinamiko.* Nun unu regbito evoluas laŭ
 $c_i(t+1)=c_i(t)+c_(i+1)(t)$ kaj la datumoj laŭ
 $x_i(t+1)=c_i(t)x_i(t)+x_(i+1)(t)$. Ambaŭ ĝisdatigoj uzas $bb(F)_2$.
 Ĉe $T=2$ la koeficiento de $x_1(0)$ ĉe la origino estas
 $(c_0(0)+c_1(0))+c_1(0)=c_0(0)$. La komencaj paroj $(1,0)$ kaj $(0,1)$
-havas la saman restonombron kaj saltan flagon por tiu finpunkto, sed
-donas malsamajn koeficientojn. Resto ĉe la sama ĉelo nun povas legi
-malsamajn gardvalorojn laŭ la tempo. Nombri la ĉelojn kiuj permesas
-restadon ĉe tempo nul perdas la ordon necesan por determini nuligon.
+havas la saman restonombron kaj saltan flagon por tiu finpunkto. Kun
+datumoj $(0,1,0)$ ili donas malsamajn prognozojn. Tial neniu ellegilo de
+tiu resumo kun la datuma kunteksto povas ĝuste prognozi ĉiun fenestron.
+Lean kontrolas la kolizion sur la efektiva iteracio. Resto ĉe la sama
+ĉelo nun povas legi malsamajn gardvalorojn laŭ la tempo, do gravas
+la ordo de la regbitoj.
 
 Ankaŭ ĉi tiu regulo havas mallongan koeficientan priskribon. Estu
 $Q_T(i)=c_i(T)+c_(i+T)(0)$ la Pascal-pareco de la komencaj regbitoj sen
@@ -432,27 +440,36 @@ $Q_T(i+1)$, kun la sama sumo kaj malplena sufikso. Tio validas ankaŭ
 ĉe $T=0$ ĉar $Q_0(i+1)=0$. La koeficiento de la nur-salta vojo ĉiam
 estas unu. #qed
 
-Resumo de bloko de sinsekvaj ĉeloj estas paro $(Z,V)$. La bito $Z$
-indikas ĉu ĉiuj regbitoj en la bloko estas nulaj. La bito $V$ estas la
-pareco de la datumaj bitoj kun nur nulaj regbitoj dekstre de ili en la
-bloko. Unuopa ĉelo havas la resumon $(1+c_j(0),x_j(0))$. Kunigi du
-blokojn kunmetas iliajn resumojn laŭ
+*La kontrolita prognozilo.* Por la unuaj $T$ ĉeloj la generita
+cirkvito reduktas tribitajn resumojn $(Z,V,Q)$. $Z$ indikas ĉu ĉiuj
+regbitoj de la bloko estas nulaj. $V$ estas la pareco de la datumaj
+bitoj kun nur nulaj regbitoj dekstre en la bloko. $Q$ kolektas la
+maskitan regan parecon. Estu $lambda_(T,j)=binom(T,j) mod 2$.
+Ĉelo $j$ kontribuas $(1+c_j(0),x_j(0),lambda_(T,j)c_j(0))$.
+Kunigo de apudaj blokoj donas la asocian operacion
 $
-  (Z_L,V_L),(Z_R,V_R) |-> (Z_L Z_R,V_L Z_R+V_R).
+  (Z_L,V_L,Q_L),(Z_R,V_R,Q_R) |-> (Z_L Z_R,V_L Z_R+V_R,Q_L+Q_R).
 $
-Ekvilibra arbo kalkulas $V$ por la unuaj $T$ ĉeloj, kun malplena
-resumo $(1,0)$. La prognozo estas $x_T(0)+Q_T(0)V$. Dua arbo kalkulas
-$Q_T(0)$ el la submaskaj dratoj. La du arboj uzas entute $O(T+1)$
-pordegojn kaj havas profundon $O(log(T+2))$. La regulaj aranĝoj
-estas sinsekve eligeblaj en logaritma spaco.
+La idento estas $(1,0,0)$ kaj la ellego estas $x_T(0)+Q V$. La eniro
+interplektas $T$ parojn de rega kaj datuma bito, poste donas $x_T(0)$.
+La logspaca generilo kalkulas $T$ el la nepara enirlongo kaj uzas
+la submaskan teston de Lucas por fiksi la maskojn. Ĝi malakceptas parajn
+longojn. La kompililo de ordigitaj resumoj kompletigas per identoj kaj
+duonigas la aktivan larĝon ĉe ĉiu nivelo. Lean kontrolas la generitan
+familion, inkluzive de kopiaj pordegoj, kaj pruvas la pordegobaron
+$108(T+1)$ kaj, por $T>=1$, la profundobaron $6+5ell(T)$.
 
-Ĉe pozitiva tempo la esencaj eniroj estas ĝuste la unuaj $T$ regbitoj
-kaj ĉiuj $T+1$ datumaj bitoj. Fiksi ĉiujn datumajn bitojn krom $x_0(0)$
-al nul donas $x_0(0)c_0(0) product_(j=1)^(T-1)(1+c_j(0))$, kio atestas
-la esencecon de tiuj regbitoj. Fiksi $c_0(0)=1$ kaj
-$c_1(0)=dots=c_(T-1)(0)=0$ donas la parecon de ĉiuj datumaj bitoj.
-Sekvas la malsupra profundobaro $ell(2T+1)$. Lean kontrolas la koeficientan formulon por la efektiva kuplita
-evoluo. La cirkvitaj baroj sekvas el la supra argumento.
+*Malsupra baro.* Por $T>0$, fiksu $c_0(0)=1$ kaj nuligu ĉiujn aliajn
+enirajn regbitojn. Ĉiuj datumaj koeficientoj fariĝas unu. La $T+1$
+datumaj bitoj do estas esencaj. Lean kontrolas la malsupran baron
+$ell(T+1)$ por ĉiuj buleaj cirkvitoj kun enira grado maksimume du.
+La minimuma De Morgan-profundo do estas $Theta(log(T+1))$ kiam $T$
+kreskas. Ĉe tempo nul la prognozo estas datuma projekcio. La formulo
+donas ankaŭ pli akran nombradon surpapere. Se $x_0(0)=1$ estas la
+sola nenula datumbito, la eligo estas
+$c_0(0) product_(j=1)^(T-1)(1+c_j(0))$. Ĉiuj $T$ regbitoj do ankaŭ estas
+esencaj, kio donas la nombran baron $ell(2T+1)$.
+
 
 = Rilata laboro
 
@@ -525,12 +542,17 @@ uzas la elektitan cirkvitfamilion kiel unu atestanton pri ĝusteco,
 grando, unuformeco kaj la baro je ĉiu tempo. La teoremo pri unuvoja transporto establas optimuman profundon por ĉiu
 fenestrolongo aparte. Por branĉado kun unuforma transporto, Lean kontrolas
 la koordinatŝanĝon kaj la cirkvitan redukton per nova enira drataro.
+La kompililo de ordigitaj resumoj realigas la adician kaj OR-prognozilojn.
+Ĝi kalkulas la kostojn de pravalorizo, kunigo kaj ellego, kaj konservas
+la blokordon ŝanĝante la krampadon.
 
 Ĉiu fiksita regvorto elektas unu el kvar lokaj datumaj mapoj
 $0$, $x_i$, $x_(i+1)$ kaj $x_i+x_(i+1)$. Post fiksado de la regvortoj
 la datuma dinamiko estas unuflanka kaj lineara. La eniro estas eksplicita
 fenestro kun longo lineara laŭ $T$, kaj la cirkvito povas kunligi
-arbitrajn ĉelojn.
+arbitrajn ĉelojn. La lokeco de la dinamiko kaj tiu de la prognozila
+drataro estas apartaj kondiĉoj. La rezultoj uzas senliman drataron
+kaj la tutan eksplicitan enirdomajnon de ĉiu modelo.
 
 La akompana Lean-projekto formaligas tri sufiĉajn kriteriojn. A konstruas
 prognozilon el kunmetaj cirkvitoj kun limigitaj rimedoj. B transdonas
@@ -541,8 +563,12 @@ malsupran profundobaron laŭ la nombro de esencaj eniroj, kiel en la
 modeloj ĉi tie. Ĉe fiksitaj enira grado, dimensio, radiuso kaj bitlarĝo,
 lumkonuso de polinoma volumeno limigas la *nombran baron* de C al
 $O(log(T+2))$. La efektiva prognoza profundo povas superi tiun baron.
-Lean kontrolas liveritajn atestilojn. Trovi ilin por arbitraj reguloj
-estas aparta problemo. Por la familio kun fiksita regado, la plenumebla
+La finia resumrekonilo kontrolas lokajn ekvaciojn por donitaj
+taksilo kaj ŝablono. Ĝia konkludo uzas pruvon, kiu ligas la taksilon al
+la prognoza tasko. Kolizio ekskludas sian kandidatan resumon, kaj la
+larĝa baro koncernas sendependan resumon ĉe fiksa tranĉo. Ambaŭ rezultoj
+koncernas la specifitan resuminterfacon. Por la familio kun fiksita
+regado, la plenumebla
 klasifikilo elektas branĉon per konstantecaj provoj sur finia alfabeto.
 
 = Konkludo
@@ -565,13 +591,16 @@ Uzu la deponejan revizion asociitan kun ĉi tiu PDF por trovi la deklarojn
 en @lean-map.
 La deponejo dokumentas la fiksitajn versiojn de Typst kaj la tiparojn
 por rekonstrui la kvar eldonojn. Rulu #box[`./scripts/check.sh`] por la
-strikta Lean-kompilo, transitiva aksiomkontrolo kaj negativa regresprovo.
+strikta Lean-kompilo, kontrolo de importkovro, transitiva aksiomkontrolo
+kaj regresprovoj.
 La kontrolgvidilo distingas kompilajn rezultojn disde la revizio de modelaj
 supozoj.
 @lean-map listigas la deklarojn malantaŭ la ĉefaj rezultoj.
 
 #counter(heading).update(0)
 #set heading(numbering: "A.1")
+#set text(size: 10pt)
+#set par(leading: 0.5em)
 #heading(supplement: [Apendico])[Aranĝo de la generilo kaj kalkulo de la profundobaro] <depth-budget>
 
 Estu $m=T+1$ kaj $B=ell(T+3)+1$. La registro konservas la tempoetikedon
@@ -603,38 +632,37 @@ normaligo. Sekvas maksimume $2 ell(T+1)$ registraj stadioj de
 maksimume po du tavoloj, denove kun normaligo. Tio donas maksimume
 $6B$ por la registra vojo kaj entute $104B+max(d_s,d_h)$ kun la gardoj.
 
-La tabelo havas $m^2(m+3)/2$ vicojn. Estas $O(m^2)$ nombriloj kun
-maksimume po $m+1$ eniraj bitoj. La regula aranĝo donas
-$O(m^3 log^3(m+1))$ pordegojn por fiksitaj gardoj. Ĉiun pordegan
-rikordon indeksas ĝiaj stadio, bloko, bitpozicio kaj loko en loka
-ŝablono. Por paralelaj bankoj la serialigilo nombras pli fruajn
-blokojn por kalkuli dratan deŝovon. En ĉeno de larĝo $W$, identecaj
-pordegoj $y and y$ donas sinsekvajn indeksojn al la eliroj de stadio.
-Post $G$ pordegoj kun $N$ ĉefaj eniroj, elirpozicio $a$ de tiu stadio
-estas drato $N+G-W+a$. Tiel la serialigilo rekalkulas referencojn per
-logaritmlarĝaj nombriloj kun fiksa nestada profundo kaj eligas la
-listojn de pordegoj kaj eliroj laŭ la unume kodita longo.
+La tabelo havas $m^2(m+3)/2$ vicojn. Estas $O(m^2)$ nombriloj kun po
+maksimume $m+1$ eniraj bitoj. La aranĝo uzas $O(m^3 log^3(m+1))$
+pordegojn por fiksitaj gardoj. Pordegan rikordon indeksas stadio, bloko,
+bitpozicio kaj loko en la ŝablono. Por paralelaj bankoj la serialigilo
+nombras pli fruajn blokojn por trovi la dratan deŝovon. Identecaj pordegoj
+$y and y$ donas sinsekvajn elirindeksojn. En ĉeno de larĝo $W$, post $G$
+pordegoj kun $N$ ĉefaj eniroj, elirpozicio $a$ estas drato $N+G-W+a$.
+La serialigilo tiel rekalkulas referencojn per logaritmlarĝaj nombriloj
+kun fiksa nestada profundo kaj eligas la kodon laŭ la unume kodita longo.
 
 #block(breakable: false)[
 #set text(size: 9.5pt)
+#set par(leading: 0.42em, justify: false)
 #heading(supplement: [Apendico])[Korespondo kun la Lean-deklaroj] <lean-map>
 
 La vojoj sube estas relativaj al `PredictionDepth/`.
 
 #table(
   columns: (1fr, 2.55fr),
-  inset: (x: 7pt, y: 3pt),
+  inset: (x: 7pt, y: 2pt),
   align: left,
   stroke: none,
   table.hline(stroke: 0.7pt),
   table.header([*Rezulto*], [*Lean-modulo kaj deklaro*]),
   table.hline(stroke: 0.4pt),
   [Iteracio kun fiksita regado],
-  [`FrozenPascal/Semantics.lean` #linebreak() `iterate_data`],
+  [`FrozenPascal/Semantics.lean` · `iterate_data`],
   [Fenestra interfaco],
-  [`FrozenPascal/GuardRules.lean` #linebreak() `rawSample_decodeRaw`],
+  [`FrozenPascal/GuardRules.lean` · `rawSample_decodeRaw`],
   [Plenumebla klasifikilo],
-  [`FrozenPascal/Classification.lean` #linebreak() `classify`, `classify_eq_iff`],
+  [`FrozenPascal/Classification.lean` · `classify`, `classify_eq_iff`],
   [Unuforma klasifiko],
   [`FrozenPascal/UniformClassification.lean` #linebreak()
    `uniform_depth_classification` #linebreak() `predictionLanguage_mem_uniformNC_zero_iff`],
@@ -642,7 +670,7 @@ La vojoj sube estas relativaj al `PredictionDepth/`.
   [`FrozenPascal/UniformPrediction.lean` #linebreak()
    `uniformGuardedPrediction_code_logspace` #linebreak() `uniformGuardedPrediction_depth`],
   [Kodkunmeto],
-  [`Complexity/CodeLogspace.lean` #linebreak() `compCode_logspace`],
+  [`Complexity/CodeLogspace.lean` · `compCode_logspace`],
   [Pascal-subteno kaj XOR-profundo],
   [`FrozenPascal/HomogeneousPascal.lean` #linebreak()
    `pascalSupport_card` #linebreak() `homogeneousNativeXorPrediction_depth`],
@@ -655,10 +683,18 @@ La vojoj sube estas relativaj al `PredictionDepth/`.
    `exact_prediction_depth`, `constant_depth_iff`],
   [Unuforma transporto kun branĉado],
   [`TransportedBranching.lean` #linebreak()
-   `reverseFrame_iterate`, `prediction_correct` #linebreak()
-   `prediction_depth`, `prediction_size`],
-  [Koeficientoj por adicia regado], [`AdditiveBranching.lean` #linebreak()
-    `trimmedParity_eq_sum`, `iterate_data`],
+    `reduction`, `prediction_correct`, `prediction_uniform`],
+  [Kompililo de ordigitaj resumoj], [`Complexity/BlockSummary.lean` #linebreak()
+    `compile_eval`, `compile_depth`, `compile_size`, `compile_code_logspace`],
+  [Rekono kaj limoj de resumoj], [`BlockSummary.lean` #linebreak()
+    `recognize?`, `findCollision?_sound`, `width_lower_bound`],
+  [OR-instanco], [`ORAutomaton/Summary.lean` · `summaryFamily_uniform`],
+  [Koeficientoj por adicia regado], [`AdditiveBranching.lean` · `trimmedParity_eq_sum`, `iterate_data`],
+  [Baroj kaj unuformeco por adicia regado], [`AdditiveBranching/Summary.lean` #linebreak()
+    `prediction_depth`, `prediction_size`, `predictionFamily_uniform` #linebreak()
+    `AdditiveBranching/LowerBound.lean` · `prediction_depth_lower_bound`],
+  [Kolizio por adicia regado], [`AdditiveBranching/Summary.lean` #linebreak()
+    `frozenEndpointCollision`, `frozenEndpoint_noReadout`],
   table.hline(stroke: 0.7pt),
 )
 ]

@@ -32,6 +32,6 @@ Unuforma NC postulas, ke unu sama cirkvitfamilio samtempe plenumu semantikajn, g
 
 ## Kion certigas la kontrolo
 
-`scripts/check_imports.py` postulas, ke la defaŭlta enirmodulo kovru ĉiujn projektajn pruvdosierojn. `lake build` kompilas ĉiujn projektajn modulojn. `Audit.lean` elektas deklarojn laŭ iliaj difinaj moduloj, inkluzive de helpaj deklaroj generitaj de Lean en aliaj nomspacoj. La kontrolo inspektas ĉiun transitivan aksioman dependecon kaj akceptas nur `propext`, `Classical.choice` kaj `Quot.sound`.
+`lake build` kompilas ĉiujn projektajn modulojn. Poste `scripts/check_imports.py` komparas la liston de projektaj pruvdosieroj kun la transitiva importaro, kiun Lean raportas post ŝargo de la kompilita enirmodulo. `Audit.lean` elektas deklarojn laŭ iliaj difinaj moduloj, inkluzive de helpaj deklaroj generitaj de Lean en aliaj nomspacoj. La kontrolo inspektas ĉiun transitivan aksioman dependecon kaj akceptas nur `propext`, `Classical.choice` kaj `Quot.sound`.
 
 La fiksitaj Lean-iloj kaj ilia kerno apartenas al la fidbazo. Kiam kompilo uzas la Mathlib-kaŝmemoron, la importitaj kompilproduktoj ankaŭ apartenas al ĝi. Rekompili la dependecojn el la fiksitaj fontoj en freŝa klono kun malŝaltitaj Lake-kaŝmemoroj forigas la dependecon de la antaŭkompilita kaŝmemoro. La aksiomkontrolo ekzamenas logikajn dependecojn. Por taksi ĉu la formalaj difinoj kaj supozoj esprimas la celatan prognozproblemon, necesas aparte revizii la teoremajn asertojn. [Kompilaj pruvoj kaj revizia procedo](verification.md) · [Formala amplekso](requirements.md)
