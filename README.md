@@ -2,9 +2,9 @@
 
 **English** · [简体中文](i18n/zh-CN/README.md) · [日本語](i18n/ja/README.md) · [Esperanto](i18n/eo/README.md)
 
-The research question is which verifiable structural conditions on a dynamical system yield bounds on the circuit depth of predicting an observation. A prediction problem fixes the evolution, observation, input encoding, and allowed circuits. Lean 4 checks three reusable criteria for these problems.
+The research question is which verifiable structural conditions on a dynamical system yield bounds on the circuit depth of predicting an observation. A prediction problem fixes the evolution, observation, input encoding, and allowed circuits. Lean 4 checks reusable upper and lower bound criteria and concrete circuit families.
 
-The current paper by Amamiya Miu classifies a family of one-sided cellular automata with frozen controls that can vary across sites. The order of hops is fixed, so a hop conjunction and a stay count suffice to summarize the paths to each endpoint. A binary no-carry test detects which path counts are odd. Evolving-control examples show which summaries survive uniform motion and which need to change when the controls themselves branch. English is the primary edition. [Related work](docs/literature.md)
+The paper by Amamiya Miu develops two routes to shallow prediction. For controlled rules, path coefficients and ordered block summaries give all-input depth bounds. For rules with sparse corrections, the actual trajectory can be reconstructed from a linear background and checked on its full dependency cone. English is the primary edition. [Related work](docs/literature.md)
 
 | Paper language | PDF | Typst source |
 | --- | --- | --- |
@@ -12,6 +12,18 @@ The current paper by Amamiya Miu classifies a family of one-sided cellular autom
 | 简体中文 | [PDF](paper/structural-certificates.zh-CN.pdf) | [Source](paper/structural-certificates.zh-CN.typ) |
 | 日本語 | [PDF](paper/structural-certificates.ja.pdf) | [Source](paper/structural-certificates.ja.typ) |
 | Esperanto | [PDF](paper/structural-certificates.eo.pdf) | [Source](paper/structural-certificates.eo.typ) |
+
+## Sparse corrections along a trajectory
+
+Fix a deterministic local rule and a linear background. A residual bit is the XOR of their outputs when both rules read the actual predecessor state. The input supplies the entire initial window of length $n=q(2RT+1)$. The predictor returns an applicability bit and the observation gated by that bit, after checking every local update of a reconstructed trajectory. [Specification and completion record](docs/sparse-corrections.md) · [Formal scope](docs/requirements.md#sparse-correction-certificates)
+
+| Support information | Construction and bound |
+| --- | --- |
+| At most $k$ nonzero bits at unknown positions | Enumerate at most $(M+1)^k$ tuples over the $M$ event addresses and a padding symbol. Each fixed budget gives logspace-uniform NC¹ with a shallow uniform reference. |
+| All nonzero bits lie in a uniform list of $K$ possible positions | Enumerate $2^K$ assignments. A logarithmic list length gives logspace-uniform NC¹ with the same reference hypothesis. |
+| At most $k$ nonzero bits, or at most $k$ nonzero update layers | Repair the first failing bit or layer in each of $k$ rounds. The gate bound is $O((k+1)(S+V+1))$ for a reference of size $S$ on a cone of $V$ state bits. With a logarithmic-depth reference and a logspace-computable logarithmic round budget, this gives logspace-uniform NC². |
+
+Lean checks both enumeration regimes, the bit and layer repair circuits, and their complete logspace generators. Pascal and free streaming have verified full forced responses. The OR certificate agrees with direct disjunction at every horizon. The two-collision trajectories have three residual bits in two update layers at every positive separation. The paper proves the finite-state coefficient construction for every fixed homogeneous binary linear background. [Lean entry point](PredictionDepth/SparseCorrections.lean) · [Verification](docs/verification.md#mathematical-verification) · [Paper proof](paper/structural-certificates.pdf)
 
 ## Depth classification for frozen controls
 
@@ -91,7 +103,11 @@ GitHub Actions rebuilds all four editions from the checked-out revision. Use a f
 | Essential inputs and exact depth for transported controls | `TransportedControl.lean`, `iterate_data_true_iff`, `essential_prediction_iff`, `exact_prediction_depth`, `constant_depth_iff` |
 | Branching with transported controls | `TransportedBranching.lean`, `reverseFrame_iterate`, `prediction_correct`, `prediction_depth`, `prediction_size` |
 | Coefficient formula for branching with additive control evolution | `AdditiveBranching.lean`, `trimmedParity_eq_sum`, `iterate_data` |
-| Executable boundary and example checks | `Examples.lean` |
+| Sparse cone semantics, propagation, and residual uniqueness | `SparseCorrections/Semantics.lean`, `Reconstruction.lean` |
+| Sparse enumeration and two uniform NC¹ consequences | `SparseCorrections/Compiler.lean`, `Description.lean`, `Uniform.lean`, `Certificate.lean` |
+| Chronological bit and layer repair | `SparseCorrections/RepairCircuit.lean`, `RepairCode.lean`, `RepairUniform.lean` |
+| Full response and concrete predictors | `SparseCorrections/PascalOR.lean`, `CollisionCertificate.lean`, `RepairExamples.lean` |
+| Executable boundary and example checks | `Examples.lean`, `SparseCorrections/CompilerExamples.lean`, `CollisionExamples.lean` |
 
 ### A. Efficiently composable representations
 
