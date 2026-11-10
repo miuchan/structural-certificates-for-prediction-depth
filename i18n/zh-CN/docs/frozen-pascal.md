@@ -96,13 +96,19 @@ AND/OR 控制可分别取 $`a_{\rm on}=(1,1)`$ 和 $`a_{\rm off}=(1,0)`$。结�
 
 门的扇入决定了这个下界的适用范围。例如 $`s\equiv0, h(a)=a`$ 时，预测就是 $`x_T(0)\land a_0\land\cdots\land a_{T-1}`$。二输入门需要对数深度，允许无界扇入时一个 AND 门即可完成。
 
-若两个函数恒为 $`1`$，系数化为 $`\binom{T}{k}\bmod 2`$。令 $`p=\operatorname{popcount}(T)`$ 表示 $`T`$ 的二进制置位数。按 Lucas 位测试，奇系数对应的 $`k`$ 恰是 $`T`$ 的所有子掩码，每个置位独立决定取或不取。因此有 $`2^p`$ 个本质数据位，给出 $`p`$ 层的下界。逐时刻的平衡 XOR 构造深度至多 $`3p`$，门数为 $`5(2^p-1)`$。若 XOR 可作为原生二输入门，则最优深度恰为 $`p`$。在 $`T=2^r-1`$ 时至少需要 $`r`$ 层，紧接着的 $`T=2^r`$ 只需异或两位。这给出了逐时刻深度随时间下降的例子。 [齐次规则的精细深度界](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [经典奇系数计数，见 Rowland §1](https://arxiv.org/pdf/1001.1783)
+若两个函数恒为 $`1`$，预测就是对 Pascal 行奇系数对应的数据位求奇偶。令 $`p=\operatorname{popcount}(T)`$。奇系数的下标恰是 $`T`$ 的二进制子掩码，因此本质数据位有 $`2^p`$ 个。Lean 验证了允许原生二输入 XOR 时最优深度为 $`p`$，也验证了 NOT 计为一层时的 De Morgan 最优深度在 $`p=0`$ 时为零，在 $`p>0`$ 时为 $`2p+1`$。因此从 $`T=2^r-1`$ 到 $`T=2^r`$，De Morgan 最优深度从 $`2r+1`$ 降到三层（$`r\ge2`$）。逐时刻最优电路与下节的 $`3p`$ 统一上界对应不同的构造。 [支撑集与原生 XOR 定理](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [De Morgan 精确深度定理](../../../PredictionDepth/FrozenPascal/PascalExactDepth.lean)
 
 ## 统一族的实现
 
 `classifiedPrediction` 按固定规则的分类结果选定生成器。规则在电路族定义时固定，生成器随输入长度变化。无传输和纯移位生成器输出原专用电路的完整编码，分别保留常数深度和零门的界。可变控制规则沿用通用路径电路。齐次 Pascal 生成器扫描 $`k\le T`$，用子掩码测试流式输出奇系数的接线，归约电路只处理这些输入。 [无传输和移位生成器](../../../PredictionDepth/FrozenPascal/UniformLocal.lean) · [Pascal 生成器](../../../PredictionDepth/FrozenPascal/UniformHomogeneous.lean)
 
 Pascal 归约使用 $`p`$ 轮固定宽度的并行 XOR，每轮三层 De Morgan 门。这样可直接流式串接各轮输出，得到 $`3p`$ 深度上界及 $`5p2^p`$ 个门。由于 $`2^p\le T+1`$，门数至多按 $`T\log(T+2)`$ 增长。前面的逐时刻平衡树有更小的门数，统一总定理采用固定宽度构造。 [XOR 归约及编码](../../../PredictionDepth/FrozenPascal/UniformXor.lean)
+
+## 控制演化时的两个对照
+
+控制轨统一平移时也可保留等待和传输两条分支。Lean 验证了反射后的移动坐标系把规则化为冻结控制，并交换等待、传输函数。对有限窗口重接输入线即可复用冻结预测电路，门数相同，深度至多相同。 [移动坐标系与有限窗口布线](../../../PredictionDepth/TransportedBranching.lean)
+
+当 $`c'_i=c_i\oplus c_{i+1}`$、$`x'_i=c_ix_i\oplus x_{i+1}`$ 时，冻结前缀计数不足以恢复系数。Lean 验证了一个有序的系数公式。第 $`T`$ 个数据位的系数为 1。对 $`k<T`$，系数等于共享的 Pascal 奇偶值 $`Q_T=c_0(T)\oplus c_T(0)`$ 乘以控制后缀 $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ 全零的指示值。论文用平衡归约证明了线性门数和对数深度，并给出匹配的对数下界。 [Lean 系数公式](../../../PredictionDepth/AdditiveBranching.lean) · [论文中的电路界](../../../paper/structural-certificates.zh-CN.pdf)
 
 ## 适用范围与形式化索引
 
@@ -114,6 +120,7 @@ Pascal 归约使用 $`p`$ 轮固定宽度的并行 XOR，每轮三层 De Morgan 
 | 任意正确二输入预测器的逐时刻下界 | [`classifiedPrediction_depth_lower_bound`](../../../PredictionDepth/FrozenPascal/UniformClassification.lean) |
 | 在时刻索引上共用常数深度界的充要条件 | [`bounded_prediction_depth_iff`](../../../PredictionDepth/FrozenPascal/Classification.lean) |
 | Pascal 支撑基数和逐时刻平衡树的资源界 | [`pascalSupport_card`、`homogeneousPrediction_depth`、`homogeneousPrediction_size`](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) |
+| 齐次 Pascal 的逐时刻最优深度 | [`homogeneousNativeXorPrediction_depth`](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [`homogeneous_prediction_deMorgan_exact_depth`](../../../PredictionDepth/FrozenPascal/PascalExactDepth.lean) |
 | 同一族上的语言正确性、对数空间统一性和分支界 | [`uniform_depth_classification`](../../../PredictionDepth/FrozenPascal/UniformClassification.lean) |
 | 全部输入长度上的统一 NC⁰ 充要条件 | [`predictionLanguage_mem_uniformNC_zero_iff`](../../../PredictionDepth/FrozenPascal/UniformClassification.lean) |
 

@@ -96,13 +96,19 @@ $`h`$ が非定数なら、データビットを $`x_T(0)=1`$ だけが 1 にな
 
 下界の適用範囲はゲートのファンインによって決まる。例えば $`s\equiv0, h(a)=a`$ の場合、予測は $`x_T(0)\land a_0\land\cdots\land a_{T-1}`$ になる。二入力ゲートでは対数深さを要するが、ファンインに上限がなければ一つの AND ゲートで計算できる。
 
-二つの関数が常に $`1`$ なら、係数は $`\binom{T}{k}\bmod 2`$ となる。$`p=\operatorname{popcount}(T)`$ を $`T`$ の二進展開に含まれる 1 の個数とする。Lucas のビット検査によると、奇係数に対応する $`k`$ はちょうど $`T`$ のすべてのサブマスクであり、1 の位置ごとにそのビットを取るかどうかを独立に選べる。従って本質的データビットは $`2^p`$ 個で、$`p`$ 層の下界を得る。時刻ごとの平衡 XOR 構成では深さが高々 $`3p`$ で、ゲート数は $`5(2^p-1)`$ である。XOR を基本の二入力ゲートとして使える場合には、最小深さはちょうど $`p`$ になる。$`T=2^r-1`$ では少なくとも $`r`$ 層が必要だが、直後の $`T=2^r`$ では二ビットの XOR で足りる。この例では時刻が進んでも予測の深さが下がる。[斉次規則の精密な深さの境界](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [古典的な奇係数の計数。Rowland §1](https://arxiv.org/pdf/1001.1783)
+二つの関数が常に $`1`$ なら、予測は Pascal の行で係数が奇数となるデータビットのパリティである。$`p=\operatorname{popcount}(T)`$ とする。奇係数の添字は $`T`$ の二進サブマスクに一致するため、本質的なデータビットは $`2^p`$ 個ある。Lean では、二入力 XOR を直接使える場合の最小深さが $`p`$ であることと、NOT を一層と数えるド・モルガン回路での最小深さが $`p=0`$ でゼロ、$`p>0`$ で $`2p+1`$ であることを検証した。したがって $`r\ge2`$ では、時刻 $`2^r-1`$ から $`2^r`$ へ進むとド・モルガン回路の最小深さは $`2r+1`$ 層から三層に下がる。時刻ごとの最小深さと、次節の一様上界 $`3p`$ は別々の構成で得られる。 [台と二入力 XOR の定理](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [ド・モルガン回路の最小深さの定理](../../../PredictionDepth/FrozenPascal/PascalExactDepth.lean)
 
 ## 一様回路族の実装
 
 `classifiedPrediction` は固定規則の分類結果に応じて生成器を選ぶ。規則は回路族を定義する際に固定し、生成器は入力長に応じた回路を出力する。移動なしの場合と純粋なシフトの場合の生成器は、専用回路を完全に符号化し、それぞれ定数深さとゲート数ゼロの境界を保つ。制御関数が非定数の場合は汎用の経路回路を使う。斉次 Pascal 規則の生成器は $`k\le T`$ を走査し、サブマスク検査により奇係数に対応する配線を順次出力する。集約回路が処理するのは選ばれた入力だけである。[移動なしとシフトの生成器](../../../PredictionDepth/FrozenPascal/UniformLocal.lean) · [Pascal 規則の生成器](../../../PredictionDepth/FrozenPascal/UniformHomogeneous.lean)
 
 Pascal 規則の集約では、固定幅の並列 XOR を $`p`$ ラウンド実行する。各ラウンドはド・モルガンゲートの三層で構成する。各ラウンドの出力を順に直列接続して生成でき、深さは高々 $`3p`$、ゲート数は $`5p2^p`$ である。$`2^p\le T+1`$ なのでゲート数は $`T\log(T+2)`$ のオーダーで抑えられる。前述の時刻ごとの平衡木はゲート数が少なく、一様分類の定理は固定幅の構成を採用する。[XOR 集約と符号化](../../../PredictionDepth/FrozenPascal/UniformXor.lean)
+
+## 制御が発展する二つの対照例
+
+制御トラックが一様に移動する場合も、滞留と移動の二分岐を扱える。Lean では、移動に合わせて座標を反転すると制御が凍結し、滞留関数と移動関数が入れ替わることを検証した。有限窓の入力を配線し直すことで、ゲート数を保ち、深さを増やさずに凍結制御の予測回路を再利用できる。 [移動座標系と有限窓の配線](../../../PredictionDepth/TransportedBranching.lean)
+
+$`c'_i=c_i\oplus c_{i+1}`$、$`x'_i=c_ix_i\oplus x_{i+1}`$ の場合、凍結制御で用いる接頭辞の集計だけでは係数を復元できない。Lean では順序を反映する係数公式を検証した。第 $`T`$ データビットの係数は 1 である。$`k<T`$ での係数は共通の Pascal パリティ $`Q_T=c_0(T)\oplus c_T(0)`$ と、制御の接尾辞 $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ がすべてゼロであることの指示値との積になる。論文では、平衡木で線形ゲート数と対数深さを実現し、同じオーダーの深さの下界も示す。 [Lean による係数公式](../../../PredictionDepth/AdditiveBranching.lean) · [論文の回路深さとサイズの証明](../../../paper/structural-certificates.ja.pdf)
 
 ## 適用範囲と形式化の索引
 
@@ -114,6 +120,7 @@ Pascal 規則の集約では、固定幅の並列 XOR を $`p`$ ラウンド実�
 | 任意の正しい二入力予測器に対する時刻ごとの下界 | [`classifiedPrediction_depth_lower_bound`](../../../PredictionDepth/FrozenPascal/UniformClassification.lean) |
 | すべての時刻に共通する定数深さ上界の必要十分条件 | [`bounded_prediction_depth_iff`](../../../PredictionDepth/FrozenPascal/Classification.lean) |
 | Pascal の台の濃度と時刻ごとの平衡木の資源上界 | [`pascalSupport_card`、`homogeneousPrediction_depth`、`homogeneousPrediction_size`](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) |
+| 斉次 Pascal 規則の時刻ごとの最小深さ | [`homogeneousNativeXorPrediction_depth`](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [`homogeneous_prediction_deMorgan_exact_depth`](../../../PredictionDepth/FrozenPascal/PascalExactDepth.lean) |
 | 同じ回路族における言語の決定の正しさ、対数空間一様性、各場合の深さ上界 | [`uniform_depth_classification`](../../../PredictionDepth/FrozenPascal/UniformClassification.lean) |
 | 全入力長での一様 NC⁰ の必要十分条件 | [`predictionLanguage_mem_uniformNC_zero_iff`](../../../PredictionDepth/FrozenPascal/UniformClassification.lean) |
 

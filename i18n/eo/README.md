@@ -2,26 +2,30 @@
 
 [English](../../README.md) · [简体中文](../zh-CN/README.md) · [日本語](../ja/README.md) · **Esperanto**
 
-La projekto formaligas en Lean 4 la cirkvitan profundon de prognozoj pri dinamikaj sistemoj. La ĉefa ekzemplo estas unuflanka ĉela aŭtomato kun fiksita regado. La regvortoj povas varii laŭ pozicio. Por fiksita regagordo la datuma trako evoluas lineare. Kalkulado de vojoj reduktas la prognozon al prefiksaj statistikoj kaj pareco de kombinatorikaj koeficientoj. La projekto konstruas cirkvitfamilion en logspac-unuforma NC¹.
+La esplora demando estas, kiuj kontroleblaj strukturaj kondiĉoj pri dinamika sistemo donas barojn por la cirkvita profundo de prognozo. Prognozproblemon difinas la evoluregulo, observado, enirkodado kaj permesataj cirkvitoj. La projekto kontrolas tri reuzeblajn kriteriojn en Lean 4.
 
-La artikolo de Amamiya Miu prezentas la modelojn, kodadojn, precizajn teoremojn, pruvideojn kaj limojn de aplikeblo. La angla eldono estas la ĉefa versio. [Artikolo en PDF](../../paper/structural-certificates.eo.pdf) · [Typst-fonto](../../paper/structural-certificates.eo.typ) · [Komparo kun la literaturo](docs/literature.md)
+La nuna artikolo de Amamiya Miu traktas familion de unuflankaj ĉelaj aŭtomatoj kun fiksita regado. La regvortoj povas varii laŭ pozicio. Kun fiksitaj regvortoj la datuma trako evoluas lineare, kaj nombrado de vojoj reduktas prognozon al prefiksaj statistikoj kaj koeficienta pareco. La komparo kun evoluanta regado traktas kaj unuopan datuman vojon kaj regulojn kun du branĉoj. La angla eldono estas la ĉefa. [Artikolo en PDF](../../paper/structural-certificates.eo.pdf) · [Typst-fonto](../../paper/structural-certificates.eo.typ) · [Komparo kun la literaturo](docs/literature.md)
 
 ## Profundoklasifiko de la reguloj kun fiksita regado
 
-Fiksu la larĝon $q$ de regvorto kaj du gardajn funkciojn por restado kaj salto. Ĉiu prognozo ricevas eksplicite la regvortojn kaj datumajn bitojn de la ĉeloj $0,\ldots,T$. La valida enirlongo do estas $n=(q+1)(T+1)$ kaj determinas la tempon $T$. La subaj malsupraj baroj validas por cirkvitoj kun enira grado maksimume du, arbitra drataro kaj komunaj subcirkvitoj. Efektivaj cirkvitoj de De Morgan realigas la suprajn barojn.
+Fiksu la larĝon $q$ de regvorto kaj du gardajn funkciojn por restado kaj salto. Ĉiu prognozo ricevas eksplicite la regvortojn kaj datumajn bitojn de la ĉeloj $0,\ldots,T$. La valida enirlongo do estas $n=(q+1)(T+1)$ kaj determinas la tempon $T$. La tabelo distingas malsuprajn barojn por arbitraj du-eniraj pordegoj, la minimuman profundon de De Morgan je ĉiu tempo kaj la supran baron de la kontrolita unuforma familio. Arbitra drataro kaj komunaj subcirkvitoj estas permesataj.
 
 | Gardaj funkcioj | Prognoza profundo |
 | --- | --- |
 | Salto ĉiam malpermesita | Konstanta profundo. Je pozitiva tempo sufiĉas legi la restogardon kaj la datuman biton ĉe la origino. |
 | Salto ĉiam permesita, restado ĉiam malpermesita | Nula profundo. La cirkvito rekte legas la datuman biton de ĉelo $T$. |
 | Nekonstanta saltogardo, aŭ konstante permesita salto kun nekonstanta restogardo | $\Theta(\log(T+1))$. Almenaŭ $T+1$ esencaj enirbitoj donas la malsupran baron. La gardoj AND kaj OR estas ekzemplo. |
-| Salto kaj restado ĉiam permesitaj | Se $p$ estas la nombro de unuj en la duuma prezento de $T$, la profundo estas inter $p$ kaj $3p$. Je $T=2^r$ ĝi estas maksimume tri, kaj je $T=2^r-1$ ĝi estas almenaŭ $r$. |
+| Salto kaj restado ĉiam permesitaj | Estu $`p`$ la nombro de unubitoj de $`T`$. La minimuma profundo kun du-enira XOR estas $`p`$. Kun NOT nombrata kiel unu tavolo, la minimuma De Morgan-profundo estas nulo je $`T=0`$ kaj $`2p+1`$ je $`T>0`$. La supra baro de la unuforma generilo estas $`3p`$. |
 
 `classify` trairas la finiajn regvortojn laŭ prefiksoj kaj ĉesigas la nunan provon pri konstanteco ĉe la unua kontraŭekzemplo, sen konstrui kompletan liston de regvortoj. Elĉerpa provo ankoraŭ povas viziti $`2^q`$ vortojn. `classify_eq_iff` pruvas, ke la rezulto ekvivalentas al la kondiĉoj en la tabelo. Por ĉiu fiksita paro de gardoj, `uniform_depth_classification` donas unu logspac-unuforman cirkvitfamilion de polinoma grando, kiu realigas la supran profundobaron de la koncerna branĉo. Tio inkluzivas la baron de $`3p`$ tavoloj por la homogena Pascal-regulo. La lingvo apartenas al unuforma NC⁰ ĝuste kiam la regulo estas en unu el la unuaj du branĉoj. [Matematika argumento pri fiksita regado](docs/frozen-pascal.md)
 
-## Preciza profundo ĉe transportata regado
+## Transportata regado kiel struktura komparo
 
 Fiksu $`u,v\in\{0,1\}`$. Ĉiu paŝo aplikas $`c'_i=c_{i+u}`$ kaj $`d'_i=c_i\land d_{i+v}`$. La eniro enhavas eksplicite la bitojn de ambaŭ trakoj ĉe $`0,\ldots,T`$. Je tempo nul la antaŭdiro rekte legas datuman biton, kun nula profundo. Je pozitiva tempo egalaj rapidoj postulas legi unu komencan regbiton kaj unu datuman biton, do la preciza profundo estas 1. Kun malsamaj rapidoj la prognozo legas $`T`$ komencajn regbitojn kaj unu datuman biton, kun preciza profundo $`\lceil\log_2(T+1)\rceil`$. Lean konstruas AND-arbon kun lineara nombro da pordegoj kaj pruvas kongruan malsupran baron por du-eniraj cirkvitoj kun komunaj subcirkvitoj. La rezulto por ĉiu tempo montras, ke moviĝanta regado povas postuli logaritman profundon eĉ se la datumo restas surloke. [Semantiko kaj profundo de transportata regado](../../PredictionDepth/TransportedControl.lean)
+
+Kun unuforme ŝoviĝanta rega trako oni povas konservi ambaŭ branĉojn por restado kaj salto. Lean kontrolas, ke speguli la koordinatojn laŭ la moviĝo fiksas la regadon kaj interŝanĝas la du gardojn. Rekonekti la enirojn de la finia fenestro ebligas reuzi la prognozan cirkviton por fiksita regado kun la sama nombro da pordegoj kaj sen pligrandigo de la profundo. [Moviĝanta referenca kadro kaj fenestra drataro](../../PredictionDepth/TransportedBranching.lean)
+
+Por $`c'_i=c_i\oplus c_{i+1}`$ kaj $`x'_i=c_ix_i\oplus x_{i+1}`$, la prefiksaj nombroj de la fiksa modelo ne determinas la koeficientojn. La koeficiento de datumbito $`T`$ estas 1. Por $`k<T`$ ĝi estas la komuna Pascal-pareco $`Q_T=c_0(T)\oplus c_T(0)`$ multiplikita per la indikilo, ke la rega sufikso $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ estas tutnula. Lean kontrolas la koeficientan formulon. En la artikolo, ekvilibra redukto donas linearan pordegonombron kaj logaritman profundon, kun kongrua logaritma malsupra baro. [Lean-formulo](../../PredictionDepth/AdditiveBranching.lean) · [Pruvo de la cirkvitaj baroj](../../paper/structural-certificates.eo.pdf)
 
 ## Formaliga infrastrukturo
 
@@ -71,8 +75,10 @@ Por kompili ĉiujn kvar versiojn, metu la statikajn SC- kaj JP-tiparojn Regular 
 | Limo de la metodo kalkuli informajn dependecojn | `DependencyGrowth.lean` · `dependency_method_limit` |
 | Unuflanka regulfamilio kun fiksita regado | `iterate_data` en `FrozenPascal/Semantics.lean` kaj `predictionLanguage_mem_uniformNC_one` en `FrozenPascal/UniformLanguage.lean` |
 | Profundoklasifiko por fiksita regado | `bounded_prediction_depth_iff` kaj `varyingGuard_prediction_depth_lower_bound` en `FrozenPascal/Classification.lean`. `pascalSupport_card` kaj la profundobaroj laŭ la nombro de unubitoj en `FrozenPascal/HomogeneousPascal.lean`. |
+| Minimuma profundo de la homogena Pascal-regulo je ĉiu tempo | `homogeneousNativeXorPrediction_depth`, `homogeneous_prediction_deMorgan_exact_depth`, `homogeneous_prediction_deMorgan_depth_lower_bound` |
 | Rulebla klasifikilo kaj unuforma profundoklasifiko | `classify_eq_iff` en `FrozenPascal/Classification.lean`. `uniform_depth_classification` kaj `predictionLanguage_mem_uniformNC_zero_iff` en `FrozenPascal/UniformClassification.lean`. |
 | Esencaj eniroj kaj preciza profundo ĉe transportata regado | `TransportedControl.lean` · `iterate_data_true_iff`, `essential_prediction_iff`, `exact_prediction_depth`, `constant_depth_iff` |
+| Moviĝanta referenca kadro kaj cirkvita reuzo je ĉiu tempo | `TransportedBranching.lean`, `reverseFrame_iterate`, `prediction_correct`, `prediction_depth`, `prediction_size` |
 | Ruleblaj randokazoj kaj ekzemplokontroloj | `Examples.lean` |
 
 ### A. Rapide kunmeteblaj prezentoj
@@ -161,4 +167,6 @@ Se la spaca radiuso de ĉiu tavolo de la prognozilo estas maksimume `r` kaj la f
 - B postulas kompletan simulan atestilon por la konkreta sistemo. P-kompleteco ankaŭ postulas, ke la cellingvo apartenu al P. La apartiga supozo implicas nemembrecon en unuforma NC.
 - En luma konuso de polinoma grando C donas maksimume logaritman malsupran baron per nombrado. La malsupra baro por fiksita regado mezuras la profundon de cirkvitoj kun po maksimume du eniroj en ĉiu pordego. Pruvo de NC¹-kompleteco postulus NC¹-malfacilecon sub taŭga redukto.
 
-La kontrolo de modeloj kaj transitivaj aksiomaj dependecoj ampleksis la triapartiajn kompleksecajn fundamentojn. La projektaj dokumentoj registras la modelajn detalojn, supozojn kaj la amplekson de la kontrolo, kiuj gravas por interpreti la pruvojn.
+La kontrolitaj klasifiko kaj drataro precizigas, kiam la prognozilo por fiksita regado estas reuzebla. La ekzemplo kun adicia regado donas alian resumon de la koeficientoj, kiun oni povas kunmeti. Sekva demando estas, kiuj ordosentemaj resumoj restas uzeblaj kun la sama rega evoluo kaj alia saltogardo.
+
+La aksiomkontrolo sekvas transitivajn dependecojn de projektaj teoremoj ĝis la eksteraj kompleksecaj fundamentoj. La difinoj, teoremaj deklaroj kaj kontrolgvidilo ebligas kontroli la modelojn kaj supozojn. [Fidlimoj](docs/dependencies.md)

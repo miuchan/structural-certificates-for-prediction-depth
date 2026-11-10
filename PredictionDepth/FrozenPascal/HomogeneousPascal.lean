@@ -121,12 +121,13 @@ theorem homogeneous_prediction_depth_lower_bound (stay hop : Gates q 1)
   apply (Nat.clog_le_iff_le_pow (b := 2) (by decide)).mpr
   simpa using h
 
-private def pascalWires (q T : ℕ) : List (Gates (RawWidth q (T + 1)) 1) :=
-  ((pascalSupport T).sort (· ≤ ·)).map fun i => wireBit (rawDataWire i)
+private def pascalWires (σ : Signature) (q T : ℕ) :
+    List (Circuit σ (RawWidth q (T + 1)) 1) :=
+  ((pascalSupport T).sort (· ≤ ·)).map fun i => Circuit.wiring σ (fun _ => rawDataWire i)
 
 /-- A balanced parity circuit on just the data wires that contribute. -/
 def homogeneousPrediction (q T : ℕ) : Gates (RawWidth q (T + 1)) 1 :=
-  parity (pascalWires q T)
+  parity (pascalWires signature q T)
 
 theorem homogeneousPrediction_correct (stay hop : Gates q 1)
     (hs : ∀ a, guard stay a = true) (hh : ∀ a, guard hop a = true)
@@ -140,11 +141,11 @@ theorem homogeneousPrediction_correct (stay hop : Gates q 1)
   rw [← List.sum_toFinset _ (Finset.sort_nodup _ _), Finset.sort_toFinset]
   rfl
 
-private theorem pascalWires_length (q T : ℕ) :
-    (pascalWires q T).length = 2 ^ T.bitIndices.length := by
+private theorem pascalWires_length (σ : Signature) (q T : ℕ) :
+    (pascalWires σ q T).length = 2 ^ T.bitIndices.length := by
   rw [pascalWires, List.length_map, Finset.length_sort, pascalSupport_card]
 
-private theorem pascalWires_ne_nil (q T : ℕ) : pascalWires q T ≠ [] := by
+private theorem pascalWires_ne_nil (σ : Signature) (q T : ℕ) : pascalWires σ q T ≠ [] := by
   rw [← List.length_pos_iff, pascalWires_length]
   exact pow_pos (by decide) _
 
@@ -152,23 +153,74 @@ private theorem pascalWires_ne_nil (q T : ℕ) : pascalWires q T ≠ [] := by
 theorem homogeneousPrediction_depth (q T : ℕ) :
     (homogeneousPrediction q T).depth ≤ 3 * T.bitIndices.length := by
   have hd := Circuit.depth_balanced_le xorGate (constBit (RawWidth q (T + 1)) false)
-    (D := 0) (l := pascalWires q T)
+    (D := 0) (l := pascalWires signature q T)
     (fun c hc => by
       obtain ⟨i, _, rfl⟩ := List.mem_map.mp hc
       simp)
-    (fun he => (pascalWires_ne_nil q T he).elim)
+    (fun he => (pascalWires_ne_nil signature q T he).elim)
   simpa [homogeneousPrediction, parity, pascalWires_length, Nat.clog_pow 2 _ (by decide)] using hd
 
 theorem homogeneousPrediction_size (q T : ℕ) :
     (homogeneousPrediction q T).size = 5 * (2 ^ T.bitIndices.length - 1) := by
-  rw [homogeneousPrediction, parity, Circuit.size_balanced _ _ (pascalWires_ne_nil q T),
+  rw [homogeneousPrediction, parity, Circuit.size_balanced _ _ (pascalWires_ne_nil signature q T),
     pascalWires_length, xorGate_size]
-  have hsum : ((pascalWires q T).map Circuit.size).sum = 0 := by
+  have hsum : ((pascalWires signature q T).map Circuit.size).sum = 0 := by
     simp only [pascalWires, List.map_map]
     change (List.map (fun i => (wireBit (rawDataWire (q := q) i)).size) _).sum = 0
     rw [List.map_congr_left (g := fun _ => 0) (fun i _ => wireBit_size (rawDataWire i))]
     simp
   rw [hsum, zero_add, Nat.mul_comm]
+
+private def nativeXor : Circuit (fullSignature 2 Bool) 2 1 :=
+  Circuit.oneGate (.fn fun u => u 0 ^^ u 1) id
+
+/-- Balanced reduction of the odd-coefficient inputs with one native XOR per merge. -/
+def homogeneousNativeXorPrediction (q T : ℕ) : Circuit (fullSignature 2 Bool)
+    (RawWidth q (T + 1)) 1 :=
+  Circuit.balanced nativeXor (Circuit.oneGate (.con false) Fin.elim0)
+    (pascalWires (fullSignature 2 Bool) q T)
+
+theorem homogeneousNativeXorPrediction_correct (stay hop : Gates q 1)
+    (hs : ∀ a, guard stay a = true) (hh : ∀ a, guard hop a = true)
+    (T : ℕ) (x : Config (Bits q)) :
+    (homogeneousNativeXorPrediction q T).eval fullInterpretation (rawSample x (T + 1)) 0 =
+      ofBoolRing (((step (guard stay) (guard hop))^[T] x).2 0) := by
+  apply bit_injective
+  rw [bit_ofBoolRing, homogeneous_prediction_sum stay hop hs hh,
+    homogeneousNativeXorPrediction, Circuit.eval_balanced]
+  have hxor (a b : Bits 1) :
+      bit (nativeXor.eval fullInterpretation (Fin.append a b) 0) = bit (a 0) + bit (b 0) :=
+    bit_xor _ _
+  rw [List.balancedFold_hom (fun u : Bits 1 => bit (u 0)) hxor]
+  change (pascalWires (fullSignature 2 Bool) q T).balancedFold (· + ·) (0 : F₂)
+    (fun c => bit (c.eval fullInterpretation (rawSample x (T + 1)) 0)) = _
+  rw [List.balancedFold_eq_foldr]
+  change ((pascalWires (fullSignature 2 Bool) q T).map
+    (fun c => bit (c.eval fullInterpretation (rawSample x (T + 1)) 0))).sum = _
+  simp only [pascalWires, List.map_map]
+  rw [← List.sum_toFinset _ (Finset.sort_nodup _ _), Finset.sort_toFinset]
+  rfl
+
+/-- The native XOR predictor attains the lower bound for all fan-in-two predictors. -/
+theorem homogeneousNativeXorPrediction_depth (stay hop : Gates q 1)
+    (hs : ∀ a, guard stay a = true) (hh : ∀ a, guard hop a = true) (T : ℕ) :
+    (homogeneousNativeXorPrediction q T).depth = T.bitIndices.length := by
+  apply le_antisymm
+  · have hxor : nativeXor.depth = 1 := Circuit.depth_oneGate _ _
+    have hd := Circuit.depth_balanced_le nativeXor
+      (Circuit.oneGate (σ := fullSignature 2 Bool) (.con false) Fin.elim0)
+      (D := 0) (l := pascalWires (fullSignature 2 Bool) q T)
+      (fun c hc => by
+        obtain ⟨i, _, rfl⟩ := List.mem_map.mp hc
+        simp)
+      (fun he => (pascalWires_ne_nil (fullSignature 2 Bool) q T he).elim)
+    simpa [homogeneousNativeXorPrediction, hxor, pascalWires_length,
+      Nat.clog_pow 2 _ (by decide)] using hd
+  · apply homogeneous_prediction_depth_lower_bound stay hop hs hh fullInterpretation T _
+    · apply Program.fanInAtMost_iff.mpr
+      intro j
+      cases (homogeneousNativeXorPrediction q T).program.lines j |>.op <;> simp [fullSignature]
+    · exact homogeneousNativeXorPrediction_correct stay hop hs hh T
 
 /-- At powers of two just two data inputs contribute, so a single XOR suffices. -/
 theorem homogeneousPrediction_depth_two_pow (q r : ℕ) :

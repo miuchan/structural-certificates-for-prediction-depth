@@ -13,7 +13,7 @@ The project proves structural certificates for dynamical-system prediction depth
 | A. Predictor construction from primitive circuits and bounds on depth, gate count, and description size | `CompiledComposition.Implementation` | Implemented |
 | A. Constraints on visited representations and executed compositions | `PathComposition`, including an example that separates path conditions from global conditions | Builds with Lean 4.36 |
 | A. Infinite global state spaces with finite input windows | `EncodedPathComposition` | Builds with Lean 4.36 |
-| A. Concrete logspace uniformity from primitive-family generators | `Complexity/UniformComposition`, including canonical time bits, composition of generators, and polynomial size | Lean 4.36 build and independent axiom audit pass |
+| A. Concrete logspace uniformity from primitive-family generators | `Complexity/UniformComposition`, including canonical time bits, composition of generators, and polynomial size | Lean 4.36 build and transitive axiom audit pass |
 | Finite-field linear system example and polylogarithmic depth | `Linear`, `LinearSize` | Implemented |
 | B. Unary time encoding, simulation reduction, and conditional hardness transfer | `Hardness.SimulationWitness` | Parameterized metatheorem implemented |
 | Standard logspace reductions and compositional closure | `Complexity/Logspace.lean` connects concrete finite-tape machines and a verified recomputation compiler | Builds with Lean 4.36 |
@@ -30,5 +30,9 @@ The project proves structural certificates for dynamical-system prediction depth
 | Time zero, empty inputs, single inputs, and concrete linear examples | `Examples` | Implemented |
 | Nonlinear frozen-control family, logarithmic depth, and uniform NC¹ | `FrozenPascal.GuardRules`, `FrozenPascal.UniformLanguage`, `FrozenPascal.LowerBound` | Lean 4.36 build and axiom audit pass |
 | Constant-depth equivalence and per-time classification for frozen controls | `bounded_prediction_depth_iff` and the varying-guard lower bound in `FrozenPascal/Classification.lean`, and the binary-weight bounds in `FrozenPascal/HomogeneousPascal.lean` | [Verification](verification.md) |
+| Exact per-time homogeneous Pascal depth | `homogeneousNativeXorPrediction_depth` and `homogeneous_prediction_deMorgan_exact_depth`, with matching lower bounds for the two gate bases | [Verification](verification.md) |
 | Executable rule classification and concrete uniform classification | `classify_eq_iff`, `uniform_depth_classification`, `predictionLanguage_mem_uniformNC_zero_iff` | [Verification](verification.md) |
+| Essential inputs and exact per-time depth for the transported-control comparison | `TransportedControl.lean`, `essential_prediction_iff`, `exact_prediction_depth`, `constant_depth_iff` | [Verification](verification.md) |
+| Per-time reduction for branching under uniform control transport | `TransportedBranching.lean`, `reverseFrame_iterate`, `prediction_correct`, `prediction_depth`, `prediction_size` | [Verification](verification.md) |
+| Coefficients for branching with additive control evolution | `AdditiveBranching.lean`, `trimmedParity_eq_sum`, `iterate_data` | Iteration formula checked in Lean. Circuit bounds proved in the [paper](../paper/structural-certificates.pdf) |
 | Project-wide strict build, transitive axiom audit, and negative regression | `scripts/check.sh`, `Audit.lean`, `scripts/check_audit.py`, `.github/workflows/lean.yml` | [Verification](verification.md) |

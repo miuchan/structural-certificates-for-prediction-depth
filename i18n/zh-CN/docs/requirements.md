@@ -31,4 +31,8 @@
 | 冻结控制的非线性规则族、对数深度与统一 NC¹ | `FrozenPascal.GuardRules`、`FrozenPascal.UniformLanguage`、`FrozenPascal.LowerBound` | Lean 4.36 编译和公理审计通过 |
 | 冻结控制族的常数深度充要条件及逐时刻分类 | `FrozenPascal/Classification.lean` 的 `bounded_prediction_depth_iff` 和可变控制下界，`FrozenPascal/HomogeneousPascal.lean` 的二进制位数深度界 | 见[验证记录](verification.md) |
 | 可执行规则分类及实际统一深度分类 | `classify_eq_iff`、`uniform_depth_classification`、`predictionLanguage_mem_uniformNC_zero_iff` | 见[验证记录](verification.md) |
+| 齐次 Pascal 在原生 XOR 与计入 NOT 层的 De Morgan 模型中的逐时刻最优深度 | [`homogeneousNativeXorPrediction_depth`](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [`homogeneous_prediction_deMorgan_exact_depth`](../../../PredictionDepth/FrozenPascal/PascalExactDepth.lean) · `homogeneous_prediction_deMorgan_depth_lower_bound` | 见[验证记录](verification.md) |
+| 移动控制对照的逐时刻精确深度与本质输入集合 | `TransportedControl.lean` 中的 `essential_prediction_iff`、`exact_prediction_depth`、`constant_depth_iff` | 见[验证记录](verification.md) |
+| 统一平移控制保留两条分支时的移动坐标系与有限窗口布线 | [`reverseFrame_iterate`](../../../PredictionDepth/TransportedBranching.lean) · `prediction_correct`, `prediction_depth`, `prediction_size` | 见[验证记录](verification.md) |
+| 加性控制分支模型的 Pascal 奇偶值和后缀公式 | [`trimmedParity_eq_sum`](../../../PredictionDepth/AdditiveBranching.lean) · [`iterate_data`](../../../PredictionDepth/AdditiveBranching.lean) | 见[验证记录](verification.md) · [线性门数与匹配的对数深度界见论文证明](../../../paper/structural-certificates.zh-CN.pdf) |
 | 全项目严格构建、传递公理审计和负向回归 | `scripts/check.sh`、`Audit.lean`、`scripts/check_audit.py`、`.github/workflows/lean.yml` | 见[验证记录](verification.md) |

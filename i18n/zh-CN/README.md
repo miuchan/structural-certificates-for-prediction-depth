@@ -2,26 +2,30 @@
 
 [English](../../README.md) · **简体中文** · [日本語](../ja/README.md) · [Esperanto](../eo/README.md)
 
-本项目用 Lean 4 形式化动力系统预测的电路深度。主要研究实例是冻结控制的一侧元胞自动机。控制字可随位置任意变化，数据轨在固定控制配置下线性演化。项目用路径计数把预测化为前缀统计与组合系数的奇偶性，并构造了对数空间统一 NC¹ 电路族。
+本项目研究动力系统的哪些可验证结构条件能够限定观测预测的电路深度。一个预测问题由演化规则、观测、输入编码和允许的电路共同确定。项目在 Lean 4 中验证了三类可复用判据。
 
-Amamiya Miu 的论文给出模型、编码、精确定理、证明思路和适用边界，英文为主版本。[论文 PDF](../../paper/structural-certificates.zh-CN.pdf) · [Typst 源稿](../../paper/structural-certificates.zh-CN.typ) · [文献对照](docs/literature.md)
+Amamiya Miu 的阶段论文研究一类冻结控制的单侧元胞自动机。控制字可随位置变化，固定控制配置后数据轨线性演化。路径计数将预测化为前缀统计与系数奇偶性。移动控制的对照从单路径的精确深度延伸到保留两条更新分支的规则。英文为主版本。[论文 PDF](../../paper/structural-certificates.zh-CN.pdf) · [Typst 源稿](../../paper/structural-certificates.zh-CN.typ) · [文献对照](docs/literature.md)
 
 ## 冻结控制规则族的深度分类
 
-固定控制字宽 $q$ 和等待、传输两个控制函数。每次预测显式给出格点 $0,\ldots,T$ 的控制字和数据位，因此合法输入长度为 $n=(q+1)(T+1)$，由长度确定时间 $T$。下表的下界覆盖扇入至多二、允许任意布线和共享的电路，上界由实际 De Morgan 电路给出。
+固定控制字宽 $q$ 和等待、传输两个控制函数。每次预测显式给出格点 $0,\ldots,T$ 的控制字和数据位，因此合法输入长度为 $n=(q+1)(T+1)$，由长度确定时间 $T$。下表区分一般二输入门的下界、De Morgan 电路的逐时刻最优值和已验证统一族的上界。电路允许任意布线和共享。
 
 | 控制函数 | 预测深度 |
 | --- | --- |
 | 传输恒关 | 常数深度。正时刻只读原点的等待标志和数据位。 |
 | 传输恒开、等待恒关 | 深度零。直接读第 $T$ 格的数据位。 |
 | 传输函数非常值，或传输恒开且等待函数非常值 | $\Theta(\log(T+1))$。下界来自至少 $T+1$ 个本质输入位，包含 AND/OR 控制实例。 |
-| 传输与等待均恒开 | 若 $p$ 是 $T$ 的二进制展开中 1 的个数，则深度介于 $p$ 与 $3p$ 之间。在 $T=2^r$ 时至多三层，在 $T=2^r-1$ 时至少 $r$ 层。 |
+| 传输与等待均恒开 | 令 $`p`$ 为 $`T`$ 的二进制置位数。二输入门含 XOR 时最小深度为 $`p`$。NOT 计为一层时，De Morgan 最小深度为 $`T=0`$ 时的零层或 $`T>0`$ 时的 $`2p+1`$ 层。统一生成器的上界为 $`3p`$。 |
 
 `classify` 按前缀遍历有限控制字，遇到反例就结束当前常值检验，无需构造完整控制字列表。穷举检验仍可能访问 $`2^q`$ 个控制字。`classify_eq_iff` 证明结果与表中的条件等价。`uniform_depth_classification` 为每对固定控制函数给出一个对数空间统一的多项式规模电路族，实现表中的分支上界，包括齐次 Pascal 规则的 $`3p`$ 层上界。语言属于统一 NC⁰ 当且仅当规则落在表中前两类。[冻结控制预测的数学论证](docs/frozen-pascal.md)
 
-## 移动控制轨的精确深度
+## 移动控制的结构性对照
 
 固定 $`u,v\in\{0,1\}`$，每步令 $`c'_i=c_{i+u}`$、$`d'_i=c_i\land d_{i+v}`$。预测输入是 $`0,\ldots,T`$ 上显式给出的两轨位串。零时刻直接读取数据位，深度为零。正时刻同速只读取一个初始控制位和一个数据位，精确深度为 1。异速则读取 $`T`$ 个初始控制位及一个数据位，精确深度为 $`\lceil\log_2(T+1)\rceil`$。Lean 构造了线性门数的 AND 树，并对允许共享的二输入电路证明匹配下界。这个逐时刻结果说明，控制轨一旦移动，即使数据从不跳跃也可能需要对数深度。[移动控制的语义与深度定理](../../PredictionDepth/TransportedControl.lean)
+
+控制轨统一平移时也可保留等待和传输两条分支。Lean 验证了反射后的移动坐标系把规则化为冻结控制，并交换等待、传输函数。对有限窗口重接输入线即可复用冻结预测电路，门数相同，深度至多相同。 [移动坐标系与有限窗口布线](../../PredictionDepth/TransportedBranching.lean)
+
+当 $`c'_i=c_i\oplus c_{i+1}`$、$`x'_i=c_ix_i\oplus x_{i+1}`$ 时，冻结前缀计数不足以恢复系数。Lean 验证了一个有序的系数公式。第 $`T`$ 个数据位的系数为 1。对 $`k<T`$，系数等于共享的 Pascal 奇偶值 $`Q_T=c_0(T)\oplus c_T(0)`$ 乘以控制后缀 $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ 全零的指示值。论文用平衡归约证明了线性门数和对数深度，并给出匹配的对数下界。 [Lean 系数公式](../../PredictionDepth/AdditiveBranching.lean) · [论文中的电路界](../../paper/structural-certificates.zh-CN.pdf)
 
 ## 形式化基础设施
 
@@ -71,8 +75,10 @@ typst compile --ignore-system-fonts --creation-timestamp 1794268800 \
 | 信息依赖计数方法的界限 | `DependencyGrowth.lean`：`dependency_method_limit` |
 | 冻结控制的一侧规则族 | `FrozenPascal/Semantics.lean` 的 `iterate_data` 和 `FrozenPascal/UniformLanguage.lean` 的 `predictionLanguage_mem_uniformNC_one` |
 | 冻结控制的深度分类 | `FrozenPascal/Classification.lean` 的 `bounded_prediction_depth_iff` 和 `varyingGuard_prediction_depth_lower_bound`，`FrozenPascal/HomogeneousPascal.lean` 的 `pascalSupport_card` 及二进制位数深度界 |
+| 齐次 Pascal 的逐时刻最优深度 | `homogeneousNativeXorPrediction_depth`, `homogeneous_prediction_deMorgan_exact_depth`, `homogeneous_prediction_deMorgan_depth_lower_bound` |
 | 可执行分类器与统一深度分类 | `FrozenPascal/Classification.lean` 的 `classify_eq_iff`，`FrozenPascal/UniformClassification.lean` 的 `uniform_depth_classification` 和 `predictionLanguage_mem_uniformNC_zero_iff` |
 | 移动控制轨的本质输入与精确深度 | `TransportedControl.lean` 的 `iterate_data_true_iff`、`essential_prediction_iff`、`exact_prediction_depth` 和 `constant_depth_iff` |
+| 移动坐标系与逐时刻电路复用 | `TransportedBranching.lean`, `reverseFrame_iterate`, `prediction_correct`, `prediction_depth`, `prediction_size` |
 | 可执行边界与实例检查 | `Examples.lean` |
 
 ### A：快速可组合表示
@@ -161,4 +167,6 @@ F^T(x)_0=\bigvee_{j=-T}^{T}x_j,
 - B 的困难性结论需要具体系统的完整模拟见证，P 完备性还需要目标语言属于 P。由类分离假设推出的结论是统一 NC 非成员资格。
 - C 在多项式大小的光锥中至多给出对数级的计数下界。冻结控制族的下界衡量二输入电路的深度。要证明 NC¹ 完备性，还需给出适当归约下的 NC¹ 困难性。
 
-第三方复杂性基础已纳入模型与传递公理依赖审查。文献链接、库名和绿色构建都不能替代对定义与假设的检查；模型细节与审计范围保存在项目文档中。
+已验证的分类和布线明确了何时可复用冻结预测器。加性控制的例子则给出另一个可组合的系数摘要。下一步可以改变传输函数，检查同样的控制演化还允许哪些有序摘要。
+
+公理审计沿项目定理的传递依赖追踪到第三方复杂性基础。模型和假设可通过对应的定义、定理声明及验证指南检查。[信任边界](docs/dependencies.md)
