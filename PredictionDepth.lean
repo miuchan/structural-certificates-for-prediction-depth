@@ -45,5 +45,6 @@ import PredictionDepth.Complexity.BlockSummary
 import PredictionDepth.AdditiveBranching.Summary
 import PredictionDepth.AdditiveBranching.LowerBound
 import PredictionDepth.ORAutomaton.Summary
+import PredictionDepth.SparseCorrections
 
 /-! Structural criteria for prediction depth: all checked core modules. -/

@@ -6,6 +6,10 @@ La esplora demando estas, kiuj kontroleblaj strukturaj kondiĉoj pri dinamika si
 
 La nuna artikolo de Amamiya Miu traktas familion de unuflankaj ĉelaj aŭtomatoj kun fiksita regado. La regvortoj povas varii laŭ pozicio. Kun fiksitaj regvortoj la datuma trako evoluas lineare, kaj nombrado de vojoj reduktas prognozon al prefiksaj statistikoj kaj koeficienta pareco. La komparo kun evoluanta regado traktas kaj unuopan datuman vojon kaj regulojn kun du branĉoj. La angla eldono estas la ĉefa. [Artikolo en PDF](../../paper/structural-certificates.eo.pdf) · [Typst-fonto](../../paper/structural-certificates.eo.typ) · [Komparo kun la literaturo](docs/literature.md)
 
+## Prognozo per maldensaj korektoj
+
+Ĉiu postresta bito komparas la efektivan ĝisdatigon kun tiu de fiksa lineara referenco en la plena dependokeglo. Lean kontrolas la nombradon kaj la unuformajn NC¹-rezultojn por konstanta buĝeto ĉe nekonataj pozicioj kaj por logaritme longa listo de eblaj pozicioj. La reigebla tritraka kolizia ekzemplo havas ĝuste tri postrestajn bitojn en la keglo por ĉiu pozitiva distanco. Lean ankaŭ kontrolas la tempordajn riparcirkvitojn por bitoj kaj tavoloj kun logspacaj generiloj, kaj la plenajn pelatajn respondojn por Pascal kaj libera transporto. La artikolo pruvas la pelatan respondon por ĉiu fiksa homogena duuma lineara regulo. [Esplora specifo](../../docs/sparse-corrections.md) · [Lean-enirejo](../../PredictionDepth/SparseCorrections.lean)
+
 ## Profundoklasifiko de la reguloj kun fiksita regado
 
 Fiksu la larĝon $q$ de regvorto kaj du gardajn funkciojn por restado kaj salto. Ĉiu prognozo ricevas eksplicite la regvortojn kaj datumajn bitojn de la ĉeloj $0,\ldots,T$. La valida enirlongo do estas $n=(q+1)(T+1)$ kaj determinas la tempon $T$. La tabelo distingas malsuprajn barojn por arbitraj du-eniraj pordegoj, la minimuman profundon de De Morgan je ĉiu tempo kaj la supran baron de la kontrolita unuforma familio. Arbitra drataro kaj komunaj subcirkvitoj estas permesataj.

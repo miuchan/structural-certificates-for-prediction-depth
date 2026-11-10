@@ -1,6 +1,6 @@
 #import "transported-control-figure.typ": transported-control-figure
 
-#let title = "Prognoza profundo de unuflankaj regataj ĉelaj aŭtomatoj"
+#let title = "Strukturaj atestiloj pri prognoza profundo"
 #let author = "Amamiya Miu"
 #set document(title: title, author: author)
 #set page(
@@ -15,7 +15,11 @@
 #set math.equation(numbering: "(1)", supplement: [Ekvacio])
 #show heading.where(level: 1): set block(above: 1.2em, below: 0.65em)
 #show heading.where(level: 2): set block(above: 1em, below: 0.5em)
-#show bibliography: set text(size: 9.5pt)
+#show bibliography: it => {
+  set text(size: 9.5pt)
+  set par(leading: 0.42em, spacing: 0.45em)
+  it
+}
 
 #let theorem(name, body) = figure(
   kind: "theorem",
@@ -32,36 +36,33 @@
 #let qed = [#h(1fr) $square$]
 
 #align(center, block(above: 0pt, below: 1.4em)[
-  #text(size: 21pt, weight: "bold")[Prognoza profundo de unuflankaj
-    #linebreak() regataj ĉelaj aŭtomatoj]
+  #text(size: 21pt, weight: "bold")[Strukturaj atestiloj
+    #linebreak() pri prognoza profundo]
   #v(0.2em)
-  #text(size: 13pt)[Klasifiko kontrolita per Lean]
+  #text(size: 13pt)[Regataj ĉelaj aŭtomatoj kaj maldensaj korektoj]
   #v(0.6em)
   #text(size: 12pt, author)
 ])
 
 #pad(x: 8mm)[
 #set text(size: 10.5pt)
-*Resumo.* Ni klasifikas la prognozan profundon de unuflankaj ĉelaj aŭtomatoj,
-kies fiksitaj regvortoj regas ĝisdatigon per restado kaj salto super
-$bb(F)_2$. La eniro estas la eksplicita komenca fenestro kaj la eliro estas
-la prognozita datuma bito ĉe la konuspinto. Plenumebla klasifikilo elektas
-branĉon por ĉiu fiksa regulo. Unu logspac-unuforma familio de cirkvitoj de
-De Morgan kun polinoma grando atingas la elektitan supran baron je ĉiu
-tempo. La prognoza lingvo apartenas al logspac-unuforma $"NC"^0$ ĝuste kiam
-la saltogardo estas ĉie nula, aŭ kiam ĝi estas ĉie unu kaj la restogardo
-estas ĉie nula. Se la saltogardo estas nekonstanta, aŭ se ĝi estas ĉie unu
-kaj la restogardo estas nekonstanta, la profundo estas $Theta(log(T+1))$.
-Por la homogena Pascal-regulo ĉe $T>0$, la minimuma profundo en la
-bazo de De Morgan estas $2p(T)+1$, kie $p(T)$ nombras la unubitojn de
-$T$. La kontrolita unuforma generilo uzas profundon maksimume $3p(T)$. Por struktura komparo ni
-solvas apartan unuvojan modelon kun transportata regado. Je pozitiva
-tempo ĝia profundo estas unu ĉe egalaj rapidoj kaj precize
-$ceil(log_2(T+1))$ ĉe malsamaj rapidoj. Por branĉa regulo kun adicia
-regado, tribita ordigita resumo donas unuforman prognozilon kun lineara
-grando kaj kongruajn logaritmajn profundobarojn. Lean 4 kontrolas tiujn
-barojn, la klasifikon de la fiksitaj reguloj, la Pascal-optimumon kaj
-la unuformajn cirkvitgenerilojn.
+*Resumo.* Ni studas du strukturojn, kiuj ebligas malprofundajn cirkvitojn
+por prognozi ĉelajn aŭtomatojn el eksplicitaj komencaj fenestroj.
+Por unuflanka fiksita regado, klasifikilo kontrolita per Lean elektas
+inter konstantprofundaj, logaritmprofundaj kaj Pascal-kazoj.
+Unu logspac-unuforma familio atingas la elektitan supran baron ĉe ĉiu
+observotempo. En la Pascal-kazo la minimuma profundo en la bazo de
+De Morgan estas $2p(T)+1$ por $T>0$, kie $p(T)$ nombras la unubitojn
+de $T$. Transportata kaj adicia regado montras la efikon de ŝanĝoj
+en la regulo sur la prognozilo. Por unuopa trajektorio, ni kontrolas
+maldensan restaĵon rilate al fiksa lineara referenco per rekonstruo de
+la plena konuso kaj kontrolo de ĉiu ĝisdatigo. Paralela nombrado donas
+logspac-unuforman $"NC"^1$ kiam la restaĵa pezo estas konstanta aŭ la
+nombro de permesitaj pozicioj estas logaritma. Tempa riparo uzas
+polinoman grandon kun eksponento sendependa de la korektobuĝeto kaj
+traktas ankaŭ limigitan nombron de nenulaj ĝisdatigaj tavoloj. Generilo
+kun finia nombro de statoj liveras la malprofundan devigitan respondon
+por ĉiu fiksa homogena duuma lineara referenco kun finia radiuso.
 
 *Ŝlosilvortoj.* Ĉelaj aŭtomatoj, cirkvita profundo, logspaca unuformeco, Lean 4.
 ]
@@ -73,9 +74,10 @@ $O$ baras la cirkvitan profundon de $O(F^T(x))$ ĉe donitaj enirkodado
 kaj cirkvita modelo? Algebra strukturo povas ebligi prognozon de ĉela
 aŭtomato per cirkvitoj multe pli malprofundaj ol laŭtavola simulado @moore.
 Ĉi tie ni demandas, kiuj fiksitaj gardoj en unuflanka dutraka aŭtomato
-permesas konstantan profundon kaj kiel la profundo dependas de la observa tempo.
+permesas konstantan profundon, kaj kiel rapide prognozi trajektorion kun
+malmultaj diferencoj rilate al fiksa lineara regulo.
 
-Nia ĉefa rezulto estas la kvarbranĉa klasifiko de reguloj kun fiksita
+La unua rezulto estas la kvarbranĉa klasifiko de reguloj kun fiksita
 regado (@frozen-classification). Finia provo de la gardoj elektas branĉon.
 Por ĉiu branĉo ni donas malsuprajn barojn je ĉiu tempo kaj unu efektivan
 generilon, kies cirkvitoj atingas la koncernan supran baron je ĉiu tempo.
@@ -90,12 +92,18 @@ ekzemploj montras kiel transdoni prognozilon per koordinatŝanĝo kaj
 kompili alian resumon kiam la fiksitaj statistikoj malsukcesas
 (@branching-boundary).
 
+La dua rezulto donas atestilon por unuopaj eniroj (@sparse-corrections).
+La respondo al kandidata restaĵo rekonstruas la tutan dependokonusan
+trajektorion. La lokaj ĝisdatigaj ekvacioj tiam determinas, ĉu la
+kandidato estas la efektiva restaĵo. La sama kontrolo servas kaj paralelan
+nombradon kaj tempan riparon, kun malsamaj grandaj kaj profundaj kostoj.
+
 = Antaŭpreparoj
 
 Loka regulo sur konfiguracioj super $bb(Z)$ estas iteraciata $T$ fojojn.
-La celo estas la datuma bito ĉe la origino. Ĉiu modelo en la ĉefaj rezultoj
-havas unuflankan ĝisdatigon de radiuso unu, do ĝia komenca fenestro konsistas
-el la ĉeloj $0, dots, T$. Por fiksita regado la eniro enhavas $q(T+1)$
+La celo estas la datuma bito ĉe la origino. La regataj modeloj havas unuflankan ĝisdatigon de radiuso unu, kun
+komenca fenestro ĉe ĉeloj $0, dots, T$. En @sparse-corrections ni uzas
+simetrian fenestron por ĝenerala finia radiuso. Por fiksita regado la eniro enhavas $q(T+1)$
 regbitojn sekvatajn de $T+1$ datumaj bitoj. La regvorta larĝo $q$ kaj la du
 gardaj cirkvitoj estas fiksaj sendepende de $T$. La valida vortlongo
 $n=(q+1)(T+1)$ unike determinas $T$. La prognoza lingvo $L_(s,h)$ konsistas
@@ -471,6 +479,233 @@ $c_0(0) product_(j=1)^(T-1)(1+c_j(0))$. Ĉiuj $T$ regbitoj do ankaŭ estas
 esencaj, kio donas la nombran baron $ell(2T+1)$.
 
 
+= Maldensaj korektoj laŭ trajektorio <sparse-corrections>
+
+La antaŭaj strukturoj estas komunaj al ĉiuj eniroj de fiksa regulo.
+Ĉi tiu atestilo koncernas unu trajektorion kaj unu observotempon. Ĝi
+nombras diferencojn inter la efektivaj ĝisdatigoj kaj tiuj de fiksa
+lineara referenco, ambaŭ taksataj ĉe la efektiva stato je ĉiu tempo.
+
+== Komuna konuso kaj devigita respondo
+
+Fiksu determinisman regulon $F$, homogenan linearan regulon $L$, nombron
+$q>=1$ de trakoj kaj komunan radiusan baron $R>=1$. Por observotempo $T$,
+la bitkoordinatoj je statotempo $t$ estas
+$B_t=[-R(T-t),R(T-t)]_bb(Z) times {0,dots,q-1}$.
+La najbareco de ĉiu ĉelo en $B_(t+1)$ troviĝas en la spaca fenestro de
+$B_t$. Tial la limigoj $F_t,L_t:bb(F)_2^(B_t)->bb(F)_2^(B_(t+1))$
+estas bone difinitaj. Indukto montras, ke finia iteracio kongruas kun
+ĉiu senfina etendo de la komenca vorto $u$. Ni observas fiksan trakon
+$a_*$ ĉe la origino je tempo $T$ kaj skribas $g_(T)(u)$ por tiu bito.
+La valida longo $n=q(2R T+1)$ determinas $T$. Estas $V=q(T+1)(R T+1)=O(n^2)$
+statbitoj kaj $M=V-n$ ĝisdatigaj elirbitoj. Okazaĵo $(t,i,a)$ estas
+la bito $(i,a)$ en $B_(t+1)$, kiun kreas la ĝisdatigo de $t$ al $t+1$.
+
+Estu $x_0=u$ kaj $x_(t+1)=F_(t)(x_t)$. La efektiva restaĵo kaj la devigita
+respondo estas
+$
+  e_t^star = x_(t+1)+L_t x_t, quad
+  y_0=u, quad y_(t+1)=L_t y_t+e_t .
+$ <forced-recurrence>
+La aritmetiko estas en $bb(F)_2$. La rektangula propagilo
+$P_(s,t)=L_(t-1) dots L_s$ portas tavolon $s$ al tavolo $t$, kun la
+identeca mapo ĉe $s=t$. Lineareco kaj indukto en @forced-recurrence donas
+$
+  y_t=P_(0,t)u+sum_(s=0)^(t-1)P_(s+1,t)e_s .
+$ <forced-sum>
+Skribu $S$ kaj $D$ por la grando kaj profundo de cirkvito, kiu eligas
+*ĉiun* biton de la respondo. Ni kontrolas, ĉu $y_(t+1)$ egalas al
+$F_(t)(y_t)$ ĉe ĉiu koordinato, inkluzive de tiuj kun nula kandidata
+restaĵo. Lokaj kontroloj kaj ekvilibra konjunkcio uzas $O(V)$ pordegojn
+kaj profundon $O(log(V+1))$. Skribu $v(u,e)$ por la rezulto. Se $e=e^star$,
+la rekuro donas $y=x$ kaj la kontrolo sukcesas. Se la kontrolo sukcesas,
+la respondo kaj la efektiva trajektorio havas la saman komencan staton
+kaj kontentigas la saman ĝisdatigon ĉe ĉiuj koordinatoj. Indukto donas
+$y=x$ kaj la rekuro tiam donas $e=e^star$. Sekve
+$
+  v(u,e)=1 <=> e=e^star .
+$ <sparse-verifier>
+
+== Paralela nombrado kaj tempa riparo
+
+#theorem("Atestilo per nombrado")[
+  Por listo de $N>=1$ kandidataj restaĵoj sendependa de la eniro,
+  cirkvito eligas $(A,A and g_(T)(u))$, kie $A$ testas ĉu $e^star$ troviĝas
+  en la listo. La grando estas $O(N(S+V+1))$ kaj la profundo estas
+  $D+O(log(V+1)+log(N+1))$.
+]<sparse-enumeration>
+
+_Pruvo._ Kopiu la respondcirkviton por ĉiu kandidato kaj anstataŭigu
+la restaĵajn enirojn per konstantoj. Prenu la disjunkcion de ĉiuj
+kontroloj por $A$. Por la dua eliro prenu la disjunkcion de la
+konjunkcioj de ĉiu kontrolo kun ĝia kandidata observado.
+@sparse-verifier determinas la sukcesajn kandidatojn kaj ilian komunan
+observitan valoron. La kopioj funkcias paralele. La du ekvilibraj
+disjunkciarboj aldonas profundon $O(log(N+1))$. #qed
+
+Restaĵon kun pezo maksimume $k$ reprezentas maksimume $k$ okazaĵadresoj.
+Ordigu la adresojn kaj kompletigu la vicon ĝis longo $k$ per malplena
+simbolo. La preciza nombro de kandidatoj estas
+$sum_(j=0)^(min(k,M)) binom(M,j) <= (M+1)^k$. La generilo povas
+trairi ĉiujn tiajn vicojn kaj interpreti ĉiun kiel aron, kun eventualaj
+ripetoj. Por fiksa $k$, la nombriloj okupas $O(log(n+1))$ spacon. Se la
+permesitaj pozicioj formas fiksan aron $J_T$ de grando $K$ kun grando kaj
+indeksitaj adresoj kalkuleblaj en logspaco, ni trairas la $2^K$ asignojn sur $J_T$
+kaj metas nulojn aliloke. La asigna nombrilo okupas logspacon kiam
+$K=O(log(n+1))$. En ambaŭ okazoj la generilo ordigas laŭ tempo, ĉelo kaj
+trako. Ĝi skanas la kodon de la respondo, metas la kandidatajn konstantojn
+ĉe restaĵaj eniroj, delokas internajn dratnumerojn kaj eligas la lokajn
+kontrolojn kaj ekvilibrajn reduktojn en indeksitaj blokoj. Polinoma
+grando certigas logaritman larĝon de ĉiuj delokigoj kaj dratnumeroj.
+Ĉe nevalida longo ambaŭ eliroj estas nulaj. Tial logspac-unuforma respondo
+kun polinoma grando kaj logaritma profundo donas logspac-unuformajn
+predikatojn en $"NC"^1$ pri aplikeblo kaj kondiĉa prognozo en ambaŭ okazoj.
+
+#theorem("Atestilo per tempa riparo")[
+  Ordigante la ĝisdatigajn elirbitojn laŭ tempo, dispartigu ilin
+  en unuopajn bitojn aŭ en tutajn ĝisdatigajn tavolojn. Por buĝeto $k$,
+  cirkvito eligas $(A,A and g_(T)(u))$, kie $A$ testas ĉu maksimume $k$
+  blokoj enhavas nenulan efektivan restaĵon. La grando estas
+  $O((k+1)(S+V+1))$ kaj la profundo estas $O((k+1)(D+log(V+1)))$.
+]<sparse-repair>
+
+_Pruvo._ Komencu kun $e=0$. En ĉiu raŭndo kalkulu la respondon $y$ kaj
+la malkongruon $m_t=F_(t)(y_t)+y_(t+1)$. Trovu la unuan blokon kun
+nenula malkongruo kaj aldonu tiun malkongruon al $e$ per XOR nur sur
+tiu bloko. Se ĉio kongruas, konservu $e$.
+
+Komence de ĉiu raŭndo, la nuna restaĵo egalas al $e^star$ en la prefikso
+ĝis la laste riparita bloko kaj estas nula poste. Komence la prefikso
+estas malplena. Ĉiuj ĝisdatigaj tavoloj antaŭ la unua ankoraŭ neriparita
+nenula bloko jam havas la efektivajn restaĵojn, do la antaŭa stato de
+tiu bloko estas ĝusta. Je ĝia ĝisdatiga tempo, $F_(t)(y_t)=x_(t+1)$ kaj
+$y_(t+1)=L_t x_t+e_t$, do la malkongruo egalas al $e_t^star+e_t$.
+Antaŭaj blokoj en la sama tavolo ankaŭ kongruas. Tial la raŭndo riparas
+ĝuste la unuan mankantan nenulan blokon kaj konservas la aliajn. Se
+neniu mankas, la plena kontrolo jam sukcesas. Post $k$ raŭndoj apliku
+denove @sparse-verifier kaj konjunkciu ĝian rezulton kun la fina observado.
+
+Kalkulu paralele ĉiujn malkongruajn bitojn kaj la flagon de ĉiu bloko.
+Metu la flagojn ĉe la folioj de ekvilibra duuma arbo kaj kalkulu la
+disjunkcion de ĉiu subarbo en suprena paso. Poste propagu prefiksojn
+malsupren, kun nulo ĉe la radiko. La maldekstra ido heredas la prefikson
+de sia patro, kaj la dekstra ricevas la disjunkcion de tiu prefikso kun
+la flago de la maldekstra subarbo. Ĉe ĉiu folio la prefikso estas la
+disjunkcio de ĉiuj antaŭaj flagoj. Elektu blokon kiam ĝia flago estas
+unu kaj ĝia prefikso nulo. La du pasoj uzas $O(V)$ pordegojn kaj
+profundon $O(log(V+1))$. Ĝisdatigi la restaĵajn bitojn aldonas konstantan
+profundon. La $k$ riparoj kaj la fina respondo kun kontrolo donas la
+asertitajn barojn. #qed
+
+La aranĝo estas logspac-unuforma se la respondo estas unuforma kaj la
+raŭnda buĝeto estas kalkulebla en logspaco kun polinoma supra baro.
+La generilo trairas la stadiojn kaj blokojn, reuzas la respondkodilon
+kun delokitaj eniroj, kaj konektas la riparitajn bitojn al la sekva
+stadio. La drataron de la arbo donas la tavolaj kaj nodaj numeroj.
+La eksponento dependa de $k$ en la nombrado cedas al la faktoro $k+1$.
+Logaritmprofunda respondo donas unuforman $"NC"^1$ por konstanta $k$ kaj
+unuforman $"NC"^2$ por $k=O(log(n+1))$. Tut-tavolaj blokoj permesas
+arbitran nombron de nenulaj bitoj en ĉiu kalkulita tavolo. Unubitajn
+blokojn regas la suma pezo de la restaĵo. Kiam $T=0$, ne estas okazaĵoj,
+la malplena kontrolo sukcesas kaj la observado estas komenca bito.
+
+== Unuforma respondo por ĉiu fiksa homogena lineara regulo
+
+#theorem("Homogena lineara respondo")[
+  Ĉiu fiksa homogena lineara regulo kun $q$ trakoj kaj radiuso $R$
+  super $bb(F)_2$ havas logspac-unuforman plenan devigitan respondon
+  sur la komuna konuso kun $O(V^2)$ pordegoj kaj profundo $O(log(V+1))$.
+]<sparse-homogeneous-response>
+
+_Pruvo._ Skribu $(L x)_i=sum_(delta=-R)^R A_delta x_(i+delta)$ kun
+fiksaj matricoj kaj metu $H(X)=sum_(delta=-R)^R A_delta X^(delta+R)$.
+La koeficiento de ĉelo $j$ al ĉelo $i$ post $r$ paŝoj estas la koncerna
+matrica elemento de $[X^(j-i+R r)]H(X)^r$, aŭ nulo por eksponento ekster
+la intervalo. Pro la fermiteco de la konuso tiuj estas la samaj
+koeficientoj kiel en la finiaj propagiloj. Ili aperas en la racionala
+matrica serio
+$
+  sum_(r>=0) Y^r H(X)^r = (I-Y H(X))^(-1).
+$
+Ĉiu elemento havas polinoman numeratoron $U$ kaj komunan denominatoron
+$Q=det(I-Y H(X))$, kun $Q(0,0)=1$.
+
+Por $a,b in {0,1}$, la operatoro $Lambda_(a,b)$ portas la koeficientojn
+ĉe indeksoj $(2i+a,2j+b)$ al $(i,j)$. Tiu duuma sekcifunkcio aperas en
+aŭtomataj algoritmoj por koeficientoj @abc-cartier.
+Super $bb(F)_2$ ni havas $Q(X,Y)^2=Q(X^2,Y^2)$. La inverso de
+$Q(X^2,Y^2)$ havas nur parajn eksponentojn en ambaŭ variabloj, do
+la sekcifunkcio transigas ĝin kun duonigitaj eksponentoj. Apliko
+al $(U Q)/Q(X^2,Y^2)$ donas
+$
+  Lambda_(a,b)(U/Q)=Lambda_(a,b)(U Q)/Q .
+$
+Por ĉiu variablo prenu la pli grandan el la gradoj de la komencaj
+numeratoroj kaj $Q$. Multipliko per $Q$ kaj duonigo de la eksponentoj
+konservas tiujn du barojn. Estas finie multaj eblaj numeratoroj super
+$bb(F)_2$. Por trovi koeficienton, komencu kun la koncerna numeratoro kaj
+legu la du duumajn indeksojn ekde la plej malaltaj bitoj, kompletigante
+la pli mallongan per nuloj. Ĉe ĉiu bitparo anstataŭigu la numeratoron
+per $Lambda_(a,b)(U Q)$. Fine liveru ĝian konstantan koeficienton,
+ĉar $Q(0,0)=1$. La fiksaj transiroj kaj logaritmlarĝaj indeksaj nombriloj
+donas logspacan koeficientgenerilon.
+
+Por ĉiu elirbito, trairu la komencajn kaj pli fruajn devigajn bitojn en
+@forced-sum. La generita koeficiento elektas, ĉu konekti la fontbiton
+aŭ nulon al folio de ekvilibra XOR-arbo. Estas maksimume $V$ folioj en
+ĉiu arbo kaj $V$ eliroj. XOR havas fiksgrandan realigon per pordegoj
+de De Morgan. La nombriloj de tempo, ĉelo kaj trako donas la adresojn.
+Kompletigo de la arboj ĝis komuna potenco de du ebligas kalkuli dratajn
+delokigojn per logaritmlarĝa entjera aritmetiko. Tiel la generilo eligas
+la tutan respondcirkviton en logspaco. #qed
+
+Tiu teoremo liveras la respondan cirkviton bezonatan de ambaŭ atestiloj
+por homogenaj linearaj fonoj sur la krado. Ĉe lineara fono, kiu dependas
+de tempo aŭ pozicio, @forced-sum plu validas, kaj malprofunda unuforma
+respondo estas aparte liverenda.
+
+== Du konkretaj fonoj
+
+La unutraka Pascal-referenco $(L x)_i=x_i+x_(i+1)$ post $r$ paŝoj uzas
+ĝuste la delokigojn, kies unubitoj aperas en $r$. Tio estas la duuma
+koeficienttesto en @pascal-exact. La efektiva OR-regulo
+$(F x)_i=x_i or x_(i+1)$ havas restaĵon $x_i x_(i+1)$ ĉe ĉiu ĝisdatigo.
+La aparte konata observado ĉe la pinto estas $or.big_(j=0)^T x_j$,
+per kiu oni povas kontroli la prognozon ĉe akceptitaj eniroj.
+
+Por reigebla nelineara ekzemplo, uzu tri trakojn $(a,b,c)$ kaj apliku
+la lokan ciklon $110 -> 101 -> 011 -> 110$, konservante ĉiujn aliajn
+statojn. Poste transportu $a$ dekstren, $b$ maldekstren kaj lasu $c$
+senmova. Kaj la permuto kaj la transporto estas inversigeblaj kaj
+konservas la nombron de unubitoj en konfiguracioj kun finia subteno.
+La ciklo fiksas la tri bazajn vektorojn kaj ŝanĝas $110$, do la regulo
+estas nelineara. Kun libera transporto kiel $L$, ĉiu devigita eliro
+estas la XOR de la komenca bito kaj ĉiuj impulsoj laŭ ĝia karakteriza
+linio. Ekzemple,
+$
+  a_(i)(t)=a_(i-t)(0)+sum_(s=0)^(t-1)e^a_(s,i-(t-1-s)).
+$
+La karakteriza linio por $b$ havas la kontraŭan direkton kaj tiu por
+$c$ restas ĉe $i$. Ĉiu eliro uzas maksimume $T+1$ termojn. La
+transporta respondo do havas grandon $O(V(T+1))$ kaj profundon
+$O(log(T+2))$.
+
+Por ajna entjero $h>=1$, metu unun nur ĉe $a_0$, $c_0$ kaj $c_(-h)$
+kaj observu $a_(0)(2h)$. Je tempo nulo la stato $101$ ĉe la origino
+fariĝas $011$ kaj sendas $b$ maldekstren. Je tempo $h$ la stato $011$
+ĉe ĉelo $-h$ fariĝas $110$ kaj kreas dekstren moviĝantan $a$, kiu
+atingas la originon je tempo $2h$. Intertempe ne okazas aliaj
+netrivialaj kolizioj. La kvar nenulaj tutmondaj restaĵbitoj estas
+$
+  e^a_(0,1), quad e^b_(0,-1), quad e^a_(h,-h+1), quad e^c_(h,-h).
+$
+La lasta estas ekster la komuna konuso je statotempo $h+1$, kiam ĝia
+radiuso estas $h-1$. La aliaj tri apartenas al la konuso. Forigi unu
+el la du senmovaj partikloj nuligas la observitan biton, do ambaŭ
+interagoj influas la observitan revenon. Tio donas aplikeblajn
+interagantajn trajektoriojn ĉe arbitre grandaj observotempoj. La
+atestilo limigas la kompleksecon de aplikeblo kaj de la kondiĉa observado.
+
 = Rilata laboro
 
 *Pascal-pareco kaj rapida prognozo.* La nombro $2^(p(T))$ de neparaj eroj
@@ -510,6 +745,22 @@ polinomo de grado $T-k$. Kun diagonalaj elementoj nul kaj unu ĝi
 nombras la samajn malfortajn komponaĵojn. Oni povas specialigi la
 polinoman identecon al entjeraj nul-unu-elementoj antaŭ redukto module
 de du, sen dividado en $bb(F)_2$.
+
+*Linearaj referencoj kaj maldensaj trajektorioj.* La malkompono de
+Moore inkluzivas ekzemplon de difektoprognozo @moore. Rowland kaj
+Yassawi studis aŭtomatajn spactempajn diagramojn de skalaraj linearaj
+ĉelaj aŭtomatoj @automatic-linear-ca. En @sparse-homogeneous-response
+la duuma sekcio aplikata al la elementoj de fiksa transiga matrica
+serio donas la drataron de la plena devigita respondo.
+En SAT, malgrandaj krompordoj distingas utiligon de donita variablaro
+disde ĝia serĉado @backdoors. Ĉi tie la kandidataj pozicioj estas
+adresoj de restaĵbitoj sur trajektorio. Boyar, Find kaj Peralta
+optimumigas linearajn partojn de fiksa cirkvito @boyar-low-depth,
+dum la nenulaj restaĵoj ĉi tie povas ŝanĝiĝi laŭ la eniro.
+Por frostiĝantaj retoj, baroj pri la alfabeta grando, grado kaj
+arbolarĝo subtenas rapidan paralelan prognozon @freezing-parameters.
+La nuna parametro nombras bitojn aŭ tavolojn kun diferenco rilate
+al la elektita referenco.
 
 *Maŝina kontrolo kaj la signifo de fiksado.* Silváši kaj Tomášek formaligis
 limigitajn kradojn kaj komputeblajn ĉelajn aŭtomatojn en Lean @silvasi.
@@ -571,6 +822,20 @@ koncernas la specifitan resuminterfacon. Por la familio kun fiksita
 regado, la plenumebla
 klasifikilo elektas branĉon per konstantecaj provoj sur finia alfabeto.
 
+Lean kontrolas la finian konuson, rekonstruon, kontrolilon kaj
+nombradon, kun baroj pri la nombro de pordegoj, profundo kaj bitlongo de
+la seriigita priskribo, kaj kun unuformeco sub la aranĝaj hipotezoj. Lean
+kontrolas la paralelajn riparcirkvitojn por bitoj kaj tavoloj, ilian
+akcepton kaj kondiĉan eligon, la barojn por grando kaj profundo kaj
+la kompletan logspacan seriigilon. Sub la unuformaj aranĝaj kaj blokaj
+hipotezoj, fiksaj kaj logaritmaj nombroj de raŭndoj donas respektive
+unuformajn $"NC"^1$ kaj $"NC"^2$. La pelataj respondoj por Pascal kaj
+libera transporto havas kontrolitajn cirkvitojn kaj logspacajn generilojn.
+Lean pruvas unuformecon de la kompletaj prognoziloj por OR kaj kolizio,
+la rektan disjunkcion por OR kaj la precizajn koliziajn sojlojn de tri
+bitaj raŭndoj kaj du tavolaj raŭndoj. La teksto pruvas la ĝeneralan
+homogenan koeficientgenerilon per sekciaj operatoroj. Vidu @sparse-lean-map.
+
 = Konkludo
 
 Ĉe fiksita regado, la konstanteco de la gardoj decidas la kazojn kun
@@ -582,6 +847,13 @@ resumon eĉ kiam ĉiuj saltoj estas eblaj. Tie la indukto fermiĝas ĉar
 la koeficiento de la nur-salta vojo estas fiksa kaj la regado evoluas
 per Pascal-konvolucio. Restas determini kiam simila koeficienta rekuro
 fermiĝas se la evoluanta regado ankaŭ decidas la saltojn.
+
+Ĉe trajektori-dependa prognozo, la plena loka kontrolo permesas al
+malprofunda lineara respondo trakti maldensajn nelinearajn korektojn.
+Nombrado utiligas malgrandan aron de eblaj pozicioj, dum la grando
+de tempa riparo estas polinoma laŭ la konusvolumeno kaj la
+korektobuĝeto. La reigebla kolizia familio montras aplikeblon ĉe
+trajektorioj kun kaŭze ligitaj interagoj.
 
 #heading(numbering: none)[Haveblo de la formaligo]
 
@@ -642,7 +914,7 @@ pordegoj kun $N$ ĉefaj eniroj, elirpozicio $a$ estas drato $N+G-W+a$.
 La serialigilo tiel rekalkulas referencojn per logaritmlarĝaj nombriloj
 kun fiksa nestada profundo kaj eligas la kodon laŭ la unume kodita longo.
 
-#block(breakable: false)[
+#block[
 #set text(size: 9.5pt)
 #set par(leading: 0.42em, justify: false)
 #heading(supplement: [Apendico])[Korespondo kun la Lean-deklaroj] <lean-map>
@@ -695,6 +967,52 @@ La vojoj sube estas relativaj al `PredictionDepth/`.
     `AdditiveBranching/LowerBound.lean` · `prediction_depth_lower_bound`],
   [Kolizio por adicia regado], [`AdditiveBranching/Summary.lean` #linebreak()
     `frozenEndpointCollision`, `frozenEndpoint_noReadout`],
+  table.hline(stroke: 0.7pt),
+)
+]
+
+#block(breakable: false)[
+#set text(size: 9.5pt)
+#set par(leading: 0.42em, justify: false)
+#heading(supplement: [Apendico])[Lean-deklaroj pri maldensaj korektoj] <sparse-lean-map>
+
+La vojoj estas relativaj al `PredictionDepth/SparseCorrections/`.
+
+#table(
+  columns: (1fr, 2.55fr),
+  inset: (x: 7pt, y: 2pt),
+  align: left,
+  stroke: none,
+  table.hline(stroke: 0.7pt),
+  table.header([*Rezulto*], [*Lean-modulo kaj deklaro*]),
+  table.hline(stroke: 0.4pt),
+  [Komuna konuso kaj kontrolo], [`Semantics.lean` #linebreak() `Cone.finiteTrajectory_eq_restrict_iterate` #linebreak() `valid_iff_eq_actualResidual`],
+  [Propagila formulo], [`Reconstruction.lean` #linebreak() `forcedTrajectory_eq_propagator_sum`],
+  [Nombra kompililo], [`Compiler.lean` #linebreak() `compile_semantics` #linebreak() `compile_depth`, `compile_size` #linebreak() `compile_code_logspace`],
+  [Longo de la seriigita priskribo], [`Description.lean` #linebreak() `compile_description_length_le`],
+  [Unuforma nombrado], [`Certificate.lean` #linebreak() `Correct.unknown_mem_uniformNC_one` #linebreak() `Correct.scheduled_mem_uniformNC_one`],
+  [Tempa bitriparo], [`Repair.lean` #linebreak() `repair_accept_iff`],
+  [Tempa tavolriparo], [`LayerRepair.lean` #linebreak() `repairLayer_accept_iff`],
+  [Paralelaj riparcirkvitoj], [`RepairCircuit.lean` #linebreak()
+    `compileBits_correct`, `compileLayers_correct` #linebreak()
+    `compile_size`, `compile_depth` #linebreak()
+    `RepairCode.lean`, `compile_code_logspace`],
+  [Unuforma riparo kaj sojloj], [`RepairUniform.lean` #linebreak()
+    `fixedLanguage_mem_uniformNC_one` #linebreak()
+    `logLanguage_mem_uniformNC_two` #linebreak()
+    `RepairExamples.lean`, `example_repair_thresholds`],
+  [Respondo de libera transporto], [`Streaming.lean` #linebreak() `forcedTrajectory_eq_characteristic` #linebreak()
+    `StreamingCircuit.lean` #linebreak() `circuit_correct`, `circuit_code_logspace`],
+  [Pelata respondo por Pascal], [`PascalResponse.lean` #linebreak()
+    `circuit_correct`, `circuit_code_logspace` #linebreak()
+    `circuit_size_quadratic`, `circuit_depth_logarithmic`],
+  [Unuforma OR-prognozo], [`PascalOR.lean` #linebreak()
+    `orPredictor_correct`, `orPrediction_mem_uniformNC_one`],
+  [Kolizia ekzemplo], [`Collision.lean` #linebreak() `step_reversible`, `returning_observation` #linebreak() `exampleResidual_card`],
+  [Provoj por OR kaj tempo nulo], [`CompilerExamples.lean` #linebreak()
+    `ORFixture.oneCorrection`, `ORFixture.code_agrees` #linebreak() `emptyHorizon_predicts`],
+  [Unuforma kolizia prognozo], [`CollisionCertificate.lean` #linebreak()
+    `sparsePrediction_mem_uniformNC_one` #linebreak() `example_accepts_and_predicts`],
   table.hline(stroke: 0.7pt),
 )
 ]

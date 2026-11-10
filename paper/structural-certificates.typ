@@ -1,7 +1,7 @@
 #import "transported-control-figure.typ": transported-control-figure
 
-#let title-line-1 = "Prediction Depth of"
-#let title-line-2 = "Controlled Cellular Automata"
+#let title-line-1 = "Structural Certificates for"
+#let title-line-2 = "Prediction Depth"
 #let title = title-line-1 + " " + title-line-2
 #let author = "Amamiya Miu"
 #set document(title: title, author: author)
@@ -36,32 +36,29 @@
 #align(center, block(above: 0pt, below: 1.4em)[
   #text(size: 21pt, weight: "bold")[#title-line-1 #linebreak() #title-line-2]
   #v(0.2em)
-  #text(size: 13pt)[A Lean-Verified Classification for One-Sided Rules]
+  #text(size: 13pt)[Controlled Rules and Sparse Corrections in Cellular Automata]
   #v(0.6em)
   #text(size: 12pt, author)
 ])
 
 #pad(x: 8mm)[
 #set text(size: 10.5pt)
-*Abstract.* We classify the prediction depth of one-sided cellular automata whose
-frozen control words gate a stay/hop data update over $bb(F)_2$.
-The input is the explicit initial window and the output is the predicted data
-bit at its apex. An executable classifier selects a branch for each fixed rule.
-A single logspace-uniform, polynomial-size De Morgan family for that rule
-realizes the selected depth bound at every time. Prediction is in
-logspace-uniform $"NC"^0$ exactly when the hop guard is identically zero, or
-when it is identically one and the stay guard is identically zero. When the
-hop guard is nonconstant, or is identically one and the stay guard is
-nonconstant, depth is $Theta(log(T+1))$. For the homogeneous Pascal rule
-at $T>0$, the minimum depth is $2p(T)+1$ with De Morgan gates, where
-$p(T)$ counts the set bits of $T$. The verified uniform generator uses
-depth at most $3p(T)$.
-As a structural comparison, a separate one-path model with transported
-control has positive-time depth one at equal velocities and exactly
-$ceil(log_2(T+1))$ at unequal velocities. For a branching rule with additive
-controls, a three-bit ordered summary gives a linear-size uniform predictor
-and matching logarithmic depth bounds. Lean 4 verifies these bounds, the
-frozen classification and Pascal optimum, and the uniform circuit generators.
+*Abstract.* We study two sources of shallow circuits for cellular automaton
+prediction from explicit initial windows. For one-sided frozen controls, a
+Lean-verified classifier selects a constant-depth, logarithmic-depth, or
+Pascal branch. A single logspace-uniform family realizes the selected bound
+at every horizon. In the Pascal branch the minimum De Morgan depth is
+$2p(T)+1$ for $T>0$, with $p(T)$ the binary weight of $T$. Transported and
+additive controls illustrate how changes to the rule affect its predictor.
+For an individual trajectory, we certify a small residual relative to a
+fixed linear reference by reconstructing the full cone and checking each
+update. Parallel enumeration yields logspace-uniform $"NC"^1$ for
+constant residual weight or logarithmically many allowed event positions.
+Chronological repair uses polynomial size with an exponent independent of
+the correction budget and also handles a bounded number of nonzero
+update layers. A finite-state coefficient construction supplies the
+shallow forced response for every fixed homogeneous binary linear
+reference of finite radius.
 
 *Keywords.* Cellular automata, circuit depth, logspace uniformity, Lean 4.
 ]
@@ -73,9 +70,10 @@ bound the circuit depth of $O(F^T(x))$ for a specified input encoding and
 circuit model? Algebraic structure can make cellular automaton prediction
 much shallower than layer-by-layer simulation @moore. Here we ask which
 fixed guards in a one-sided, two-track automaton admit constant-depth
-prediction and how depth depends on the observation time.
+prediction, and when a trajectory can be predicted from a small set of
+discrepancies with a fixed linear rule.
 
-Our main result is the four-way classification of frozen rules
+The first result is the four-way classification of frozen rules
 (@frozen-classification). A finite guard test selects the branch, and
 one logspace generator for the chosen branch achieves the stated upper
 bound at every time. The main construction uses the forced order of hops
@@ -88,11 +86,19 @@ initial controls read (@transport-depth). The branching examples show
 how to transfer a predictor across a change of frame and how to compile
 a different summary when the frozen statistics fail (@branching-boundary).
 
+The second result gives a certificate for individual inputs
+(@sparse-corrections). The response to a proposed residual is computed
+on the full dependency cone. The local equations then determine whether
+that residual is the actual one. We use the same check for both parallel
+enumeration and a chronological repair procedure. Their size and depth
+bounds depend differently on the residual budget.
+
 = Preliminaries
 
 A local rule on configurations over $bb(Z)$ is iterated $T$ times. We ask for
-one data bit, at site zero. Each model in the main results has a one-sided
-radius-one update, so its initial window consists of sites $0, dots, T$.
+one data bit, at site zero. The controlled models have one-sided radius-one updates and use the
+initial window at sites $0, dots, T$. In @sparse-corrections we use a
+symmetric window for a general finite radius.
 For the frozen model the input contains $q(T+1)$ control bits followed by
 $T+1$ data bits. The control width $q$ and the two guard circuits are fixed
 independently of $T$. The legal word lengths are $n=(q+1)(T+1)$ and determine
@@ -462,6 +468,236 @@ count on paper. With only $x_0(0)=1$ on the data track, the output is
 $c_0(0) product_(j=1)^(T-1)(1+c_j(0))$, so all $T$ control bits
 are essential too. This gives the counting bound $ell(2T+1)$.
 
+= Sparse corrections along a trajectory <sparse-corrections>
+
+The preceding results exploit structure shared by every input of a fixed
+rule. Here the certificate concerns one trajectory and horizon. It counts
+the discrepancies between the actual updates and those of a fixed
+linear reference, evaluated on the actual state at each time.
+
+== Common cone and forced response
+
+Fix a deterministic rule $F$, a homogeneous linear rule $L$, a track
+count $q >= 1$, and a common radius bound $R >= 1$. At horizon $T$, let
+$B_t = [-R(T-t), R(T-t)]_bb(Z) times {0, dots, q-1}$ be the bit coordinates
+at state time $t$. Each neighborhood of a site in $B_(t+1)$ is contained
+in the spatial window of $B_t$. Consequently the restrictions
+$F_t, L_t : bb(F)_2^(B_t) -> bb(F)_2^(B_(t+1))$ are well defined and
+induction shows that the finite iteration agrees with every infinite
+extension of the initial word $u$. We observe a fixed track $a_*$ at site
+zero at time $T$. Write $g_(T)(u)$ for that bit. The legal lengths
+$n=q(2R T+1)$ determine $T$. The number of state bits is
+$V=q(T+1)(R T+1)=O(n^2)$, and there are $M=V-n$ update-output bits.
+An event $(t,i,a)$ denotes the bit at $(i,a)$ in $B_(t+1)$ created by
+the update from time $t$ to $t+1$.
+
+Let $x_0=u$, $x_(t+1)=F_(t)(x_t)$, and write the actual residual and the
+forced reference trajectory as
+$
+  e_t^star = x_(t+1) + L_t x_t, quad
+  y_0=u, quad y_(t+1)=L_t y_t+e_t .
+$ <forced-recurrence>
+All sums are in $bb(F)_2$. The rectangular propagator
+$P_(s,t)=L_(t-1) dots L_s$ carries layer $s$ to layer $t$, with the identity
+at $s=t$. Linearity and induction in @forced-recurrence give
+$
+  y_t=P_(0,t)u+sum_(s=0)^(t-1) P_(s+1,t)e_s .
+$ <forced-sum>
+Let $S$ and $D$ be the gate count and depth of a circuit returning
+*every* bit of this response. Each $y_(t+1)$ is checked against
+$F_(t)(y_t)$, including coordinates where the proposed residual is zero.
+The check costs $O(V)$ gates and $O(log(V+1))$ depth by locality and
+a balanced conjunction. Write $v(u,e)$ for its result. If $e=e^star$,
+@forced-recurrence gives $y=x$, so the check passes. Conversely a passing
+response and the actual trajectory share their initial state and satisfy
+the same update at every coordinate. Induction gives $y=x$ and
+@forced-recurrence gives $e=e^star$. Hence
+$
+  v(u,e)=1 <=> e=e^star .
+$ <sparse-verifier>
+
+== Parallel enumeration and chronological repair
+
+#theorem("Enumeration certificate")[
+  For an input-independent list of $N >= 1$ candidate residuals,
+  a circuit outputs $(A,A and g_(T)(u))$, where $A$ tests whether $e^star$
+  occurs in the list. Its size is $O(N(S+V+1))$ and its depth is
+  $D+O(log(V+1)+log(N+1))$.
+]<sparse-enumeration>
+
+_Proof._ Substitute each candidate into its own copy of the response.
+Take the OR of all checks $v(u,e)$ for $A$, and the OR of all checks
+ANDed with their candidate observation for the second output. Equation
+@sparse-verifier identifies the passing candidates and their common
+observation. Substitution uses constant wires. The copies run in parallel
+and the two balanced OR trees add $O(log(N+1))$ depth. #qed
+
+A residual of weight at most $k$ is encoded by at most $k$ event addresses.
+Each support has a sorted listing padded to length $k$ with a null symbol,
+so the number of distinct candidates is
+$sum_(j=0)^(min(k,M)) binom(M,j) <= (M+1)^k$. A generator may
+emit all such tuples with repetitions, interpreting each as a set. For
+fixed $k$, the counters occupy $O(log(n+1))$ space. If the allowed events
+are a fixed set $J_T$ of $K$ distinct addresses, assume that $K$ and
+the indexed addresses can be computed in logspace. Use the $2^K$ bit assignments on $J_T$ and zeros elsewhere. The assignment counter
+occupies $O(log(n+1))$ space when $K=O(log(n+1))$. In both cases a generator
+orders states and events by time, site and track. It substitutes each
+candidate constant for a correction input, scans the response gate code,
+relocates its internal wire indices by the copy offset, and emits the local
+checks and balanced reductions in indexed blocks. Polynomial gate counts
+give logarithmic-width counters for all offsets and references. At illegal
+lengths both outputs reject. Thus a uniform polynomial-size response of
+depth $O(log(n+1))$ gives two logspace-uniform $"NC"^1$ predicates,
+applicability and gated prediction, in both regimes.
+
+#theorem("Chronological repair certificate")[
+  Partition the update-output bits into singletons in chronological order
+  or into whole update layers in time order. For a budget $k$, a circuit
+  outputs $(A,A and g_(T)(u))$, with $A$ testing whether at most $k$ blocks
+  contain a nonzero actual residual bit. Its size is
+  $O((k+1)(S+V+1))$ and its depth is
+  $O((k+1)(D+log(V+1)))$.
+]<sparse-repair>
+
+_Proof._ Start at $e=0$. In a round compute the response $y$, and form
+the mismatch $m_t=F_(t)(y_t)+y_(t+1)$. Find the earliest block containing a
+nonzero mismatch and XOR the mismatch into $e$ on that block alone. With
+no mismatch, the round leaves $e$ unchanged.
+
+At the start of a round the current residual agrees with $e^star$ on a
+prefix ending at the last repaired block and is zero later. The empty
+prefix is allowed initially. Every earlier update layer than the first
+unrepaired nonzero block now has the actual residual, so its trajectory
+agrees with $x$ through the predecessor state of that block. At its
+update time the mismatch is exactly $e_t^star+e_t$, because
+$F_(t)(y_t)=x_(t+1)$ and $y_(t+1)=L_t x_t+e_t$. This also shows that
+all earlier blocks in the same layer have zero mismatch. Thus the chosen
+block is the first missing nonzero block of $e^star$, and the round restores
+it without changing other blocks. If none is missing, the full check
+already passes. After $k$ rounds apply @sparse-verifier once more and
+gate the final observation by this check.
+
+Compute the mismatch bits and each block's nonzero flag in parallel.
+Place the flags at the leaves of a balanced binary tree and compute
+each subtree's OR bottom-up. Then propagate prefixes downward from
+a zero prefix at the root. The left child inherits the parent's prefix.
+The right child ORs that prefix with the left subtree's OR. At a leaf
+the prefix is the OR of all preceding flags. Select a block exactly
+when its flag is one and its prefix is zero. The two passes use $O(V)$
+gates and $O(log(V+1))$ depth.
+Each residual-bit update adds constant depth. There are $k$ repair stages
+and one final response and check, which gives the claimed bounds. #qed
+
+The repair layout is logspace uniform for a uniform response and a
+logspace-computable, polynomially bounded round budget. The generator
+loops over stages and blocks, reuses the response serializer with
+relocated inputs, and wires the new residual bits to the next stage. Tree references are
+computed from level and node indices.
+This replaces the enumeration exponent depending on $k$ by a
+multiplicative factor $k+1$. With a logarithmic-depth response it gives
+uniform $"NC"^1$ for constant $k$ and uniform $"NC"^2$ for
+$k=O(log(n+1))$. With whole-layer blocks, an update may contain any number
+of residual bits. With singleton blocks the bound is on total bit weight.
+At $T=0$ there are no events, the empty check accepts and the observation
+is an initial bit in both constructions.
+
+== A uniform response for any fixed homogeneous linear rule
+
+#theorem("Homogeneous linear response")[
+  Every fixed $q$-track radius-$R$ homogeneous linear rule over
+  $bb(F)_2$ admits a logspace-uniform full forced response on the common
+  cone with $O(V^2)$ gates and depth $O(log(V+1))$.
+]<sparse-homogeneous-response>
+
+_Proof._ Write $(L x)_i=sum_(delta=-R)^R A_delta x_(i+delta)$ with fixed
+$q times q$ matrices. Let $H(X)=sum_(delta=-R)^R A_delta X^(delta+R)$.
+The coefficient from site $j$ to site $i$ after $r$ steps is the
+appropriate matrix entry of $[X^(j-i+R r)]H(X)^r$, with out-of-range
+exponents contributing zero. Cone closure identifies these with the
+finite propagator coefficients. They are coefficients of the rational
+matrix series
+$
+  sum_(r>=0) Y^r H(X)^r = (I-Y H(X))^(-1).
+$
+Each entry has polynomial numerator $U$ and common denominator
+$Q=det(I-Y H(X))$ with $Q(0,0)=1$.
+
+For $a,b in {0,1}$, let $Lambda_(a,b)$ take the coefficients at
+indices $(2i+a,2j+b)$ of a series and place them at $(i,j)$. This is the
+binary section operator used in automatic coefficient algorithms
+@abc-cartier. Over $bb(F)_2$ we have $Q(X,Y)^2=Q(X^2,Y^2)$. The inverse
+of $Q(X^2,Y^2)$ has only even exponents in both variables, so the
+section operator passes it through with those exponents halved.
+Applying this to $(U Q)/Q(X^2,Y^2)$ gives
+$
+  Lambda_(a,b)(U/Q)=Lambda_(a,b)(U Q)/Q .
+$
+For each variable, bound the numerator degree by the larger of the
+degrees of the original numerators and $Q$. Multiplication by $Q$ and
+halving the exponents preserve these bounds. There are finitely many
+numerators over $bb(F)_2$ in the fixed degree box. To obtain the
+coefficient at a given pair of indices, start at the relevant numerator
+and read the two binary indices least significant digits first, padding
+the shorter one with zeros. Replace the numerator by $Lambda_(a,b)(U Q)$
+at each digit pair. At the end, return the constant coefficient of the
+current numerator, since $Q(0,0)=1$. These fixed transitions and
+logarithmic-width index counters give a logspace coefficient generator.
+
+For each output bit, list all initial and earlier forcing bits in
+@forced-sum. Use its generated coefficient to wire either the
+source bit or zero into a balanced XOR tree. There are at most $V$
+leaves per output and $V$ outputs. XOR has a fixed De Morgan realization.
+The same time, site and track counters give the source and output
+addresses. Padding the trees to a common power of two makes their
+wire offsets computable by integer arithmetic on logarithmic-width
+counters. This emits the complete response circuit in logspace. #qed
+
+The homogeneous response theorem supplies the circuit hypothesis of both
+certificates for the stated lattice model. For a time-dependent or
+position-dependent linear background, @forced-sum still holds, and
+a shallow uniform response must be supplied separately.
+
+== Two concrete backgrounds
+
+For the one-track Pascal reference $(L x)_i=x_i+x_(i+1)$, an interval of
+$r$ steps uses exactly the offsets whose set bits occur in $r$. This is
+the binary coefficient test from @pascal-exact. The actual OR rule
+$(F x)_i=x_i or x_(i+1)$ has residual $x_i x_(i+1)$ on each update.
+Its independently known apex is $or.big_(j=0)^T x_j$. This supplies a
+check of the gated output on accepted inputs.
+
+For a reversible nonlinear example, use tracks $(a,b,c)$ and cycle the
+local triples $110 -> 101 -> 011 -> 110$, fixing all other triples. Then
+stream $a$ right, $b$ left and keep $c$ stationary. The local permutation
+and the streaming map are invertible and preserve the total number of ones
+on finite-support configurations. The cycle fixes the three basis triples
+and moves $110$, which proves nonlinearity. Take free streaming for $L$.
+Each forced output is the parity of the initial bit and all impulses on
+its characteristic. For example,
+$
+  a_(i)(t) = a_(i-t)(0) + sum_(s=0)^(t-1) e^a_(s,i-(t-1-s)).
+$
+The $b$ characteristic has the opposite direction and the $c$
+characteristic stays at $i$. Each output uses at most $T+1$ terms.
+The streaming response therefore has size $O(V(T+1))$ and depth
+$O(log(T+2))$.
+
+Put ones at $a_0$, $c_0$ and $c_(-h)$ for any integer $h>=1$, with all
+other bits zero, and query $a_(0)(2h)$. At time zero the local state $101$
+at the origin becomes $011$, sending $b$ to the left. At time $h$ the
+state $011$ at site $-h$ becomes $110$, creating a right-moving $a$.
+It reaches the origin at time $2h$, with no other nontrivial collision
+before that observation. The four global residual bits are
+$
+  e^a_(0,1), quad e^b_(0,-1), quad e^a_(h,-h+1), quad e^c_(h,-h).
+$
+The last lies outside the common cone at state time $h+1$, whose
+radius is $h-1$. The other three lie inside. Removing either stationary
+particle makes the queried bit zero, so both interactions are relevant
+to the observed return. This gives admissible interacting trajectories
+at arbitrarily large horizons. The certificate supplies bounds on the
+admissible input language and the gated observation.
+
 = Related work
 
 *Pascal parity and fast prediction.* The odd-entry count $2^(p(T))$ is
@@ -501,6 +737,22 @@ difference is a complete homogeneous polynomial of degree $T-k$.
 On zero-one diagonal entries it counts the same weak compositions.
 The polynomial identity can be specialized to integer zero-one entries
 before reducing modulo two, with no division in $bb(F)_2$.
+
+*Linear references and sparse trajectories.* Moore's decomposition also
+gives a defect prediction example @moore. Automatic spacetime diagrams
+for scalar linear automata were studied by Rowland and Yassawi
+@automatic-linear-ca. The binary section argument in
+@sparse-homogeneous-response applies to the entries of a fixed matrix
+transfer series and gives the wiring of the complete forced response.
+Small SAT backdoors distinguish exploiting a given variable set from
+finding one @backdoors. Our candidate locations are addresses of residual
+bits on a trajectory. The linear components optimized by Boyar, Find
+and Peralta are parts of a fixed circuit @boyar-low-depth, whereas the
+nonzero residuals here can vary with the input. For freezing networks,
+bounded alphabet, degree and treewidth support fast parallel prediction
+@freezing-parameters. The parameter here counts discrepancy bits or
+layers relative to the chosen reference, even when the reference changes
+on every step.
 
 *Mechanization and the meaning of frozen.* Silváši and Tomášek formalized
 bounded grids and computable cellular automata in Lean @silvasi. Their
@@ -544,7 +796,7 @@ Local dynamics and locality of the predictor's wiring are separate
 assumptions. The results here use unrestricted wiring and the full
 explicit input domain of each model.
 
-The accompanying Lean development formalizes three sufficient criteria for
+The accompanying Lean development also formalizes three general criteria for
 prediction problems. A compiles resource-bounded composition circuits into
 a predictor. B transfers P-hardness from circuit evaluation given a
 logspace simulation witness. Exclusion from uniform $"NC"$ via B assumes
@@ -561,6 +813,19 @@ specified summary interface. In the frozen family,
 the executable classifier selects the depth branch by testing guard
 constancy on a fixed finite alphabet.
 
+Lean checks the finite cone, reconstruction, verification, and enumeration,
+including gate and depth bounds, the bit length of the serialized circuit,
+and uniformity under the layout hypotheses. It verifies both chronological
+repair circuits, including their acceptance and gated value, their size and
+depth bounds, and their exact logspace serializer. Under the uniform layout
+and block hypotheses, fixed and logarithmic round budgets give uniform
+$"NC"^1$ and $"NC"^2$, respectively. The Pascal and free streaming responses
+have checked circuits and logspace generators. The OR and collision
+predictors have end-to-end uniformity proofs. Lean verifies the direct
+disjunction for OR and the exact collision thresholds of three bit rounds
+and two layer rounds. The text proves the general homogeneous coefficient
+generator using section operators. See @sparse-lean-map.
+
 = Conclusion
 
 For frozen controls, guard constancy decides the constant-depth cases,
@@ -573,6 +838,13 @@ the induction closes because the all-hop coefficient is fixed and the
 control evolves by Pascal convolution. It remains to determine when a
 comparable coefficient recurrence closes if the evolving control also
 gates the hops.
+
+For trajectory-dependent prediction, complete local verification lets a
+shallow linear response handle sparse nonlinear corrections. Enumeration
+exploits a small set of possible positions, while chronological repair
+uses a size bound polynomial in the cone volume and the correction
+budget. The reversible collision family illustrates that an admissible
+trajectory can contain causally linked interactions.
 
 #heading(numbering: none)[Artifact availability]
 
@@ -628,7 +900,7 @@ $N+G-W+a$. This lets the serializer recompute references with counters
 of logarithmic width and fixed nesting depth. It streams the gate and
 output lists from the unary length.
 
-#block(breakable: false)[
+#block[
 #set text(size: 9.5pt)
 #set par(leading: 0.42em, justify: false)
 #heading(supplement: [Appendix])[Lean correspondence] <lean-map>
@@ -677,5 +949,49 @@ The paths below are relative to `PredictionDepth/`.
 ]
 
 #block(breakable: false)[
-  #bibliography("references.bib", style: "ieee", title: [References])
+#set text(size: 9.5pt)
+#set par(leading: 0.42em, justify: false)
+#heading(supplement: [Appendix])[Sparse correction declarations] <sparse-lean-map>
+
+Paths are relative to `PredictionDepth/SparseCorrections/`.
+
+#table(
+  columns: (1fr, 2.55fr),
+  inset: (x: 7pt, y: 2pt),
+  align: left,
+  stroke: none,
+  table.hline(stroke: 0.7pt),
+  table.header([*Result*], [*Lean module and declaration*]),
+  table.hline(stroke: 0.4pt),
+  [Common cone and verifier], [`Semantics.lean` #linebreak() `Cone.finiteTrajectory_eq_restrict_iterate` #linebreak() `valid_iff_eq_actualResidual`],
+  [Propagator formula], [`Reconstruction.lean` #linebreak() `forcedTrajectory_eq_propagator_sum`],
+  [Enumeration compiler], [`Compiler.lean` #linebreak() `compile_semantics` #linebreak() `compile_depth`, `compile_size` #linebreak() `compile_code_logspace`],
+  [Serialized description length], [`Description.lean` #linebreak() `compile_description_length_le`],
+  [Uniform enumeration], [`Certificate.lean` #linebreak() `Correct.unknown_mem_uniformNC_one` #linebreak() `Correct.scheduled_mem_uniformNC_one`],
+  [Chronological bit repair], [`Repair.lean` #linebreak() `repair_accept_iff`],
+  [Chronological layer repair], [`LayerRepair.lean` #linebreak() `repairLayer_accept_iff`],
+  [Parallel repair circuits], [`RepairCircuit.lean` #linebreak()
+    `compileBits_correct`, `compileLayers_correct` #linebreak()
+    `compile_size`, `compile_depth` #linebreak()
+    `RepairCode.lean`, `compile_code_logspace`],
+  [Uniform repair and thresholds], [`RepairUniform.lean` #linebreak()
+    `fixedLanguage_mem_uniformNC_one` #linebreak()
+    `logLanguage_mem_uniformNC_two` #linebreak()
+    `RepairExamples.lean`, `example_repair_thresholds`],
+  [Streaming response], [`Streaming.lean` #linebreak() `forcedTrajectory_eq_characteristic` #linebreak()
+    `StreamingCircuit.lean` #linebreak() `circuit_correct`, `circuit_code_logspace`],
+  [Forced Pascal response], [`PascalResponse.lean` #linebreak()
+    `circuit_correct`, `circuit_code_logspace` #linebreak()
+    `circuit_size_quadratic`, `circuit_depth_logarithmic`],
+  [Uniform OR prediction], [`PascalOR.lean` #linebreak()
+    `orPredictor_correct`, `orPrediction_mem_uniformNC_one`],
+  [Collision example], [`Collision.lean` #linebreak() `step_reversible`, `returning_observation` #linebreak() `exampleResidual_card`],
+  [OR and empty-horizon fixtures], [`CompilerExamples.lean` #linebreak()
+    `ORFixture.oneCorrection`, `ORFixture.code_agrees` #linebreak() `emptyHorizon_predicts`],
+  [Uniform collision prediction], [`CollisionCertificate.lean` #linebreak()
+    `sparsePrediction_mem_uniformNC_one` #linebreak() `example_accepts_and_predicts`],
+  table.hline(stroke: 0.7pt),
+)
 ]
+
+#bibliography("references.bib", style: "ieee", title: [References])

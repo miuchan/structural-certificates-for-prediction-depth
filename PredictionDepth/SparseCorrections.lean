@@ -1,0 +1,9 @@
+import PredictionDepth.SparseCorrections.CollisionCertificate
+import PredictionDepth.SparseCorrections.CollisionProperties
+import PredictionDepth.SparseCorrections.CompilerExamples
+import PredictionDepth.SparseCorrections.CollisionExamples
+import PredictionDepth.SparseCorrections.Description
+import PredictionDepth.SparseCorrections.PascalOR
+import PredictionDepth.SparseCorrections.RepairExamples
+
+/-! Sparse trajectory certificates, their uniform compiler, and concrete instances. -/
