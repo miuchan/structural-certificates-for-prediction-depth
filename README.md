@@ -2,9 +2,9 @@
 
 **English** · [简体中文](i18n/zh-CN/README.md) · [日本語](i18n/ja/README.md) · [Esperanto](i18n/eo/README.md)
 
-This project formalizes the circuit depth of dynamical-system prediction in Lean 4. The main example is a family of one-sided cellular automata with frozen controls. Control words can vary arbitrarily across sites. For a fixed control configuration, the data track evolves linearly. Path counting reduces prediction to prefix statistics and parity tests on combinatorial coefficients, yielding logspace-uniform NC¹ circuits.
+The research question is which verifiable structural conditions on a dynamical system yield bounds on the circuit depth of predicting an observation. A prediction problem fixes the evolution, observation, input encoding, and allowed circuits. Lean 4 checks three reusable criteria for these problems.
 
-The paper by Amamiya Miu states the models, encodings, theorems, proofs, and limits of the results. English is the primary edition. [Related work](docs/literature.md)
+The current paper by Amamiya Miu classifies a family of one-sided cellular automata with frozen controls that can vary across sites. The order of hops is fixed, so a hop conjunction and a stay count suffice to summarize the paths to each endpoint. A binary no-carry test detects which path counts are odd. Evolving-control examples show which summaries survive uniform motion and which need to change when the controls themselves branch. English is the primary edition. [Related work](docs/literature.md)
 
 | Paper language | PDF | Typst source |
 | --- | --- | --- |
@@ -22,17 +22,19 @@ Fix a control-word width $q$ and two guards, stay and hop. The input explicitly 
 | Hop is always off | Constant depth. At positive times, the output uses only the stay guard and data bit at the origin. |
 | Hop is always on and stay is always off | Depth zero. Read the data bit at site $T$. |
 | Hop varies, or hop is always on and stay varies | $\Theta(\log(T+1))$. At least $T+1$ inputs are essential, including in the AND/OR guard example. |
-| Stay and hop are always on | Let $p$ be the number of ones in the binary expansion of $T$. The depth is between $p$ and $3p$. It is at most three at $T=2^r$ and at least $r$ at $T=2^r-1$. |
+| Stay and hop are always on | Let $p$ be the number of ones in the binary expansion of $T$. Minimum depth is $p$ with native XOR and $2p+1$ with De Morgan gates at positive times, counting a NOT gate as one layer. Time zero needs depth zero. The verified uniform De Morgan family uses at most $3p$ layers. |
 
 `classify` traverses the finite control alphabet by prefix. Each constancy test stops at its first counterexample and avoids allocating the full list of words. An exhaustive test can still visit $`2^q`$ words. `classify_eq_iff` proves the equivalence between the returned branch and its condition. For each fixed pair of guards, `uniform_depth_classification` gives a single logspace-uniform, polynomial-size family realizing the appropriate upper bound, including the $`3p`$ bound for homogeneous Pascal. The prediction language is in uniform NC⁰ exactly in the first two cases. [Frozen-control model and proof](docs/frozen-pascal.md)
 
-## Exact depth for transported controls
+## Structural comparison with transported controls
 
-Fix $`u,v\in\{0,1\}`$. Each step updates the control and data tracks by $`c'_i=c_{i+u}`$ and $`d'_i=c_i\land d_{i+v}`$. The input explicitly lists both tracks at sites $`0,\ldots,T`$. At time zero the output is a data wire of depth zero. At positive times, equal velocities make the output depend on one initial control bit and one data bit, giving exact depth 1. With unequal velocities it depends on $`T`$ initial control bits and one data bit, giving exact depth $`\lceil\log_2(T+1)\rceil`$. Lean constructs a linear-size AND tree and proves a matching lower bound for fan-in-two circuits with sharing. Thus a moving control track can force logarithmic depth even when the data track stays in place. [Transported-control semantics and depth](PredictionDepth/TransportedControl.lean)
+Fix $`u,v\in\{0,1\}`$. Each step updates the control and data tracks by $`c'_i=c_{i+u}`$ and $`d'_i=c_i\land d_{i+v}`$. The input explicitly lists both tracks at sites $`0,\ldots,T`$. At time zero the output is a data wire of depth zero. At positive times, equal velocities make the output depend on one initial control bit and one data bit, giving exact depth 1. With unequal velocities it depends on $`T`$ initial control bits and one data bit, giving exact depth $`\lceil\log_2(T+1)\rceil`$. Lean constructs a linear-size AND tree and proves a matching lower bound for fan-in-two circuits with sharing. These are per-time bounds for a single-path conjunction rule. Both tracks can move while retaining constant depth, provided they move together. [Transported-control semantics and depth](PredictionDepth/TransportedControl.lean)
+
+With both stay and hop branches available, uniformly translating the controls still allows a reflected moving frame that freezes the controls and exchanges the two guards. Lean checks this change of frame and the per-time reduction to a frozen predictor by input rewiring. For additive control evolution $`c'_i=c_i+c_{i+1}`$ and data update $`x'_i=c_i x_i+x_{i+1}`$ over $`\mathbb F_2`$, the frozen endpoint summaries fail. Lean verifies the replacement coefficient formula, which uses a shared Pascal parity and suffix-zero tests. The paper uses it to derive a linear-size logspace-uniform predictor with logarithmic depth and a matching logarithmic lower bound. [Reflected-frame reduction](PredictionDepth/TransportedBranching.lean) · [Additive-control coefficients](PredictionDepth/AdditiveBranching.lean) · [Paper](paper/structural-certificates.pdf)
 
 ## Formal infrastructure
 
-The three certificates compile resource-bounded primitive circuits into a predictor (A), turn concrete simulation witnesses into complexity lower bounds (B), and turn essential-input counts into bounded-fan-in depth lower bounds (C). The standard complexity layer connects concrete Turing machines, completeness of the Circuit Value Problem (CVP), and closure of uniform NC under reductions. An OR automaton illustrates exact depth and geometric constraints. Binary-field matrices illustrate composition costs. [Formal scope](docs/requirements.md) · [Dependencies and machine models](docs/dependencies.md) · [Verification](docs/verification.md)
+The three certificates compile resource-bounded primitive circuits into a predictor (A), transfer P-hardness through a logspace simulation reduction (B), and turn essential-input counts into unconditional bounded-fan-in depth lower bounds (C). The standard complexity layer connects concrete Turing machines, completeness of the Circuit Value Problem (CVP), and closure of uniform NC under reductions. An OR automaton illustrates exact depth and geometric constraints. Binary-field matrices illustrate composition costs. [Formal scope](docs/requirements.md) · [Dependencies and machine models](docs/dependencies.md) · [Verification](docs/verification.md)
 
 ## Reproduction
 
@@ -80,8 +82,11 @@ GitHub Actions rebuilds all four editions from the checked-out revision. Use a f
 | Limit of dependency counting | `DependencyGrowth.lean`, `dependency_method_limit` |
 | One-sided frozen-control rules | `iterate_data` in `FrozenPascal/Semantics.lean` and `predictionLanguage_mem_uniformNC_one` in `FrozenPascal/UniformLanguage.lean` |
 | Frozen-control depth classification | `bounded_prediction_depth_iff` and `varyingGuard_prediction_depth_lower_bound` in `FrozenPascal/Classification.lean`, and `pascalSupport_card` and the binary-weight depth bounds in `FrozenPascal/HomogeneousPascal.lean` |
+| Exact homogeneous Pascal depth | `homogeneousNativeXorPrediction_depth` in `FrozenPascal/HomogeneousPascal.lean` and `homogeneous_prediction_deMorgan_exact_depth` in `FrozenPascal/PascalExactDepth.lean` |
 | Executable classifier and uniform depth classification | `classify_eq_iff` in `FrozenPascal/Classification.lean`, and `uniform_depth_classification` and `predictionLanguage_mem_uniformNC_zero_iff` in `FrozenPascal/UniformClassification.lean` |
 | Essential inputs and exact depth for transported controls | `TransportedControl.lean`, `iterate_data_true_iff`, `essential_prediction_iff`, `exact_prediction_depth`, `constant_depth_iff` |
+| Branching with transported controls | `TransportedBranching.lean`, `reverseFrame_iterate`, `prediction_correct`, `prediction_depth`, `prediction_size` |
+| Coefficient formula for branching with additive control evolution | `AdditiveBranching.lean`, `trimmedParity_eq_sum`, `iterate_data` |
 | Executable boundary and example checks | `Examples.lean` |
 
 ### A. Efficiently composable representations
@@ -169,4 +174,6 @@ When each predictor layer has spatial radius at most `r`, an essential input at 
 - B requires a complete simulation witness for the concrete system. P-completeness additionally requires P membership. The class separation assumption yields exclusion from uniform NC.
 - In a light cone of polynomial size, C gives at most a logarithmic counting bound. The frozen-control lower bounds concern fan-in-two circuits. NC¹ completeness would require an additional NC¹-hardness proof under an appropriate reduction.
 
-The model review and transitive axiom audit include the third-party complexity foundation. The definitions, assumptions, and audit scope are recorded in the project documentation. [Trust boundaries](docs/dependencies.md)
+For the additive-control example the all-hop coefficient is always one, which lets the other coefficients share a single parity factor. The next boundary is to allow the evolving control to gate the hops too and determine when the coefficient recurrence still admits a compact summary.
+
+The axiom audit follows project theorems' transitive dependencies into the third-party complexity foundation. The definitions, theorem statements, and verification guide support review of the model and its assumptions. [Trust boundaries](docs/dependencies.md)

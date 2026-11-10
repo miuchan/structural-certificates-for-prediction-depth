@@ -1,3 +1,5 @@
+#import "transported-control-figure.typ": transported-control-figure
+
 #let title = "Prognoza profundo de unuflankaj regataj ĉelaj aŭtomatoj"
 #let author = "Amamiya Miu"
 #set document(title: title, author: author)
@@ -50,8 +52,9 @@ tempo. La prognoza lingvo apartenas al logspac-unuforma $"NC"^0$ ĝuste kiam
 la saltogardo estas ĉie nula, aŭ kiam ĝi estas ĉie unu kaj la restogardo
 estas ĉie nula. Se la saltogardo estas nekonstanta, aŭ se ĝi estas ĉie unu
 kaj la restogardo estas nekonstanta, la profundo estas $Theta(log(T+1))$.
-Por la homogena Pascal-regulo la profundo estas inter la nombro de
-unubitoj de $T$ kaj trioblo de tiu nombro. Por struktura komparo ni
+Por la homogena Pascal-regulo ĉe $T>0$, la minimuma profundo en la
+bazo de De Morgan estas $2p(T)+1$, kie $p(T)$ nombras la unubitojn de
+$T$. La kontrolita unuforma generilo uzas profundon maksimume $3p(T)$. Por struktura komparo ni
 solvas apartan unuvojan modelon kun transportata regado. Je pozitiva
 tempo ĝia profundo estas unu ĉe egalaj rapidoj kaj precize
 $ceil(log_2(T+1))$ ĉe malsamaj rapidoj. Lean 4 kontrolas la klasifikon,
@@ -63,19 +66,21 @@ generilojn por la reguloj kun fiksita regado.
 
 = Enkonduko
 
-Algebra strukturo povas ebligi prognozon de la estonta stato de ĉela aŭtomato
-per cirkvitoj multe pli malprofundaj ol laŭtavola simulado @moore.
-Ni demandas, kiuj fiksitaj gardoj en unuflanka dutraka aŭtomato permesas
-konstantan profundon kaj kiel la profundo dependas de la observa tempo.
+Kiuj kontroleblaj strukturaj kondiĉoj pri evoluregulo $F$ kaj observado
+$O$ baras la cirkvitan profundon de $O(F^T(x))$ ĉe donitaj enirkodado
+kaj cirkvita modelo? Algebra strukturo povas ebligi prognozon de ĉela
+aŭtomato per cirkvitoj multe pli malprofundaj ol laŭtavola simulado @moore.
+Ĉi tie ni demandas, kiuj fiksitaj gardoj en unuflanka dutraka aŭtomato
+permesas konstantan profundon kaj kiel la profundo dependas de la observa tempo.
 
 Nia ĉefa rezulto estas la kvarbranĉa klasifiko de reguloj kun fiksita
 regado (@frozen-classification). Finia provo de la gardoj elektas branĉon.
 Por ĉiu branĉo ni donas malsuprajn barojn je ĉiu tempo kaj unu efektivan
 generilon, kies cirkvitoj atingas la koncernan supran baron je ĉiu tempo.
 La homogena branĉo havas nemonotonan profundoprofilon, kiun regas la
-unubitoj de la observa tempo. La ĉefa konstruo derivas prefiksajn
-statistikojn el vojonombroj, kalkulas ilin paralele kaj uzas ilin por
-elekti koeficientojn en logaritma profundo (@uniform-construction).
+unubitoj de la observa tempo. La deviga ordo de la saltoj permesas resumi ĉiujn vojojn al sama
+finpunkto per du prefiksaj statistikoj. Duuma provo pri adicio sen reteno
+montras kiuj koeficientoj restas post nuligo (@uniform-construction).
 Kiel strukturan komparon ni ankaŭ solvas apartan unuvojan regulon kun
 transportata regado (@transport-depth). Tie la relativa rapido determinas
 kiom da malsamaj komencaj regbitoj la vojo renkontas.
@@ -93,10 +98,10 @@ el validaj vortoj kies prognozita bito estas unu. Ĝi malakceptas ĉiujn
 aliajn longojn.
 
 Niaj supraj baroj uzas buleajn pordegojn AND kaj OR de enira grado du, NOT
-kaj konstantojn. Enira drato havas profundon nul. Pordegoj povas reuzi
-elirojn kaj kunligi arbitrajn ĉelojn. La malsupraj baroj je ĉiu tempo
-validas por arbitraj buleaj pordegoj de enira grado maksimume du en tiu
-dratara modelo. Por fiksita regulo, $D(T)$ estas la minimuma profundo
+kaj konstantojn. Enira drato havas profundon nul, kaj NOT-pordego kostas
+unu tavolon. Pordegoj povas reuzi elirojn kaj kunligi arbitrajn ĉelojn.
+La malsupraj baroj de la klasifiko validas por arbitraj buleaj pordegoj
+de enira grado maksimume du. Por fiksita regulo, $D(T)$ estas la minimuma profundo
 de cirkvito de De Morgan sur valida fenestro je $T$. Skribu
 $ell(m)=ceil(log_2 m)$ por $m >= 1$. Unuformaj cirkvitfamilioj estas
 indeksitaj laŭ enirlongo. Determinisma logspaca transduktilo ricevas la
@@ -176,7 +181,7 @@ finiaj, ankaŭ ĉe $T=0$.
     [$h equiv 0$], [$0$], [$1+d_s$],
     [$h equiv 1$, $s equiv 0$], [$0$], [$0$],
     [$h$ varias, aŭ $h equiv 1$ kaj $s$ varias],
-      [$ell(T+1)$], [$104(ell(T+3)+1)+max(d_s,d_h)$],
+      [$ell(T+1)$], [$O(log(T+2))$],
     [$s equiv h equiv 1$], [$p(T)$], [$3p(T)$],
     table.hline(stroke: 0.7pt),
   ),
@@ -236,109 +241,82 @@ baron. En la varia branĉo la malsupra baro kreskas laŭ $T$. En la homogena
 branĉo ĝi kreskas laŭ la tempoj $T=2^r-1$. Tio pruvas la karakterizon de
 konstanta profundo. #qed
 
-Je $T=2^r-1$ la homogena regulo bezonas almenaŭ $r$ tavolojn, kaj tuj poste
-je $T=2^r$ ekzistas cirkvito de profundo maksimume tri. Por $r>3$ tio estas
-strikta falo de la minimuma profundo. La akompana klasifikilo kontrolas
-konstantecon de la gardoj per prefiksa trairo de regvortoj. Lean pruvas,
-ke ĝia liverita valoro estas ekvivalenta al la kondiĉo de la elektita
-branĉo. La konstantecoprovo haltas ĉe la unua kontraŭekzemplo kaj en la
-plej malbona kazo povas viziti $2^q$ vortojn.
+La akompana klasifikilo kontrolas konstantecon de la gardoj per prefiksa
+trairo de regvortoj. Lean pruvas, ke ĝia liverita valoro estas ekvivalenta
+al la kondiĉo de la elektita branĉo. La konstantecoprovo haltas ĉe la unua
+kontraŭekzemplo kaj en la plej malbona kazo povas viziti $2^q$ vortojn.
+
+== Preciza profundo de la Pascal-regulo <pascal-exact>
+
+Skribu $p=p(T)$ kaj $N=2^p$. La Pascal-eliro estas la pareco de $N$
+eniroj. Se XOR estas unu du-enira pordego, ekvilibra arbo atingas la
+malsupran baron $p$. En la bazo de De Morgan la minimuma profundo estas
+nul ĉe $T=0$ kaj $2p+1$ ĉe $T>0$.
+
+_Pruvo._ Por la supra baro, ĉe ĉiu folio pretigu la biton kaj ĝian
+negacion. Interna nodo ricevas la du parecojn $a,b$ kaj iliajn negaciojn.
+Ĝi kalkulas $(a and not b) or (not a and b)$ kaj
+$(a and b) or (not a and not b)$ per du tavoloj. Unu tavolo de foliaj
+negacioj kaj la $p$ internaj niveloj kune kostas $2p+1$ tavolojn.
+
+Por la malsupra baro, fiksu la neesencajn enirojn al konstantoj kaj
+malfaldu la cirkviton en formulon sen pliigi ĝian profundon. Puŝu la
+negaciojn ĝis la folioj kaj simpligu la konstantojn. La pareca baro de
+Khrapchenko postulas almenaŭ $N^2$ literalajn foliojn @khrapchenko.
+Puŝi negaciojn ne ŝanĝas la folinombron, kaj simpligi konstantojn povas
+nur malpliigi ĝin. Formulo de profundo maksimume $2p$ havas maksimume
+$2^(2p)=N^2$ foliojn, kun egaleco nur por plena duuma arbo kies folioj
+ĉiuj troviĝas ĉe profundo $2p$. Tia arbo havas nur AND- kaj OR-pordegojn
+kaj do kalkulas monotonan funkcion. Pareco de $N>=2$ eniroj ne estas
+monotona. La profundo devas do superi $2p$. #qed
+
+La minimuma profundo en la bazo de De Morgan falas de $2r+1$ ĉe
+$T=2^r-1$ al tri ĉe $T=2^r$ por $r>=2$. Lean kontrolas la optimumon je
+ĉiu tempo en ambaŭ pordegaj bazoj. La unuforma klasifiko uzas la
+apartan generilon kun profundo $3p$ en @regimes.
 
 == Unuforma prognoza cirkvito <uniform-construction>
 
-Estu $m=T+1$. Post paralela taksado de ambaŭ gardoj ĉe ĉiuj ĉeloj,
-la cirkvito tenas la gardbitojn kaj la datuman trakon en registro apud
-$m$-bita tempoetikedo $tau$ kun unu aktiva bito. Komencante ĉe $u=0$, la
-duumaj ciferoj de $T$ gvidas sinsekvon de duobligoj #box[$u -> 2u$] kaj
-laŭvolaj pliigoj #box[$u -> u+1$]. Ĉiu operacio nur plusendas la etikedajn
-dratojn kaj plenigas la mankantajn poziciojn per nuloj. La gardaj kaj
-datumaj trakoj trairas senŝanĝe. Fine nur $tau_T$ estas unu.
+Estu $B(a)$ la aro de pozicioj de unubitoj en la duuma prezento de $a$.
+Por $w>0$, laŭ la teoremo de Lucas, $M(w,r)$ estas nepara ĝuste kiam
+$B(r) subset.eq B(w+r-1)$ @rowland. Ekvivalente, adicii $r$ kaj $w-1$
+produktas neniun retenon. Efektive, se la sumo enhavas ĉiujn unubitojn
+de $r$, subtrahi $r$ forviŝas tiujn bitojn sen prunto kaj lasas la bitojn
+de $w-1$. Kun la kazo $w=0$ la provo fariĝas
+$
+  M(w,r) mod 2 = 1 quad <=> quad
+  (w=0 and r=0) or (w>0 and B(r) inter B(w-1) = emptyset).
+$ <no-carry>
 
-*Paralelaj prefiksoj.* Por ĉiu $k$, nombri la $k+1$ restobitojn donas $w_k$,
-kaj konjunkcio de la unuaj $k$ saltobitoj donas $e_k$. Ĉiuj prefiksoj
-estas kalkulataj sendepende kaj paralele. Nombrilo de $a$ bitoj uzas
-$b=ell(a+1)$ bitojn por ĉiu vorto kaj kompletigas la eniron ĝis $P=2^b$
-paroj da vortoj. Paro reprezentas eniran biton aŭ nulon. Kunpremilo
-reduktas tri vortojn al du. Por ĉiu bitpozicio la XOR de la tri bitoj
-iras en la sumvorton, kaj ilia plimulta valoro iras en la sekvan
-pozicion de la retenvorto. Tio konservas la sumon module de $2^b$ sen
-retenpropagado ene de la rondo. Du kunpremiloj sinsekve kunigas du
-parojn en unu. Post $b$ kunigrondoj la radika paro reprezentas la
-tutan sumon. La fina adicio aplikas kunpremilon kun tria eniro nula
-$b$ fojojn, ĉiufoje nuligante unu plian malaltan retenbiton.
-Ĉar $a<2^b$, la rezulto estas la preciza nombro. La profundo estas
-$O(b)$ ĉar ĉiu vojo trairas nur unu adicion kun retenpropagado.
+La saltprefikso $e_k$ determinas ĉu vojo povas atingi $k$. Se la saltoj
+estas eblaj, sufiĉas la nombro $w_k$ de ĉeloj permesantaj restadon,
+ĉar ĉiu tia ĉelo povas akcepti arbitran nombron de restoj. Ekzemple,
+se estas du tiaj ĉeloj kaj unu resto por distribui, la du eblaj vojoj
+nuligas unu la alian. En @no-carry tio estas la komuna plej malalta
+bito de $r=1$ kaj $w_k-1=1$.
 
-*Elekto de koeficientoj.* Dum generado de la cirkvito oni listigas la
-triopojn $(u,k,j)$ kun $0 <= u,k < m$ kaj $0 <= j <= k+1$. Estu
-$C_(u,k,j)$ nulo se $u<k$, kaj $M(j,u-k) mod 2$ alie. Por $u>=k$ kaj
-$j=0$ ĝi estas unu ĝuste kiam $u=k$. Por $j>0$ la Pascal-pareco dependas
-de tio, ĉu ĉiu unubito de $u-k$ ankaŭ aperas en $j+u-k-1$. La generilo
-povas trairi tiujn du entjerojn biton post bito. Ĉiu tabelvico kun
-koeficiento unu testas $w_k=j$ per konjunkcio de kongruaj bitliteraloj
-kaj kunigas la rezulton kun $tau_u$ per AND. Nula vico eligas konstanton.
-Ĝuste unu kandidata paro $(u,j)$ povas kontentigi ambaŭ testojn. La XOR de
-ĉiuj vicoj por ĉelo do estas $C_(T,k,w_k)$, la koeficiento en @frozen-sum.
-La cirkvito unue reduktas laŭ $j$, poste laŭ $u$, kunigas ĉiun rezulton
-kun $e_k$ kaj $x_k$ per AND, kaj fine kalkulas la XOR laŭ $k$. En ĉi tiu
-konstruo ĉiu XOR-redukto legas la plej malaltan biton de nombrilo kun
-konservataj retenoj.
+*De la provo al cirkvito.* Taksu la gardojn paralele. Kalkulu ĉiun
+$e_k$ per ekvilibra AND-arbo kaj ĉiun $w_k$ per nombrilo kun konservataj
+retenoj. Ĉiu kunigrondo kunpremas du parojn de vortoj en unu je
+konstanta profundo. La fina adicio propagas retenojn tra nur
+$O(log(T+2))$ bitoj. Por ĉiu $k$ la generilo konas $r=T-k$. Ĝi kontrolas
+@no-carry per duuma trairo por ĉiu kandidata nombro $j=0,dots,k+1$.
+La cirkvito testas egalecon al $w_k$ por la kandidatoj kiuj trapasas.
+Maksimume unu kandidato kongruas. Multipliku la elektitan biton per
+$e_k x_k$ kaj prenu parecon tra la ĉeloj. La konstruo uzas konstantan
+nombron de logaritmprofundaj stadioj kaj polinoman grandon eĉ kun
+aparta nombrilo por ĉiu prefikso.
 
-#figure(
-  table(
-    columns: (2.1fr, 1fr, 1.15fr),
-    inset: (x: 6pt, y: 4pt),
-    align: left,
-    stroke: none,
-    table.hline(stroke: 0.7pt),
-    table.header([*Stadio*], [*Paralelaj okazoj*], [*Profundobaro*]),
-    table.hline(stroke: 0.4pt),
-    [Taksado de gardoj], [$2m$], [$max(d_s,d_h)$],
-    [Pravalorizo de registro kaj tempoetikedo], [Unu registro], [$6B$],
-    [Nombroj de restoj kaj konjunkcioj de saltoj], [$m$ el ĉiu], [$22B$ kaj $5B$],
-    [Testoj de koeficientaj vicoj], [$m^2(m+3)/2$], [$5B$],
-    [Pareco laŭ $j$, poste laŭ $u$], [$m^2$, poste $m$], [Po $23B$],
-    [AND kun saltprefikso kaj datumbito, poste fina pareco], [$m$, poste unu], [$2+23B$],
-    table.hline(stroke: 0.7pt),
-  ),
-  caption: [Rimedoj de la generita prognoza cirkvito kun fiksita regado,
-    kie $B=ell(T+3)+1$. La du prefiksaj kalkuloj okazas paralele.],
-  kind: table,
-  supplement: [Tabelo],
-) <uniform-resources>
-
-*Grando kaj generado.* La tabelo havas $m sum_(k=0)^(m-1) (k+2)$
-vicojn, ĉiu kun $O(log^2(m+1))$ pordegoj en la regula konjunkcia aranĝo.
-Kompletigita nombrilo havas
-$O(a+1)$ blokojn de po $O(log(a+2))$ bitpozicioj en ĉiu el
-$O(log(a+2))$ rondoj. Ĉiu bitpozicio uzas maksimume $O(log(a+2))$
-pordegojn eĉ kiam la kunpremilo estas ripetata por ĉiu eliro. Estas
-$O(m^2)$ nombriloj, inkluzive de tiuj por pareco, kun maksimume $m+1$
-eniroj ĉiu. La gardokopioj, plusendo de la etikedo kaj konjunkcioj
-ankaŭ restas ene de la rezulta baro de $O(m^3 log^3(m+1))$ pordegoj.
-La profundo estas $O(log(m+1))$ ĉar nur fiksa nombro de logaritme
-profundaj stadioj estas kunmetataj.
-@depth-budget derivas la konstantojn de @regimes.
-
-La seriigilo nombras la unuman enirlongon $n$, kontrolas divideblecon
-per $q+1$ kaj ĉe validaj longoj kalkulas $m$ kaj $T$. Ĝi listigas la
-tabelvicojn laŭ $(k,u,j)$ kaj trairas iliajn bitpoziciojn. La registro
-havas kvar indeksitajn blokojn de larĝo $m$, por tempo, restado, salto
-kaj datumoj. En nombrila rondo la bloko $e$ legas la blokojn $2e$ kaj
-$2e+1$ de la antaŭa rondo, kun nuloj ekster la banko. Pordega rikordo
-estas difinita de la rondo, bloko, bitpozicio kaj pozicio en la loka
-ŝablono. Por seriigi paralelajn blokojn la generilo nombras antaŭajn
-pordegojn kaj aldonas la rezultan delokigon al internaj referencoj.
-En ĝenerala sinsekva kunmeto ĝi solvas eniran referencon per regenerado
-de la koncerna antaŭa elirindico. Por sinsekvo de fiksa larĝo la
-normaligo aldonas pordegon $y and y$ por ĉiu eliro, tiel ke la $W$
-eliroj estas la lastaj $W$ dratoj en ordo. Kun $N$ komencaj eniroj
-kaj $G$ jam eligitaj pordegoj, loka dratindico $i$ de la sekva
-stadio fariĝas $N+G-W+i$. La nestoprofundo de la seriigiloj estas
-fiksa. La iterindicoj, delokigoj kaj referencoj estas polinome baritaj
-laŭ $n$, do fiksa nombro da nombriloj kaj provizoraj aritmetikaj valoroj
-sufiĉas en $O(log(n+2))$ bitoj de laborspaco. La listoj de pordegoj kaj
-eliroj estas eligataj sinsekve.
+*La kontrolita generilo.* Lean kontrolas komunan malkodilon por ajna
+tempo $u$ en la fenestro. La generilo konstruas la tabelon por ĉiuj
+tiaj tempoj per la bitprovo de Lucas kaj elektas la vicojn por $T$ per
+tempoetikedo kun unu sola unubito. La etikedo realigas la kunmetan
+interfacon per vojigo de dratoj laŭ la duumaj ciferoj de $T$. Ĉiu
+parecbanko legas la plej malaltan biton de nombrilo kun konservataj
+retenoj. Logspaca transduktilo eligas la kompletajn listojn de
+pordegoj kaj eliroj kaj rekalkulas la referencojn. La eksplicita
+profundobaro estas $104(ell(T+3)+1)+max(d_s,d_h)$. @depth-budget priskribas
+la aranĝon kaj la rimedokalkulon.
 
 = Transportata regado kiel struktura komparo
 
@@ -380,52 +358,153 @@ rapidoj. Por $m$ faktoroj, ekvilibra AND-arbo de alto $ell(m)$ atingas
 la baron el esencaj eniroj. Kompletigo ĝis la sekva potenco de du uzas
 $2^(ell(m))-1 <= 2m$ du-enirajn pordegojn. #qed
 
+#transported-control-figure(
+  caption: [Komenca regpozicio $j(k)$ ĉe la malantaŭa paŝo $k$ por $i=0$ kaj $T=4$.
+    Ambaŭ vojoj finiĝas ĉe la komenca datuma bito $d_4$.],
+  alt: "Maldekstre, ĉe egalaj rapidoj, ĉiuj kvar paŝoj legas la komencan regbiton 3. Dekstre, ĉe malsamaj rapidoj, ili sinsekve legas la komencajn regbitojn 0, 1, 2 kaj 3.",
+  supplement: [Figuro],
+) <transport-controls-figure>
+
+En @transport-controls-figure la datuma vojo restas fiksa kaj nur $u$ varias.
 La paro $(u,v)=(0,0)$ estas la fiksita kazo sen salto kun restogardo $c_i$.
 Ŝanĝi nur $u$ al unu donas logaritman profundon, kvankam la datumoj neniam
 saltas. Por $(u,v)=(1,1)$ ambaŭ trakoj moviĝas, sed ilia egala rapido donas
 konstantan profundon. Por ĉi tiu unuvoja regulo gravas la nombro de
 malsamaj komencaj regbitoj laŭ la datuma vojo en ĝia moviĝanta referenca
 sistemo. La kadro por tempovariaj koeficientoj en @moore kovras ĉi tiun
-regulon. Ĝia sola vojo ebligas precize kalkuli la profundon.
+regulon. Por finiaj buleaj monomiaj sistemoj, la rilato inter la variabloj
+de iteracio kaj dependecaj promenoj de fiksa longo estas klasika
+@boolean-monomial. En la finia prognoza fenestro la du ŝovoj eksplicite
+determinas tiun variablaron.
+
+= Evoluanta regado kun branĉado <branching-boundary>
+
+*Unuforma transporto.* Permesu ambaŭ termojn en @frozen-rule kaj
+transportu la tutan regtrakon per $a_i(t+1)=a_(i+1)(t)$. En la reflektita
+moviĝanta koordinatsistemo $y_j(t)=x_(-j-t)(t)$ anstataŭigo donas
+$
+  y_j(t+1)=h(a_(-j-1)(0)) y_j(t)+s(a_(-j-1)(0)) y_(j+1)(t).
+$
+En tiu sistemo la regado estas fiksa kaj la gardoj interŝanĝas rolojn.
+La observado $x_0(T)$ egalas al $y_(-T)(T)$, kies komenca datuma fenestro
+estas la inversigo de la origina fenestro. La fiksa regfenestro enhavas
+$a_(T-1)(0),dots,a_0(0)$ kaj unu kompletigan vorton. Neniu resto povas
+okazi ĉe la lasta virtuala ĉelo, do la kompletiga vorto ne influas la
+rezulton. La du prefiksaj statistikoj plu funkcias en tiu sistemo, kun
+interŝanĝitaj roloj de restado kaj salto. Lean kontrolas la
+koordinatŝanĝon kaj la cirkvitan redukton je ĉiu tempo, inkluzive de
+la nova enira drataro.
+
+*Adicia regdinamiko.* Nun unu regbito evoluas laŭ
+$c_i(t+1)=c_i(t)+c_(i+1)(t)$ kaj la datumoj laŭ
+$x_i(t+1)=c_i(t)x_i(t)+x_(i+1)(t)$. Ambaŭ ĝisdatigoj uzas $bb(F)_2$.
+Ĉe $T=2$ la koeficiento de $x_1(0)$ ĉe la origino estas
+$(c_0(0)+c_1(0))+c_1(0)=c_0(0)$. La komencaj paroj $(1,0)$ kaj $(0,1)$
+havas la saman restonombron kaj saltan flagon por tiu finpunkto, sed
+donas malsamajn koeficientojn. Resto ĉe la sama ĉelo nun povas legi
+malsamajn gardvalorojn laŭ la tempo. Nombri la ĉelojn kiuj permesas
+restadon ĉe tempo nul perdas la ordon necesan por determini nuligon.
+
+Ankaŭ ĉi tiu regulo havas mallongan koeficientan priskribon. Estu
+$Q_T(i)=c_i(T)+c_(i+T)(0)$ la Pascal-pareco de la komencaj regbitoj sen
+ĝia plej dekstra termo. Por $0 <= k < T$, estu
+$
+  P_(T,k)(i)=product_(j=k+1)^(T-1)(1+c_(i+j)(0)).
+$
+Tiam la koeficiento de $x_(i+k)(0)$ en $x_i(T)$ estas $P_(T,k)(i) Q_T(i)$
+por $k<T$, kaj unu por $k=T$. Unu sola pareco do estas komuna al la
+finpunktoj, kaj testo pri nula sufikso elektas kiuj ricevas ĝin.
+
+_Pruvo._ Nomu la koeficienton $b_(T,k)(i)$ kaj prenu ĝin nula ekster
+la fenestro. La ĝisdatigo donas
+$
+  b_(T+1,k)(i)=c_i(T)b_(T,k)(i)+b_(T,k-1)(i+1).
+$
+Ĉar la kvadrato de bito egalas al ĝi mem,
+$c_i(T)Q_T(i)=(1+c_(i+T)(0))c_i(T)$. Por $k<T$ la resta termo do havas
+la sufiksan faktoron $P_(T+1,k)(i)$. Ankaŭ la salta termo havas ĝin,
+ĉar $P_(T,k-1)(i+1)=P_(T+1,k)(i)$ por $k>0$. Por $k=0$ la salta termo
+forestas, sed $Q_T(i+1)$ jam nuliĝas kiam $P_(T+1,0)(i)=1$: tiam la
+sufikso nuligas ĉiun komencan regbiton en tiu pareco. Post elpreno de
+la sufiksa faktoro, la sumo estas $c_i(T)+Q_T(i+1)=Q_(T+1)(i)$. Ĉe
+$k=T$ la resta termo estas $c_i(T)$ kaj la salta termo estas
+$Q_T(i+1)$, kun la sama sumo kaj malplena sufikso. Tio validas ankaŭ
+ĉe $T=0$ ĉar $Q_0(i+1)=0$. La koeficiento de la nur-salta vojo ĉiam
+estas unu. #qed
+
+Resumo de bloko de sinsekvaj ĉeloj estas paro $(Z,V)$. La bito $Z$
+indikas ĉu ĉiuj regbitoj en la bloko estas nulaj. La bito $V$ estas la
+pareco de la datumaj bitoj kun nur nulaj regbitoj dekstre de ili en la
+bloko. Unuopa ĉelo havas la resumon $(1+c_j(0),x_j(0))$. Kunigi du
+blokojn kunmetas iliajn resumojn laŭ
+$
+  (Z_L,V_L),(Z_R,V_R) |-> (Z_L Z_R,V_L Z_R+V_R).
+$
+Ekvilibra arbo kalkulas $V$ por la unuaj $T$ ĉeloj, kun malplena
+resumo $(1,0)$. La prognozo estas $x_T(0)+Q_T(0)V$. Dua arbo kalkulas
+$Q_T(0)$ el la submaskaj dratoj. La du arboj uzas entute $O(T+1)$
+pordegojn kaj havas profundon $O(log(T+2))$. La regulaj aranĝoj
+estas sinsekve eligeblaj en logaritma spaco.
+
+Ĉe pozitiva tempo la esencaj eniroj estas ĝuste la unuaj $T$ regbitoj
+kaj ĉiuj $T+1$ datumaj bitoj. Fiksi ĉiujn datumajn bitojn krom $x_0(0)$
+al nul donas $x_0(0)c_0(0) product_(j=1)^(T-1)(1+c_j(0))$, kio atestas
+la esencecon de tiuj regbitoj. Fiksi $c_0(0)=1$ kaj
+$c_1(0)=dots=c_(T-1)(0)=0$ donas la parecon de ĉiuj datumaj bitoj.
+Sekvas la malsupra profundobaro $ell(2T+1)$. Lean kontrolas la koeficientan formulon por la efektiva kuplita
+evoluo. La cirkvitaj baroj sekvas el la supra argumento.
 
 = Rilata laboro
 
 *Pascal-pareco kaj rapida prognozo.* La nombro $2^(p(T))$ de neparaj eroj
-estas klasika. Rowland atribuas la duuman rezulton al Glaisher kaj
-derivas ĝin el la teoremo de Lucas @rowland. La rapida prognozo de ĉelaj
-aŭtomatoj en @moore jam uzas Pascal-koeficientojn por homogenaj adiciaj
-reguloj. Ĝiaj modulaj adiciaj pordegoj povas havi nelimigitan eniran
-gradon. La nuna Pascal-rezulto donas malsupran baron por limigita
-enira grado je ĉiu tempo kaj kongruan profilon ĝis konstanta faktoro,
-kun kontrolita unuforma generilo de cirkvitoj de De Morgan.
+estas klasika. Rowland atribuas la duuman rezulton al Glaisher kaj derivas
+ĝin el la teoremo de Lucas @rowland. Moore uzas Pascal-koeficientojn por
+homogenaj adiciaj reguloj. Li ricevas logaritman profundon kun du-eniraj
+pordegoj kaj logspac-unuforman $"ACC"^0$ kun nelimigitaj modulaj sumoj
+@moore. Robison donas sinsekvan metodon por kalkuli unu koeficienton
+el sola nenula komenca bito @robison. La optimumo je ĉiu tempo en
+@pascal-exact sekvas el la klasika komplekseco de pareco. La kontrolita
+unuforma familio realigas la Pascal-profilon ĝis konstanta faktoro.
 
-*Dependaj linearaj trakoj kaj koeficienta formulo.* La ĝenerala divida
-metodo de Moore donas profundon $O(log^2(T+2))$ por prognozo de linearaj
-stadioj dependantaj de tempo kaj spaco kun limigita enira grado @moore.
-Fiksi la regadon kaj uzi la unuflankan regulon kun restado kaj salto
-ebligas prefiksajn statistikojn kaj profundon $O(log(T+2))$ en ĉi tiu
-specialigo. La koeficiento en @frozen-sum ankaŭ havas klasikan matrican
-analogon. La unupaŝa datuma mapo estas supra dudiagonala operatoro sur la
-koncerna finia fenestro. La formulo de Higham por funkcio de tia matrico
-multiplikas la interajn eksterdiagonalajn elementojn per dividita diferenco
-laŭ la diagonalaj elementoj @higham. Por la monomo $z^T$, la dividita
-diferenco estas kompleta homogena polinomo de grado $T-k$. Kun diagonalaj
-elementoj nul kaj unu ĝi nombras la samajn malfortajn komponaĵojn.
-Oni povas specialigi la polinoman identecon al entjeraj nul-unu-elementoj
-antaŭ redukto module de du, sen dividado en $bb(F)_2$.
+*Dependaj linearaj trakoj kaj koeficienta formulo.* La Lemmo 1 de Moore
+kunmetas spactempajn transigajn koeficientojn per dispartigo de la
+tempintervalo. Teoremo 1 aplikas la algoritmon al kvazaŭ-rektaj produtoj.
+Ekzemploj 1 kaj 3 kovras duumajn datumajn trakojn regatajn de alia
+trako kaj triangulajn linearajn trakojn kiel en nia adicia modelo
+@moore. Kun ekvilibraj XOR-arboj por la modulaj
+sumoj, la ĝenerala metodo donas baron $O(log^2(T+2))$ por niaj duumaj
+trakoj. Tempa senŝanĝeco kaj la unuflanka ĝisdatigo reduktas la fiksajn
+koeficientojn al prefiksaj statistikoj. En alia kadro, Salo studas la
+ĉellokan elekton inter identeco kaj XOR kun la dekstra najbaro sur
+finia ringo @salo. Sekcio 3 uzas la lokajn mapojn de $s equiv 1$ kaj
+$h(a)=a$ kaj traktas surĵetivecon kaj periodecon. Ĉi tie la regvortoj
+estas parto de la eniro, kaj la eliro estas unu bito prognozita el
+finia fenestro.
+
+Paralelaj prefiksaj cirkvitoj estas klasikaj @ladner-fischer. Ĉi tie
+ekvilibraj produtoj, nombrado per konservataj retenoj kaj koeficientaj
+provoj donas la baron $O(log(T+2))$. La koeficiento en @frozen-sum havas
+klasikan matrican analogon. La unupaŝa datuma mapo estas supra dudiagonala
+operatoro sur la koncerna finia fenestro. La Teoremo 6.1 de Higham por
+funkcio de tia matrico multiplikas la interajn eksterdiagonalajn
+elementojn per dividita diferenco laŭ la diagonalaj elementoj @higham.
+Por la monomo $z^T$, la dividita diferenco estas kompleta homogena
+polinomo de grado $T-k$. Kun diagonalaj elementoj nul kaj unu ĝi
+nombras la samajn malfortajn komponaĵojn. Oni povas specialigi la
+polinoman identecon al entjeraj nul-unu-elementoj antaŭ redukto module
+de du, sen dividado en $bb(F)_2$.
 
 *Maŝina kontrolo kaj la signifo de fiksado.* Silváši kaj Tomášek formaligis
 limigitajn kradojn kaj komputeblajn ĉelajn aŭtomatojn en Lean @silvasi.
-Tio estas precedenco por maŝine kontrolitaj ĉelaj aŭtomatoj. La nuna
-formaligo kontrolas profundoklasifikon de regulfamilio kaj la efektivan
-cirkvitgenerilon. La modelo de Ollinger kaj Theyssier kun frostiĝo
-(*freezing*) postulas monotonan ordon por la tuta stato de ĉiu ĉelo
-@ollinger. En @frozen-rule fiksa estas la regvorto, kaj la datumo ĉe
-ĉelo povas cikli. La kontribuo ĉi tie estas la kombino de plenumebla
-regulklasifikilo, profundobaroj je ĉiu tempo kaj kontrolita unuforma
-generilo por la tuta regulfamilio kun fiksita regado. La preciza
-kvarbranĉa klasifiko kaj la unuvoja transporta specialigo havas
-nedeterminitan literaturan prioritaton.
+La nuna formaligo kontrolas profundoklasifikon de regulfamilio kaj la
+efektivan cirkvitgenerilon. La modelo de Ollinger kaj Theyssier kun
+frostiĝo (*freezing*) postulas monotonan ordon por la tuta stato de ĉiu
+ĉelo @ollinger. En @frozen-rule fiksa estas la regvorto, kaj la datumo
+ĉe ĉelo povas cikli. La kontribuo ĉi tie estas la plenumebla kvarbranĉa
+klasifiko, la kongruaj logaritmaj baroj por variaj gardoj kaj la pruvo
+ke unu logspaca generilo por ĉiu regulo atingas la deklaritajn suprajn
+barojn ĉe ĉiuj longoj. La antaŭaj komparoj lasas malferma la demandon
+pri prioritato de tiu kombino.
 
 = Formaligo kaj aplikkampo
 
@@ -443,44 +522,75 @@ La reuzeblaj kodkunmetiloj kontrolas referencobarojn kaj delokigon por
 paralelaj bankoj kaj sinsekva kunmeto. Tio permesas al la generilo
 rekalkuli unuopajn referencojn en logaritma spaco. La klasifika teoremo
 uzas la elektitan cirkvitfamilion kiel unu atestanton pri ĝusteco,
-grando, unuformeco kaj la baro je ĉiu tempo. La transporta teoremo
-aparte establas optimuman profundon ĉe ĉiu fenestrolongo.
+grando, unuformeco kaj la baro je ĉiu tempo. La teoremo pri unuvoja transporto establas optimuman profundon por ĉiu
+fenestrolongo aparte. Por branĉado kun unuforma transporto, Lean kontrolas
+la koordinatŝanĝon kaj la cirkvitan redukton per nova enira drataro.
 
 Ĉiu fiksita regvorto elektas unu el kvar lokaj datumaj mapoj
 $0$, $x_i$, $x_(i+1)$ kaj $x_i+x_(i+1)$. Post fiksado de la regvortoj
 la datuma dinamiko estas unuflanka kaj lineara. La eniro estas eksplicita
 fenestro kun longo lineara laŭ $T$, kaj la cirkvito povas kunligi
-arbitrajn ĉelojn. La akompana formaligo ankaŭ prezentas kriteriojn pri
-kunmeto kaj simulado por aliaj modeloj. Ilia aplikado bezonas apartan
-atestanton pri realigo aŭ redukto.
+arbitrajn ĉelojn.
+
+La akompana Lean-projekto formaligas tri sufiĉajn kriteriojn. A konstruas
+prognozilon el kunmetaj cirkvitoj kun limigitaj rimedoj. B transdonas
+P-malfacilecon de la problemo pri cirkvitvaloro, se disponeblas atestilo
+pri logspaca simulado. Ekskludo el unuforma $"NC"$ per B supozas
+$"P" != "NC"$ kaj koncernas kompleksecklason. C donas senkondiĉan
+malsupran profundobaron laŭ la nombro de esencaj eniroj, kiel en la
+modeloj ĉi tie. Ĉe fiksitaj enira grado, dimensio, radiuso kaj bitlarĝo,
+lumkonuso de polinoma volumeno limigas la *nombran baron* de C al
+$O(log(T+2))$. La efektiva prognoza profundo povas superi tiun baron.
+Lean kontrolas liveritajn atestilojn. Trovi ilin por arbitraj reguloj
+estas aparta problemo. Por la familio kun fiksita regado, la plenumebla
+klasifikilo elektas branĉon per konstantecaj provoj sur finia alfabeto.
 
 = Konkludo
 
-La preciza kriterio por $"NC"^0$ kaj la Pascal-profilo montras malsamajn
-manierojn, laŭ kiuj la prognoza profundo kun fiksita regado dependas de
-tempo. Ĉe variaj gardoj la prefiksaj nombriloj ebligas elekti la
-vojkoeficientojn en logaritma profundo, tiel ke la sama unuforma familio
-atingas la supran baron ĉe ĉiu valida longo. La transporta regulo montras
-alian mekanismon. Relativa moviĝo ŝanĝas profundon per la nombro de
-komencaj regbitoj legitaj laŭ unu datuma vojo.
+Ĉe fiksita regado, la konstanteco de la gardoj decidas la kazojn kun
+konstanta profundo. Ĉe variaj gardoj prefiksaj statistikoj donas unuforman
+prognozilon de logaritma profundo. La Pascal-profundon regas la unubitoj
+de la observa tempo. Kun branĉado, unuforma transporto konservas la
+fiksan resumon post koordinatŝanĝo. Adicia regdinamiko bezonas alian
+resumon eĉ kiam ĉiuj saltoj estas eblaj. Tie la indukto fermiĝas ĉar
+la koeficiento de la nur-salta vojo estas fiksa kaj la regado evoluas
+per Pascal-konvolucio. Restas determini kiam simila koeficienta rekuro
+fermiĝas se la evoluanta regado ankaŭ decidas la saltojn.
 
 #heading(numbering: none)[Haveblo de la formaligo]
 
-La formalaj rezultoj respondas al ĉi tiu #link("https://github.com/miuchan/structural-certificates-for-prediction-depth/tree/08e9aa3dfad7132226849b39386005397469d656")[fiksita revizio de la Lean-fonto].
-La Typst-fonto kaj kompilinstrukcioj estas en la #link("https://github.com/miuchan/structural-certificates-for-prediction-depth")[projekta deponejo].
-Uzu la plenan Git-SHA asociitan kun la PDF por elekti la fontan revizion.
+La fontoj en Lean kaj Typst kaj la kompilinstrukcioj troviĝas en la
+#link("https://github.com/miuchan/structural-certificates-for-prediction-depth")[projekta deponejo].
+Uzu la deponejan revizion asociitan kun ĉi tiu PDF por trovi la deklarojn
+en @lean-map.
 La deponejo dokumentas la fiksitajn versiojn de Typst kaj la tiparojn
-por rekonstrui la kvar eldonojn. GitHub Actions kontrolas, ke ĉiuj kvar PDF-eldonoj rekonstrueblas el la elprenita revizio. Rulu
-#box[`./scripts/check.sh`] por la strikta Lean-kompilo kaj aksiomkontrolo.
+por rekonstrui la kvar eldonojn. Rulu #box[`./scripts/check.sh`] por la
+strikta Lean-kompilo, transitiva aksiomkontrolo kaj negativa regresprovo.
+La kontrolgvidilo distingas kompilajn rezultojn disde la revizio de modelaj
+supozoj.
 @lean-map listigas la deklarojn malantaŭ la ĉefaj rezultoj.
 
 #counter(heading).update(0)
 #set heading(numbering: "A.1")
-#pagebreak(weak: true)
-#heading(supplement: [Apendico])[Kalkulo de la profundobaro] <depth-budget>
+#heading(supplement: [Apendico])[Aranĝo de la generilo kaj kalkulo de la profundobaro] <depth-budget>
+
+Estu $m=T+1$ kaj $B=ell(T+3)+1$. La registro konservas la tempoetikedon
+$tau$, la restajn kaj saltajn flagojn kaj la datumojn en kvar blokoj
+de larĝo $m$. La tempoindekso komenciĝas je nul. Legante la duumajn
+ciferojn de $T$ de la plej signifa al la malplej signifa, ĉiu stadio
+duobligas la indekson kaj aldonas unu se la cifero estas unu. La
+operacioj vojigas dratojn kaj plenigas liberajn lokojn per nuloj.
+
+Ĉe ĉelo $k$ la malkodilo enumeras la vicojn kun $0 <= u < m$ kaj
+$0 <= j <= k+1$. Por vico kun $u>=k$ kaj nepara $M(j,u-k)$ ĝi eligas
+la provon $(w_k=j) and tau_u$. Ĉiuj aliaj vicoj eligas nulon. Pareco
+tra $j$ kaj poste tra $u$ elektas la koeficienton. La malkodilo
+multiplikas ĝin per la saltprefikso kaj datumo, kaj prenas la parecon
+tra $k$.
 
 La normaligita nombrila arbo kostas maksimume $2+14b$ tavolojn,
-inkluzive de pravalorizo kaj kopiado ĉe ĉiu kunigrondo. La fina adicio
+inkluzive de pravalorizo kaj kopiado ĉe ĉiu kunigrondo, por vorta larĝo
+$b=ell(a+1)$ de nombrilo pri $a$ bitoj. La fina adicio
 kostas maksimume $1+8b$. Kune ili kostas maksimume $22(b+1)$. La nombriloj
 do bezonas maksimume $22B$ tavolojn. Legi la plej malaltan biton por
 pareco bezonas maksimume $23B$, inkluzive de la malplena kazo.
@@ -493,13 +603,27 @@ normaligo. Sekvas maksimume $2 ell(T+1)$ registraj stadioj de
 maksimume po du tavoloj, denove kun normaligo. Tio donas maksimume
 $6B$ por la registra vojo kaj entute $104B+max(d_s,d_h)$ kun la gardoj.
 
+La tabelo havas $m^2(m+3)/2$ vicojn. Estas $O(m^2)$ nombriloj kun
+maksimume po $m+1$ eniraj bitoj. La regula aranĝo donas
+$O(m^3 log^3(m+1))$ pordegojn por fiksitaj gardoj. Ĉiun pordegan
+rikordon indeksas ĝiaj stadio, bloko, bitpozicio kaj loko en loka
+ŝablono. Por paralelaj bankoj la serialigilo nombras pli fruajn
+blokojn por kalkuli dratan deŝovon. En ĉeno de larĝo $W$, identecaj
+pordegoj $y and y$ donas sinsekvajn indeksojn al la eliroj de stadio.
+Post $G$ pordegoj kun $N$ ĉefaj eniroj, elirpozicio $a$ de tiu stadio
+estas drato $N+G-W+a$. Tiel la serialigilo rekalkulas referencojn per
+logaritmlarĝaj nombriloj kun fiksa nestada profundo kaj eligas la
+listojn de pordegoj kaj eliroj laŭ la unume kodita longo.
+
+#block(breakable: false)[
+#set text(size: 9.5pt)
 #heading(supplement: [Apendico])[Korespondo kun la Lean-deklaroj] <lean-map>
 
 La vojoj sube estas relativaj al `PredictionDepth/`.
 
 #table(
   columns: (1fr, 2.55fr),
-  inset: (x: 7pt, y: 5pt),
+  inset: (x: 7pt, y: 3pt),
   align: left,
   stroke: none,
   table.hline(stroke: 0.7pt),
@@ -519,13 +643,24 @@ La vojoj sube estas relativaj al `PredictionDepth/`.
    `uniformGuardedPrediction_code_logspace` #linebreak() `uniformGuardedPrediction_depth`],
   [Kodkunmeto],
   [`Complexity/CodeLogspace.lean` #linebreak() `compCode_logspace`],
-  [Pascal-subteno],
-  [`FrozenPascal/HomogeneousPascal.lean` #linebreak() `pascalSupport_card`],
+  [Pascal-subteno kaj XOR-profundo],
+  [`FrozenPascal/HomogeneousPascal.lean` #linebreak()
+   `pascalSupport_card` #linebreak() `homogeneousNativeXorPrediction_depth`],
+  [Preciza Pascal-profundo],
+  [`FrozenPascal/PascalExactDepth.lean` #linebreak()
+   `homogeneous_prediction_deMorgan_exact_depth`],
   [Transportata regado],
   [`TransportedControl.lean` #linebreak()
    `iterate_data_true_iff`, `essential_prediction_iff` #linebreak()
    `exact_prediction_depth`, `constant_depth_iff`],
+  [Unuforma transporto kun branĉado],
+  [`TransportedBranching.lean` #linebreak()
+   `reverseFrame_iterate`, `prediction_correct` #linebreak()
+   `prediction_depth`, `prediction_size`],
+  [Koeficientoj por adicia regado], [`AdditiveBranching.lean` #linebreak()
+    `trimmedParity_eq_sum`, `iterate_data`],
   table.hline(stroke: 0.7pt),
 )
+]
 
 #bibliography("references.bib", style: "ieee", title: [Referencoj])

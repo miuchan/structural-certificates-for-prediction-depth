@@ -31,4 +31,8 @@
 | 凍結制御の非線形規則族、対数深さ、一様 NC¹ | `FrozenPascal.GuardRules`、`FrozenPascal.UniformLanguage`、`FrozenPascal.LowerBound` | Lean 4.36 でのコンパイルと公理監査を通過 |
 | 凍結制御族の定数深さの必要十分条件と時刻ごとの分類 | `FrozenPascal/Classification.lean` の `bounded_prediction_depth_iff` と変動する制御の下界、`FrozenPascal/HomogeneousPascal.lean` の二進展開における 1 の個数に基づく深さの境界 | [検証記録](verification.md) |
 | 実行可能な規則分類と具体的な一様深さ分類 | `classify_eq_iff`、`uniform_depth_classification`、`predictionLanguage_mem_uniformNC_zero_iff` | [検証記録](verification.md) |
+| 斉次 Pascal 規則の時刻ごとの最小深さ。二入力 XOR と NOT を一層と数えるド・モルガン回路 | [`homogeneousNativeXorPrediction_depth`](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [`homogeneous_prediction_deMorgan_exact_depth`](../../../PredictionDepth/FrozenPascal/PascalExactDepth.lean) · `homogeneous_prediction_deMorgan_depth_lower_bound` | [検証記録](verification.md) |
+| 対照となる移動制御の本質的入力と時刻ごとの正確な深さ | `TransportedControl.lean` の `essential_prediction_iff`、`exact_prediction_depth`、`constant_depth_iff` | [検証記録](verification.md) |
+| 一様に移動する制御の二分岐規則。移動座標系と有限窓の配線 | [`reverseFrame_iterate`](../../../PredictionDepth/TransportedBranching.lean) · `prediction_correct`, `prediction_depth`, `prediction_size` | [検証記録](verification.md) |
+| 加法的制御の分岐規則における Pascal パリティと接尾辞の係数公式 | [`trimmedParity_eq_sum`](../../../PredictionDepth/AdditiveBranching.lean) · [`iterate_data`](../../../PredictionDepth/AdditiveBranching.lean) | [検証記録](verification.md) · [線形サイズと同じオーダーの対数深さの上下界は論文で証明](../../../paper/structural-certificates.ja.pdf) |
 | プロジェクト全体の厳格なビルド、推移的な公理依存の監査、負例による回帰テスト | `scripts/check.sh`、`Audit.lean`、`scripts/check_audit.py`、`.github/workflows/lean.yml` | [検証記録](verification.md) |

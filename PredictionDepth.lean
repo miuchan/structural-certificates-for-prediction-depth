@@ -34,9 +34,12 @@ import PredictionDepth.Complexity.OutputNormalization
 import PredictionDepth.Complexity.UniformComposition
 import PredictionDepth.FrozenPascal.Classification
 import PredictionDepth.FrozenPascal.HomogeneousPascal
+import PredictionDepth.FrozenPascal.PascalExactDepth
 import PredictionDepth.FrozenPascal.LowerBound
 import PredictionDepth.FrozenPascal.UniformLanguage
 import PredictionDepth.FrozenPascal.UniformClassification
 import PredictionDepth.TransportedControl
+import PredictionDepth.TransportedBranching
+import PredictionDepth.AdditiveBranching
 
 /-! Structural criteria for prediction depth: all checked core modules. -/

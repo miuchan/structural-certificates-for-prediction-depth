@@ -1,3 +1,5 @@
+#import "transported-control-figure.typ": transported-control-figure
+
 #let title-line-1 = "Prediction Depth of"
 #let title-line-2 = "Controlled Cellular Automata"
 #let title = title-line-1 + " " + title-line-2
@@ -50,35 +52,38 @@ realizes the selected depth bound at every time. Prediction is in
 logspace-uniform $"NC"^0$ exactly when the hop guard is identically zero, or
 when it is identically one and the stay guard is identically zero. When the
 hop guard is nonconstant, or is identically one and the stay guard is
-nonconstant, depth is $Theta(log(T+1))$. The homogeneous Pascal rule has
-depth between the number of set bits of $T$ and three times that number.
+nonconstant, depth is $Theta(log(T+1))$. For the homogeneous Pascal rule
+at $T>0$, the minimum depth is $2p(T)+1$ with De Morgan gates, where
+$p(T)$ counts the set bits of $T$. The verified uniform generator uses
+depth at most $3p(T)$.
 As a structural comparison, a separate one-path model with transported
 control has positive-time depth one at equal velocities and exactly
 $ceil(log_2(T+1))$ at unequal velocities. Lean 4 verifies the classification,
-the connection from dynamics to finite prediction, and the circuit bounds
-and generators for the frozen rules.
+the connection from dynamics to finite prediction, the Pascal optimum,
+and the uniform generators for the frozen rules.
 
 *Keywords.* Cellular automata, circuit depth, logspace uniformity, Lean 4.
 ]
 
 = Introduction
 
-Algebraic structure can make a cellular automaton's future state accessible
-to much shallower circuits than layer-by-layer simulation @moore.
-We ask which fixed guards in a one-sided, two-track automaton admit
-constant-depth prediction and how depth depends on the observation time.
+Which verifiable conditions on an evolution rule $F$ and an observation $O$
+bound the circuit depth of $O(F^T(x))$ for a specified input encoding and
+circuit model? Algebraic structure can make cellular automaton prediction
+much shallower than layer-by-layer simulation @moore. Here we ask which
+fixed guards in a one-sided, two-track automaton admit constant-depth
+prediction and how depth depends on the observation time.
 
 Our main result is the four-way classification of frozen rules
 (@frozen-classification). A finite guard test selects the branch, and
-each branch pairs pointwise lower bounds with a single actual generator
-that meets its upper bound at every time. The homogeneous branch has a
-nonmonotone depth profile governed by the set bits of the observation time.
-The main construction turns path counts into parallel prefix statistics
-and uses those statistics to select coefficients in logarithmic depth
-(@uniform-construction). We also solve a separate one-path rule with
-transported control as a structural comparison (@transport-depth).
-There, relative velocity determines how many distinct initial controls
-the path encounters.
+one logspace generator for the chosen branch achieves the stated upper
+bound at every time. The main construction uses the forced order of hops
+to summarize all paths to an endpoint by two prefix statistics. A binary
+no-carry test then detects which coefficients survive cancellation
+(@uniform-construction). The homogeneous branch has a nonmonotone depth
+profile governed by the set bits of the observation time. A separate
+one-path rule shows how relative velocity changes the number of distinct
+initial controls read (@transport-depth).
 
 = Preliminaries
 
@@ -92,9 +97,10 @@ $T$ uniquely. The prediction language $L_(s,h)$ consists of the legal words whos
 one, with all other lengths rejected.
 
 Our upper bounds use Boolean AND and OR gates of fan-in two, NOT gates, and
-constants. An input wire has depth zero. Gates can share outputs and connect
-arbitrary sites. The per-time lower bounds apply to any Boolean gates of
-fan-in at most two in this wiring model. For a fixed rule, write $D(T)$ for
+constants. An input wire has depth zero and a NOT gate costs one layer.
+Gates can share outputs and connect arbitrary sites. The lower bounds in
+the classification apply to any Boolean gates of fan-in at most two.
+For a fixed rule, write $D(T)$ for
 the minimum De Morgan circuit depth on the legal window at time $T$ and
 write $ell(m)=ceil(log_2 m)$ for $m >= 1$. Uniform circuit families are indexed
 by input length. A deterministic logspace transducer receives the length in
@@ -173,7 +179,7 @@ $T=0$.
     [$h equiv 0$], [$0$], [$1+d_s$],
     [$h equiv 1$, $s equiv 0$], [$0$], [$0$],
     [$h$ varies, or $h equiv 1$ and $s$ varies],
-      [$ell(T+1)$], [$104(ell(T+3)+1)+max(d_s,d_h)$],
+      [$ell(T+1)$], [$O(log(T+2))$],
     [$s equiv h equiv 1$], [$p(T)$], [$3p(T)$],
     table.hline(stroke: 0.7pt),
   ),
@@ -232,104 +238,81 @@ constant bound. In the varying branch the lower bound grows with $T$.
 For the homogeneous branch it grows along the times $T=2^r-1$.
 This proves the constant-depth characterization. #qed
 
-At $T=2^r-1$ the homogeneous rule needs at least $r$ layers, while at the
-next time $T=2^r$ it has a circuit of depth at most three. For $r>3$ this
-gives a strict drop in minimum depth. The accompanying classifier
-tests constancy of the guards by traversing control words by prefix.
+The accompanying classifier tests constancy of the guards by traversing
+control words by prefix.
 Lean proves that its return value is equivalent to the branch condition.
 A constancy test stops at its first counterexample and can visit
 $2^q$ words in the worst case.
 
+== Exact depth in the Pascal case <pascal-exact>
+
+Write $p=p(T)$ and $N=2^p$. The Pascal output is parity of $N$ inputs.
+With XOR available as a single binary gate, a balanced tree attains
+the lower bound $p$. With De Morgan gates the exact depth is zero at
+$T=0$ and $2p+1$ at $T>0$.
+
+_Proof._ For the upper bound, give every leaf both its bit and its
+negation. A node with child parities $a,b$ computes $a xor b$ and its
+complement in two layers from $a,not a,b,not b$. For example, the
+positive output is $(a and not b) or (not a and b)$ and the negative
+output is $(a and b) or (not a and not b)$. The $p$ internal levels
+therefore add $2p$ layers to the one layer of leaf negations.
+
+For the lower bound, set irrelevant inputs to constants and unfold the
+circuit into a formula of the same or smaller depth. Push negations to
+the leaves and simplify constants. Khrapchenko's parity bound requires
+at least $N^2$ literal leaves @khrapchenko. Pushing negations preserves
+leaf count and simplifying constants can only decrease it. A formula
+of depth at most $2p$ has at most $2^(2p)=N^2$ leaves, with equality only
+for a full binary tree with all leaves at depth $2p$. That tree has only
+AND and OR gates and hence computes a monotone function. Parity of
+$N>=2$ inputs is nonmonotone. Thus depth at most $2p$ is impossible.
+#qed
+
+Lean verifies both per-time optima. The De Morgan profile drops from
+$2r+1$ at $T=2^r-1$ to three at $T=2^r$, for $r>=2$. The uniform
+classification uses the separate $3p$ generator in @regimes.
+
 == Uniform prediction circuit <uniform-construction>
 
-Put $m=T+1$. After evaluating the two guards at all sites in parallel,
-the circuit keeps the resulting guard bits and the data track in a
-register alongside an $m$-bit one-hot time tag $tau$. Starting with
-$u=0$, the binary digits of $T$ direct a sequence of index doublings and
-optional increments $u -> 2u$, $u -> u+1$. Each operation just routes
-the tag wires, with zero fill. The guard and data tracks pass through.
-At the end only $tau_T$ is one.
+Let $B(a)$ be the set of one-bit positions in the binary expansion of
+$a$. For $w>0$, Lucas's theorem says that $M(w,r)$ is odd exactly when
+$B(r) subset.eq B(w+r-1)$ @rowland. Equivalently, adding $r$ and $w-1$
+produces no carry. Indeed, if the bits of $r$ are contained in those of
+the sum, subtracting $r$ clears those bits without a borrow. The
+remaining bits are those of $w-1$. Including the case $w=0$, the
+coefficient test is
+$
+  M(w,r) mod 2 = 1 quad <=> quad
+  (w=0 and r=0) or (w>0 and B(r) inter B(w-1) = emptyset).
+$ <no-carry>
 
-*Parallel prefixes.* For each $k$, count the $k+1$ stay bits to obtain
-$w_k$ and take the conjunction of the first $k$ hop bits to obtain $e_k$.
-All prefixes are computed independently and in parallel. A counter on
-$a$ bits uses $b=ell(a+1)$ bits per word and pads to $P=2^b$ pairs of words.
-Each initial pair represents an input bit or zero. A three-word
-compressor emits the bitwise XOR as its sum word and the bitwise majority
-shifted left by one as its carry word. These two words preserve the sum
-modulo $2^b$ without propagating carries across bit positions. Two such
-compressors suffice to merge two pairs into one. After $b$ merge rounds only the
-root pair contributes. The final addition applies a compressor with
-third input zero $b$ times, clearing one more low carry bit per step.
-Since $a<2^b$, the result is the exact count. The depth is $O(b)$ because
-there is only one carry-propagating addition on each path.
+The hop prefix $e_k$ decides whether a path can reach $k$. Once the hops
+are enabled, the stay count $w_k$ suffices because the enabled sites can
+each absorb any number of stays. For example, with two enabled stay
+sites and one stay to allocate, both possible paths cancel. In
+@no-carry this is the shared low bit of $r=1$ and $w_k-1=1$.
 
-*Coefficient selection.* At circuit generation time, enumerate the triples
-$(u,k,j)$ with $0 <= u,k < m$ and $0 <= j <= k+1$. Let $C_(u,k,j)$ be
-zero for $u<k$, and $M(j,u-k) mod 2$ otherwise. For $u>=k$, the $j=0$
-case is one exactly when $u=k$. For $j>0$, Lucas's theorem tests whether the
-set bits of $u-k$ are a subset of those of $j+u-k-1$ @rowland. The generator can scan
-these two integers bit by bit. Each table row with coefficient one
-tests $w_k=j$ by conjoining matching bit literals, then gates the test
-with $tau_u$. A zero row emits a constant. Exactly one candidate pair
-$(u,j)$ can pass the two tests. Thus the XOR of all the rows for a site
-is $C_(T,k,w_k)$, the coefficient in @frozen-sum. The circuit reduces
-first over $j$ and then over $u$, ANDs each result with $e_k$ and $x_k$,
-and takes the XOR over $k$. In this construction each XOR reduction
-reads the low bit of a carry-save counter.
+*From the test to a circuit.* Evaluate the guards in parallel. Compute
+each $e_k$ by a balanced AND tree and each $w_k$ by a carry-save counter.
+Each merge round compresses two pairs of words into one pair at constant
+depth, and the final addition propagates carries across only
+$O(log(T+2))$ bits. For each $k$ the generator knows $r=T-k$. It checks
+@no-carry for each candidate count $j=0,dots,k+1$ by a binary scan, and
+the circuit tests equality to $w_k$ for the candidates that pass.
+At most one count matches. Gate the selected bit by $e_k x_k$, then
+take parity over the sites. This uses a fixed number of logarithmic-depth
+stages and polynomial size, even with a separate counter for every prefix.
 
-#figure(
-  table(
-    columns: (2.1fr, 1fr, 1.15fr),
-    inset: (x: 6pt, y: 4pt),
-    align: left,
-    stroke: none,
-    table.hline(stroke: 0.7pt),
-    table.header([*Stage*], [*Parallel instances*], [*Depth bound*]),
-    table.hline(stroke: 0.4pt),
-    [Guard evaluation], [$2m$], [$max(d_s,d_h)$],
-    [Register initialization and time tag], [One register], [$6B$],
-    [Stay counts and hop conjunctions], [$m$ of each], [$22B$ and $5B$],
-    [Coefficient row tests], [$m^2(m+3)/2$], [$5B$],
-    [Parity over $j$, then over $u$], [$m^2$, then $m$], [$23B$ each],
-    [Gate by hop prefix and data, then final parity], [$m$, then one], [$2+23B$],
-    table.hline(stroke: 0.7pt),
-  ),
-  caption: [Resources for the generated frozen predictor, with $B=ell(T+3)+1$.
-    The two prefix computations run in parallel.],
-  kind: table,
-) <uniform-resources>
-
-*Size and generation.* The table has $m sum_(k=0)^(m-1) (k+2)$ rows,
-each with $O(log^2(m+1))$ gates for the regular conjunction layout.
-A padded counter has $O(a+1)$ blocks of
-$O(log(a+2))$ lanes in each of $O(log(a+2))$ rounds, with at most
-$O(log(a+2))$ gates per lane even when a compressor is repeated for each
-output. There are $O(m^2)$ counters including the parity banks, with at
-most $m+1$ inputs each. The guard copies, tag routing and
-conjunctions fit within the resulting $O(m^3 log^3(m+1))$ gate bound.
-The depth is $O(log(m+1))$
-because only a fixed number of logarithmic-depth stages are composed.
-@depth-budget gives the constants in @regimes.
-
-The serializer counts the unary length $n$, checks that it is a positive multiple of $q+1$,
-and obtains $m$ and $T$ at legal lengths. It enumerates table entries by
-$(k,u,j)$ and scans their bit positions. The register is indexed in four
-blocks of width $m$, for the time, stay, hop and data tracks. Within a
-counter round, block $e$ uses blocks $2e$ and $2e+1$ from the preceding
-round, with zero padding outside the bank. A gate record is determined
-by the round, block, bit lane and position in its local template. To
-serialize parallel blocks, the generator counts preceding gates and adds
-the resulting offset to internal references. In serial composition, it
-resolves an input reference by regenerating the corresponding predecessor
-output index. For a chain of width $W$, the generator appends identity
-gates $y and y$ so the outputs of each stage have consecutive indices.
-With $N$ primary inputs and $G$ preceding gates, a local wire number $a$
-then becomes $N+G-W+a$. This lets the generator count through the rounds
-without a stack. The nesting of the bank serializers has fixed depth.
-The loop indices, offsets and references are all polynomially bounded in
-$n$, so a fixed number of counters and arithmetic temporaries suffice
-using $O(log(n+2))$ bits of workspace. The gate and output lists are streamed.
+*The verified generator.* Lean verifies a shared decoder that can handle
+any time $u$ within the window. It generates the table for all such $u$
+using the Lucas bit test, and selects the rows for $T$ with a one-hot tag.
+The tag implements the composition interface by routing wires according
+to the binary digits of $T$. Each parity bank reads the low bit of a
+carry-save counter. A logspace transducer emits the complete gate and
+output lists of this circuit, using recomputation to resolve references.
+The explicit depth bound is $104(ell(T+3)+1)+max(d_s,d_h)$.
+@depth-budget describes the layout and the resource accounting.
 
 = Transported controls as a structural comparison
 
@@ -371,32 +354,135 @@ For $m$ factors, a balanced AND tree of height $ell(m)$ attains the
 essential-input lower bound. Padding to the next power of two uses
 $2^(ell(m))-1 <= 2m$ binary gates. #qed
 
+#transported-control-figure(
+  caption: [Initial control site $j(k)$ at backward step $k$ for $i=0$ and $T=4$.
+    Both paths end at the initial data bit $d_4$.],
+  alt: "Left, at equal velocities, all four steps read initial control 3. Right, at unequal velocities, the steps read initial controls 0, 1, 2, and 3 in order.",
+  supplement: [Figure],
+) <transport-controls-figure>
+
+@transport-controls-figure keeps the data path fixed and varies only $u$.
 The pair $(u,v)=(0,0)$ is the frozen no-hop case with stay guard $c_i$.
 Changing only $u$ to one gives logarithmic depth although the data never
 hops. For $(u,v)=(1,1)$ the data and control both move, yet their equal
 velocity gives constant depth. For this single-path rule, the relevant
 count is the number of distinct initial controls encountered in the
 moving frame of the data path. The time-dependent framework in @moore
-accommodates this rule. Its single path makes the exact depth accessible.
+accommodates this rule. For finite Boolean monomial systems, the link
+between iterate support and fixed-length dependency walks is classical
+@boolean-monomial. On the finite prediction window, the two shifts make
+that support explicit.
+
+= Evolving controls with branching <branching-boundary>
+
+*Uniform transport.* Allow both terms in @frozen-rule and transport the
+entire control track by $a_i(t+1)=a_(i+1)(t)$. In the reflected moving
+frame $y_j(t)=x_(-j-t)(t)$, substitution gives
+$
+  y_j(t+1)=h(a_(-j-1)(0)) y_j(t)+s(a_(-j-1)(0)) y_(j+1)(t).
+$
+The guards are now frozen and exchanged. The observation $x_0(T)$ is
+$y_(-T)(T)$, whose data window is the reversal of the original one.
+The frozen control window is $a_(T-1)(0),dots,a_0(0)$ followed by a
+padding word. At the last virtual site no stay can occur, so the padding
+is irrelevant. The two prefix statistics still work in this frame,
+with the roles of stay and hop exchanged. Lean verifies the coordinate
+change and the per-time circuit reduction, including the input rewiring.
+
+*Additive control evolution.* Now let the control be one bit and evolve
+it by $c_i(t+1)=c_i(t)+c_(i+1)(t)$, with data update
+$x_i(t+1)=c_i(t)x_i(t)+x_(i+1)(t)$. Both updates use $bb(F)_2$.
+At $T=2$, the coefficient of $x_1(0)$ at the origin is
+$(c_0(0)+c_1(0))+c_1(0)=c_0(0)$. The initial pairs $(1,0)$ and $(0,1)$
+have the same stay count and hop flag for this endpoint, but yield
+different coefficients. A stay can now read different guard values
+at the same site. Counting how many sites allow a stay at time zero
+loses the order information needed for cancellation.
+
+This rule still has a short coefficient description. Put
+$Q_T(i)=c_i(T)+c_(i+T)(0)$, the Pascal parity of the initial controls
+with its rightmost term removed. For $0 <= k < T$, put
+$
+  P_(T,k)(i)=product_(j=k+1)^(T-1)(1+c_(i+j)(0)).
+$
+Then the coefficient of $x_(i+k)(0)$ in $x_i(T)$ is
+$P_(T,k)(i) Q_T(i)$ for $k<T$, and one for $k=T$. Thus a single
+parity is shared across endpoints, and a suffix-zero test selects
+which endpoints receive it.
+
+_Proof._ Write $b_(T,k)(i)$ for the coefficient and take it to be zero
+outside the window. The update gives
+$
+  b_(T+1,k)(i)=c_i(T)b_(T,k)(i)+b_(T,k-1)(i+1).
+$
+Since a bit squares to itself,
+$c_i(T)Q_T(i)=(1+c_(i+T)(0))c_i(T)$. For $k<T$, the stay term
+therefore has suffix factor $P_(T+1,k)(i)$, as does the shifted term
+because $P_(T,k-1)(i+1)=P_(T+1,k)(i)$ for $k>0$.
+For $k=0$ the shifted term is absent, but $Q_T(i+1)$ already
+vanishes whenever $P_(T+1,0)(i)=1$: the suffix then zeros every
+initial control in that parity. After factoring out the suffix
+the sum is $c_i(T)+Q_T(i+1)=Q_(T+1)(i)$.
+For $k=T$ the stay term is $c_i(T)$ and the shifted term is
+$Q_T(i+1)$, giving the same sum with empty suffix. This also holds
+at $T=0$ since $Q_0(i+1)=0$. The all-hop term is always one. #qed
+
+A block of consecutive sites has summary $(Z,V)$, where $Z$ tests
+whether its controls are all zero and $V$ is the parity of its data
+bits with only zero controls to their right within the block. A single
+site has summary $(1+c_j(0),x_j(0))$. Concatenating blocks combines
+their summaries by
+$
+  (Z_L,V_L),(Z_R,V_R) |-> (Z_L Z_R,V_L Z_R+V_R).
+$
+A balanced tree computes $V$ on the first $T$ sites, with empty
+summary $(1,0)$. The prediction is $x_T(0)+Q_T(0)V$.
+A second tree computes $Q_T(0)$ on the submask wires. The two trees
+use $O(T+1)$ gates in total and have depth $O(log(T+2))$.
+Their regular layouts can be streamed in logspace.
+
+At positive times the essential inputs are exactly the first $T$
+control bits and all $T+1$ data bits. Setting all but $x_0(0)$ to zero
+on the data track gives $x_0(0)c_0(0) product_(j=1)^(T-1)(1+c_j(0))$,
+which witnesses the control bits. Setting $c_0(0)=1$ and
+$c_1(0)=dots=c_(T-1)(0)=0$ gives parity of the data bits. This yields
+the depth lower bound $ell(2T+1)$. Lean verifies the coefficient formula
+for the actual coupled iterate. The circuit bounds follow from the
+argument above.
 
 = Related work
 
 *Pascal parity and fast prediction.* The odd-entry count $2^(p(T))$ is
 classical. Rowland attributes the binary count to Glaisher and derives it
-from Lucas's theorem @rowland. The fast cellular-automaton prediction work
-in @moore already uses the Pascal coefficients for homogeneous additive
-rules. Its modular-sum gates can have unbounded fan-in. The Pascal claim
-here is a per-time bounded-fan-in lower bound and a matching profile up
-to a constant factor with a verified uniform De Morgan generator.
+from Lucas's theorem @rowland. Moore uses Pascal coefficients to predict
+homogeneous additive rules, obtaining logarithmic depth with binary
+gates and logspace-uniform $"ACC"^0$ with unbounded modular sums @moore.
+Robison gives a serial
+method for computing an individual coefficient from one initial seed
+@robison. The per-time optimum in @pascal-exact follows from classical
+parity complexity. The verified uniform family realizes the Pascal
+profile within a constant factor.
 
-*Dependent linear tracks and the coefficient formula.* Moore's general
-divide-and-conquer method for time- and space-dependent linear stages gives
-an $O(log^2(T+2))$ bounded-fan-in prediction bound in the stated setting
-@moore. Freezing the controls and using the one-sided stay/hop stencil
-lets us use prefix statistics and reach $O(log(T+2))$ in this specialization.
-The coefficient in @frozen-sum also has a classical matrix analogue.
+*Dependent linear tracks and the coefficient formula.* In @moore,
+Lemma 1 composes spacetime transfer coefficients by dividing the time
+interval. Theorem 1 applies that algorithm to quasidirect products.
+Examples 1 and 3 cover binary data tracks controlled by another track
+and triangular linear tracks such as our additive-control example.
+With balanced XOR trees for the modular sums,
+the general method gives an $O(log^2(T+2))$ bound for our binary tracks.
+Time invariance and the one-sided stencil reduce the frozen coefficients
+to prefix statistics. In §3, Salo studies the sitewise choice between
+identity and right-neighbor XOR on a finite ring @salo.
+That example uses the local maps of $s equiv 1$, $h(a)=a$ and concerns
+surjectivity and periodicity. Here the control word is part of the input
+and the output is one finite-window prediction bit.
+
+Parallel prefix circuits are classical @ladner-fischer. Balanced
+products, carry-save counting, and coefficient tests give the frozen
+predictor's $O(log(T+2))$ bound. The coefficient in @frozen-sum also
+has a classical matrix analogue.
 The one-step data map is upper bidiagonal on the relevant finite window.
-Higham's divided-difference formula for functions of such matrices gives
+Higham's Theorem 6.1 for functions of such matrices gives
 the product of intervening off-diagonal entries times a divided difference
 in the diagonal entries @higham. For the monomial $z^T$ this divided
 difference is a complete homogeneous polynomial of degree $T-k$.
@@ -411,10 +497,10 @@ present artifact checks a rule-family depth classification and the
 actual circuit generator. The freezing model of Ollinger and Theyssier
 imposes a monotone order on each whole cell state @ollinger. In @frozen-rule
 only the control word is fixed, and the data at a site can cycle.
-The contribution here is the combination of an executable rule classifier,
-pointwise depth bounds and a verified uniform generator for the full frozen
-rule family. The exact four-way classification and the one-path transport
-specialization have undetermined priority in the literature.
+The contribution here is the executable four-way classification,
+the matching logarithmic bounds for varying guards, and the proof that
+one logspace generator per rule achieves the stated upper bounds across
+all lengths. The comparisons above leave priority for this combination open.
 
 = Mechanization and scope
 
@@ -439,37 +525,65 @@ Each frozen control word selects one of four local data maps
 $0$, $x_i$, $x_(i+1)$ and $x_i+x_(i+1)$. Once the controls are fixed,
 the data dynamics is one-sided and linear. The input is an explicit window
 with length linear in $T$, and the circuit can wire across arbitrary sites.
-The accompanying development also formalizes composition and simulation
-criteria for other models. Their application requires a separate
-implementation or reduction witness.
+
+The accompanying Lean development formalizes three sufficient criteria for
+prediction problems. A compiles resource-bounded composition circuits into
+a predictor. B transfers P-hardness from circuit evaluation given a
+logspace simulation witness. Exclusion from uniform $"NC"$ via B assumes
+$"P" != "NC"$ and is a complexity-class statement. C gives an unconditional
+depth lower bound from essential inputs. At fixed
+fan-in, dimension, radius, and bit width, a polynomial-volume light cone
+limits the *counting bound* from C to $O(log(T+2))$. Actual prediction
+depth can exceed this bound. Lean checks supplied witnesses. Finding
+witnesses for arbitrary rules is a separate problem. In the frozen family,
+the executable classifier selects the depth branch by testing guard
+constancy on a fixed finite alphabet.
 
 = Conclusion
 
-The exact $"NC"^0$ criterion and the Pascal profile describe distinct
-ways that frozen prediction depth depends on time. For varying guards,
-prefix counts make the path coefficients accessible in logarithmic
-depth, which lets the same uniform family attain the upper bound at
-each legal length. The transported rule exhibits another mechanism.
-Relative motion changes depth by changing how many initial control
-bits a single data path reads.
+For frozen controls, guard constancy decides the constant-depth cases,
+and prefix statistics give a uniform logarithmic-depth predictor for
+varying guards. The Pascal depth is governed by the set bits of the
+observation time. With branching, uniform transport preserves the frozen
+summary after a change of frame, while additive control evolution needs
+a different summary even with all hops enabled. In the latter example,
+the induction closes because the all-hop coefficient is fixed and the
+control evolves by Pascal convolution. It remains to determine when a
+comparable coefficient recurrence closes if the evolving control also
+gates the hops.
 
 #heading(numbering: none)[Artifact availability]
 
-The formal results refer to this #link("https://github.com/miuchan/structural-certificates-for-prediction-depth/tree/08e9aa3dfad7132226849b39386005397469d656")[fixed Lean source revision].
-The Typst source and build instructions are in the #link("https://github.com/miuchan/structural-certificates-for-prediction-depth")[project repository].
-Use the full commit SHA associated with the PDF to select the source snapshot.
+The Lean and Typst sources and the build instructions are in the
+#link("https://github.com/miuchan/structural-certificates-for-prediction-depth")[project repository].
+Use the repository snapshot accompanying this PDF for the declarations
+listed in @lean-map.
 The repository documents the pinned Typst and font inputs for rebuilding
-all four editions. GitHub Actions verifies that all four PDFs rebuild from the checked-out commit. Run #box[`./scripts/check.sh`] for the strict Lean build
-and axiom audit. @lean-map lists the declarations behind the main results.
+all four editions. Run #box[`./scripts/check.sh`] for the strict Lean build,
+transitive axiom audit, and negative regression. The repository's
+verification guide separates build evidence from review of the model
+assumptions. @lean-map lists the declarations behind the main results.
 
 #counter(heading).update(0)
 #set heading(numbering: "A.1")
-#pagebreak(weak: true)
-#heading(supplement: [Appendix])[Depth budget] <depth-budget>
+#heading(supplement: [Appendix])[Generator layout and depth budget] <depth-budget>
+
+Put $m=T+1$ and $B=ell(T+3)+1$. The register stores the time tag $tau$,
+the stay and hop flags, and the data in four blocks of width $m$. The
+tag starts at index zero. Reading the binary digits of $T$ from most
+significant to least, each stage doubles the index and increments it
+when the digit is one. These operations route wires with zero fill.
+
+At site $k$, the decoder enumerates $0 <= u < m$ and $0 <= j <= k+1$.
+For a row with $u>=k$ and odd $M(j,u-k)$ it emits the test
+$(w_k=j) and tau_u$. All other rows are zero. Parity over $j$, then
+$u$, selects the coefficient. The decoder multiplies by the hop prefix
+and data and takes parity over $k$.
 
 The normalized counter tree costs at most $2+14b$ layers, including
-initialization and copying in each merge round. The finishing addition costs
-at most $1+8b$. Together they cost at most $22(b+1)$.
+initialization and copying in each merge round, for a counter of word
+width $b=ell(a+1)$ on $a$ bits. The finishing addition costs at most
+$1+8b$. Together they cost at most $22(b+1)$.
 The counts therefore cost at most $22B$, and taking the low bit of
 a counter for parity is bounded by $23B$ including the empty case.
 The depth proof charges $5B$ for a row test, from the literal comparisons,
@@ -481,13 +595,26 @@ There are at most $2 ell(T+1)$ subsequent register stages of at most two
 layers each, also counting normalization. This gives at most $6B$ for
 the register path and a total of $104B+max(d_s,d_h)$ including guards.
 
+The table has $m^2(m+3)/2$ rows and there are $O(m^2)$ counters of at most
+$m+1$ input bits. The regular layouts give $O(m^3 log^3(m+1))$ gates for
+fixed guards. A gate record is indexed by its stage, block, bit lane and
+position in a local template. For parallel banks the serializer counts
+earlier blocks to obtain a wire offset. In a chain of width $W$, identity
+gates $y and y$ give the stage outputs consecutive indices. After $G$
+gates on $N$ primary inputs, output slot $a$ of that stage is wire
+$N+G-W+a$. This lets the serializer recompute references with counters
+of logarithmic width and fixed nesting depth. It streams the gate and
+output lists from the unary length.
+
+#block(breakable: false)[
+#set text(size: 9.5pt)
 #heading(supplement: [Appendix])[Lean correspondence] <lean-map>
 
 The paths below are relative to `PredictionDepth/`.
 
 #table(
   columns: (1fr, 2.55fr),
-  inset: (x: 7pt, y: 5pt),
+  inset: (x: 7pt, y: 3pt),
   align: left,
   stroke: none,
   table.hline(stroke: 0.7pt),
@@ -501,11 +628,23 @@ The paths below are relative to `PredictionDepth/`.
   [Uniform predictor], [`FrozenPascal/UniformPrediction.lean` #linebreak()
     `uniformGuardedPrediction_code_logspace` #linebreak() `uniformGuardedPrediction_depth`],
   [Code composition], [`Complexity/CodeLogspace.lean` #linebreak() `compCode_logspace`],
-  [Pascal support], [`FrozenPascal/HomogeneousPascal.lean` #linebreak() `pascalSupport_card`],
+  [Pascal support and XOR depth], [`FrozenPascal/HomogeneousPascal.lean` #linebreak()
+    `pascalSupport_card` #linebreak() `homogeneousNativeXorPrediction_depth`],
+  [Exact Pascal De Morgan depth], [`FrozenPascal/PascalExactDepth.lean` #linebreak()
+    `homogeneous_prediction_deMorgan_exact_depth`],
   [Transported control], [`TransportedControl.lean` #linebreak()
     `iterate_data_true_iff`, `essential_prediction_iff` #linebreak()
     `exact_prediction_depth`, `constant_depth_iff`],
+  [Branching under transport], [`TransportedBranching.lean` #linebreak()
+    `reverseFrame_iterate`, `prediction_correct` #linebreak()
+    `prediction_depth`, `prediction_size`],
+  [Additive-control coefficients], [`AdditiveBranching.lean` #linebreak()
+    `trimmedParity_eq_sum`, `iterate_data`],
   table.hline(stroke: 0.7pt),
 )
 
-#bibliography("references.bib", style: "ieee", title: [References])
+]
+
+#block(breakable: false)[
+  #bibliography("references.bib", style: "ieee", title: [References])
+]
