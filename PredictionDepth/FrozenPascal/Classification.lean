@@ -120,30 +120,38 @@ def RegimeCondition (stay hop : Gates q 1) : DepthRegime → Prop
   | .varying => GuardVaries hop ∨ (∀ a, guard hop a = true) ∧ GuardVaries stay
   | .pascal => (∀ a, guard stay a = true) ∧ (∀ a, guard hop a = true)
 
-private def controlWords : (q : ℕ) → List (Bits q)
-  | 0 => [Fin.elim0]
-  | q + 1 =>
-    let tails := controlWords q
-    tails.map (Fin.cons false) ++ tails.map (Fin.cons true)
+-- Traverse one prefix at a time, stopping as soon as a word fails the test.
+private def allControlWords : (q : ℕ) → (Bits q → Bool) → Bool
+  | 0, test => test Fin.elim0
+  | q + 1, test =>
+    allControlWords q (fun tail => test (Fin.cons false tail)) &&
+      allControlWords q (fun tail => test (Fin.cons true tail))
 
-private theorem mem_controlWords (q : ℕ) (a : Bits q) : a ∈ controlWords q := by
+private theorem allControlWords_spec (q : ℕ) (test : Bits q → Bool) :
+    allControlWords q test = true ↔ ∀ a, test a = true := by
   induction q with
   | zero =>
-    have h : a = Fin.elim0 := funext fun i => i.elim0
-    simp [controlWords, h]
+    constructor
+    · intro h a
+      have ha : a = Fin.elim0 := funext fun i => i.elim0
+      simpa [allControlWords, ha] using h
+    · exact fun h => h Fin.elim0
   | succ q ih =>
-    simp only [controlWords, List.mem_append, List.mem_map]
-    have ha := Fin.cons_self_tail a
-    cases h : a 0
-    · exact Or.inl ⟨Fin.tail a, ih _, by simpa only [h] using ha⟩
-    · exact Or.inr ⟨Fin.tail a, ih _, by simpa only [h] using ha⟩
+    simp only [allControlWords, Bool.and_eq_true, ih]
+    constructor
+    · rintro ⟨hFalse, hTrue⟩ a
+      have ha := Fin.cons_self_tail a
+      cases h : a 0
+      · exact (congrArg test (by simpa only [h] using ha)).symm ▸ hFalse (Fin.tail a)
+      · exact (congrArg test (by simpa only [h] using ha)).symm ▸ hTrue (Fin.tail a)
+    · exact fun h => ⟨fun a => h (Fin.cons false a), fun a => h (Fin.cons true a)⟩
 
 private def guardIsConstant (g : Gates q 1) (b : Bool) : Bool :=
-  (controlWords q).all (fun a => guard g a == b)
+  allControlWords q (fun a => guard g a == b)
 
 private theorem guardIsConstant_spec (g : Gates q 1) (b : Bool) :
     guardIsConstant g b = true ↔ ∀ a, guard g a = b := by
-  simp [guardIsConstant, List.all_eq_true, mem_controlWords]
+  simp [guardIsConstant, allControlWords_spec]
 
 /-- Classify a fixed rule by evaluating its guards on the finite control alphabet. -/
 def classify (stay hop : Gates q 1) : DepthRegime :=

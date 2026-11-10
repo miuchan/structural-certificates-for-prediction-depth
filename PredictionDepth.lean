@@ -37,5 +37,6 @@ import PredictionDepth.FrozenPascal.HomogeneousPascal
 import PredictionDepth.FrozenPascal.LowerBound
 import PredictionDepth.FrozenPascal.UniformLanguage
 import PredictionDepth.FrozenPascal.UniformClassification
+import PredictionDepth.TransportedControl
 
 /-! Structural criteria for prediction depth: all checked core modules. -/

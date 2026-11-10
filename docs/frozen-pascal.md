@@ -1,107 +1,126 @@
-# 冻结控制的一侧元胞自动机
+# One-Sided Cellular Automata with Frozen Controls
 
-## 模型与输入
+**English** · [简体中文](../i18n/zh-CN/docs/frozen-pascal.md) · [日本語](../i18n/ja/docs/frozen-pascal.md) · [Esperanto](../i18n/eo/docs/frozen-pascal.md)
 
-固定控制字宽 $`q`$ 和两个布尔函数 $`s,h:\{0,1\}^q\to\{0,1\}`$。每个格点 $`i\in\mathbb Z`$ 有控制字 $`a_i`$ 和数据位 $`x_i\in\mathbb F_2`$，同步更新为
+## Model and input
+
+Fix a control-word width $`q`$ and two Boolean guards $`s,h:\{0,1\}^q\to\{0,1\}`$. Each site $`i\in\mathbb Z`$ has a control word $`a_i`$ and a data bit $`x_i\in\mathbb F_2`$. The synchronous update is
 
 ```math
 a_i'=a_i,\qquad x_i'=s(a_i)x_i+h(a_i)x_{i+1}.
 ```
 
-控制字是初值的一部分，可逐格独立选择。给定控制配置后，数据轨按线性映射演化。联合规则可以非仿射。例如取 $`s=\mathrm{AND}`$、$`h=\mathrm{OR}`$，在 $`x_{i+1}=0`$ 的限制下，$`x_i`$ 的系数仍随 $`a_i`$ 变化，而仿射函数的这一系数必须固定。冻结的是控制轨，数据位可以随时间变化。
+Control words are part of the initial state and can be chosen independently at each site. Once the control configuration is fixed, the data track evolves linearly. The joint rule can be non-affine. For instance, take $`s=\mathrm{AND}`$ and $`h=\mathrm{OR}`$. On the restriction $`x_{i+1}=0`$, the coefficient of $`x_i`$ still varies with $`a_i`$, whereas an affine function would have a fixed coefficient. The control track stays fixed and the data track can change.
 
-时间 $`T`$ 的查询显式给出格点 $`0,\ldots,T`$ 的初值。编码先列出这 $`T+1`$ 个控制字，再列出对应的数据位。标准预测语言的合法长度为 $`n=(q+1)(T+1)`$，所以由长度确定 $`T=n/(q+1)-1`$，并以 $`x_0(T)=1`$ 作为接受条件。空串和无法组成整格的长度被拒绝。因 $`q`$ 固定，对数深度同时是关于 $`T+2`$ 和关于总输入长度的对数界。短初值描述与独立的二进制时刻需要另行定义输入模型。 [窗口语义](../PredictionDepth/FrozenPascal/Window.lean) · [输入编码](../PredictionDepth/FrozenPascal/GuardRules.lean) · [预测语言](../PredictionDepth/FrozenPascal/UniformLanguage.lean)
+A time-$`T`$ query supplies the initial states at sites $`0,\ldots,T`$ explicitly. The encoding lists the $`T+1`$ control words followed by their data bits. The legal lengths are $`n=(q+1)(T+1)`$, so $`T=n/(q+1)-1`$ is determined by length. A legal word is accepted when $`x_0(T)=1`$. Empty words and lengths that do not form whole cells are rejected. For fixed $`q`$, logarithmic depth in $`T+2`$ is also logarithmic in the total input length. A succinct initial state with a separate binary time field would require a different input model. [Window semantics](../PredictionDepth/FrozenPascal/Window.lean) · [Input encoding](../PredictionDepth/FrozenPascal/GuardRules.lean) · [Prediction language](../PredictionDepth/FrozenPascal/UniformLanguage.lean)
 
-## 系数公式
+## Classification theorem
 
-把 $`x_0(T)`$ 展开成初始数据位的线性组合。令 $`s_k=\sum_{i=0}^{k}s(a_i)`$ 是整数计数，$`e_k=\prod_{i=0}^{k-1}h(a_i)`$ 是前 $`k`$ 条边的通行标志，空积取 $`1`$。则
+Fix $`q`$ and De Morgan guard circuits computing $`s,h`$, with depths $`d_s,d_h`$. Circuits permit arbitrary wiring and sharing of intermediate results. Let $`p=\operatorname{popcount}(T)`$ count the ones in the binary expansion of $`T`$, and let $`\ell(v)=\lceil\log_2 v\rceil`$. At each legal time, every correct Boolean circuit of fan-in at most two satisfies the lower bound in the table. For each fixed rule, one logspace-uniform, polynomial-size De Morgan family realizes the upper bound and decides the entire language, including rejection of malformed lengths. [Uniform classification theorem](../PredictionDepth/FrozenPascal/UniformClassification.lean)
+
+| Semantic condition on the fixed rule | Depth lower bound | Uniform depth upper bound |
+| --- | --- | --- |
+| $`h\equiv 0`$ | $`0`$ | $`1+d_s`$ |
+| $`h\equiv 1,\ s\equiv 0`$ | $`0`$ | $`0`$ |
+| $`h`$ is nonconstant, or $`h\equiv 1`$ and $`s`$ is nonconstant | $`\ell(T+1)`$ | $`104(\ell(T+3)+1)+\max(d_s,d_h)`$ |
+| $`h\equiv 1,\ s\equiv 1`$ | $`p`$ | $`3p`$ |
+
+Every fixed rule therefore has a logspace-uniform NC¹ prediction language, and precisely the first two cases are in uniform NC⁰. The third case has matching logarithmic bounds at positive times. The fourth has depth at most three at $`2^r`$ and at least $`r`$ at $`2^r-1`$, so a single constant cannot bound all times. At $`T=0`$, the actual minimum is zero in all four cases because the output is the input wire $`x_0(0)`$. [Uniform NC¹](../PredictionDepth/FrozenPascal/UniformLanguage.lean) · [Uniform NC⁰ equivalence](../PredictionDepth/FrozenPascal/UniformClassification.lean)
+
+## Coefficient formula
+
+Expand $`x_0(T)`$ as a linear combination of the initial data bits. Let $`s_k=\sum_{i=0}^{k}s(a_i)`$ be the integer count of enabled stay positions and $`e_k=\prod_{i=0}^{k-1}h(a_i)`$ the product of the first $`k`$ hop flags, with empty product $`1`$. Then
 
 ```math
 x_0(T)=\sum_{k=0}^T e_k\,\operatorname{multichoose}(s_k,T-k)\,x_k(0)
-\qquad\text{于 }\mathbb F_2.
+\qquad\text{in }\mathbb F_2.
 ```
 
-从格点 $`k`$ 走到原点的每条贡献路径恰好向左移动 $`k`$ 次，依次跨过同一组边，产生公共因子 $`e_k`$。其余 $`r=T-k`$ 步分配给沿途允许等待的格点，包含起点和终点。格点的访问次序固定，每组停留次数恰好决定一条路径。因此，当 $`s_k>0`$ 时，路径数为 $`\binom{s_k+r-1}{r}`$。当 $`s_k=0`$ 时，仅在 $`r=0`$ 时有一条路径。将路径数模 $`2`$ 即得到系数。`iterate_data` 通过系数递推证明该式与无限格点上的实际迭代一致。 [系数递推与 `iterate_data`](../PredictionDepth/FrozenPascal/Semantics.lean)
+A contributing path from site $`k`$ to the origin makes exactly $`k`$ leftward hops. It traverses the same edges in order, giving the common factor $`e_k`$. The remaining $`r=T-k`$ steps are distributed among the sites where staying is enabled, including the endpoints. The order of sites is fixed, so each allocation of stays determines one path. For $`s_k>0`$ there are $`\binom{s_k+r-1}{r}`$ paths. For $`s_k=0`$ there is one path if $`r=0`$ and none otherwise. Reducing the path count modulo $`2`$ gives the coefficient. `iterate_data` proves the coefficient recurrence and connects it to the actual iteration on the infinite lattice. [Coefficient recurrence and `iterate_data`](../PredictionDepth/FrozenPascal/Semantics.lean)
 
-例如，取 $`T=3`$、等待标志为 $`(1,0,1,0)`$，前三条边均通行。从格点 $`2`$ 出发的贡献需要一次等待，路径可在格点 $`0`$ 或 $`2`$ 停留。两条路径在 $`\mathbb F_2`$ 中相消，此时 $`x_0(3)=x_0(0)\oplus x_1(0)\oplus x_3(0)`$。
+For example, let $`T=3`$, take stay flags $`(1,0,1,0)`$, and enable the first three hops. A contribution from site $`2`$ requires one stay, which may occur at site $`0`$ or $`2`$. The two paths cancel in $`\mathbb F_2`$, leaving $`x_0(3)=x_0(0)\oplus x_1(0)\oplus x_3(0)`$.
 
-## 并行算法
+## Parallel algorithm
 
-对给定长度，时刻 $`T`$ 已在生成电路时确定。电路先在各格并行求两个控制标志，然后为每个 $`0\le k\le T`$ 并行计算以下量。
+For a given input length, the generator already knows $`T`$. The circuit evaluates both guards at each site in parallel and then computes the following quantities in parallel for every $`0\le k\le T`$.
 
-1. 通过平衡 AND 树求 $`e_k`$，用进位保存加法树对 $`k+1`$ 个等待标志计数。每轮把二进制数分组并行压缩，用常数深度将每组三行变成两行。经过 $`O(\log(T+2))`$ 轮后，只剩两行。最后传播进位，即使用线性于位宽的加法也只需 $`O(\log(T+2))`$ 深度。
-2. 从计数 $`s_k`$ 选出 $`\operatorname{multichoose}(s_k,T-k)\bmod 2`$。对每个候选计数 $`v=0,\ldots,k+1`$，生成器预先计算对应的系数位。运行时并行比较 $`s_k=v`$，再用平衡树归约匹配项。对于 $`v>0`$，Lucas 定理把系数位化为二进制蕴含关系。$`T-k`$ 的每个置位都须在 $`v+T-k-1`$ 中置位。$`v=0`$ 时，系数位由 $`T=k`$ 决定。
-3. 将系数位与 $`e_k`$、$`x_k(0)`$ 相乘，再用平衡 XOR 树汇总所有项。在 De Morgan 门基中，每个二输入 XOR 可用固定深度的小电路实现。
+1. Compute $`e_k`$ with a balanced AND tree and count the first $`k+1`$ stay flags with a carry-save addition tree. Each round compresses groups of three binary rows into two at constant depth. After $`O(\log(T+2))`$ rounds, two rows remain. A final carry-propagating addition still costs only $`O(\log(T+2))`$ depth, even with a linear-depth adder in the bit width.
+2. Select $`\operatorname{multichoose}(s_k,T-k)\bmod 2`$ from the count $`s_k`$. The generator computes the coefficient bit for each candidate $`v=0,\ldots,k+1`$. The circuit tests $`s_k=v`$ in parallel and reduces the matching terms with a balanced tree. For $`v>0`$, Lucas's theorem gives a bitwise implication. Each set bit in $`T-k`$ must also be set in $`v+T-k-1`$. At $`v=0`$ the bit is set exactly when $`T=k`$.
+3. Multiply the coefficient bit by $`e_k`$ and $`x_k(0)`$ and combine all terms with a balanced XOR tree. A fixed-depth De Morgan circuit implements each binary XOR.
 
-这些阶段各花 $`O(\log(T+2))`$ 深度，所有前缀各自建立子电路也只需多项式门数。核心是把时空传递系数化为前缀计数、通行标志和组合数的奇偶性。 [计数电路](../PredictionDepth/FrozenPascal/UniformWeight.lean) · [Lucas 位测试](../PredictionDepth/FrozenPascal/CoefficientBits.lean) · [系数选择与归约](../PredictionDepth/FrozenPascal/UniformDecoder.lean)
+Each stage has depth $`O(\log(T+2))`$, and using a separate subcircuit for every prefix still gives polynomial size. The coefficient formula reduces spacetime transfer coefficients to prefix counts, hop flags, and parities of combinatorial coefficients. [Counting circuits](../PredictionDepth/FrozenPascal/UniformWeight.lean) · [Lucas bit test](../PredictionDepth/FrozenPascal/CoefficientBits.lean) · [Coefficient selection and reduction](../PredictionDepth/FrozenPascal/UniformDecoder.lean)
 
-## Lean 构造与对数空间统一性
+## Lean construction and logspace uniformity
 
-上述算法可直接按固定时刻组织。Lean 中的构造把同一解码过程接到通用路径编译器，以展示如何复用带资源界的组合接口。其抽象表示把时刻 $`u`$ 解释为第 $`u`$ 次迭代，组合时将两个时刻相加。电路保存控制标志、数据位和一个窗口内的单热时间标签。初始化将标签置于位置 $`0`$，平方和乘以种子分别将位置翻倍和加一。解码器使用标签从各个时刻的系数行中选出需要的一行。时刻表示与接线路径承担的是组合和选行，利用冻结控制获得的快速性来自解码器内部的系数公式。`no_global_decoder` 刻画了标签编码的窗口边界。对于至少包含两格的窗口，存在一组固定初值，使两个标签同为全零的越界时刻给出不同答案。 [路径见证](../PredictionDepth/FrozenPascal/PathWitness.lean) · [越界分离](../PredictionDepth/FrozenPascal/Separation.lean)
+The algorithm can be organized directly for a fixed time. The Lean construction connects the same decoder to the generic path compiler, showing how to reuse the resource-bounded composition interface. Its abstract representation interprets $`u`$ as the $`u`$-fold iterate and composes by adding times. The circuit stores guard flags, data bits, and a one-hot time tag within the window. Initialization sets the tag at position $`0`$. Squaring doubles the position, and multiplication by the seed increments it. The decoder uses the tag to select one row of coefficients across possible times. The time representation and wiring implement composition and row selection. The speedup from frozen controls comes from the decoder's coefficient formula. `no_global_decoder` identifies the boundary of the tag encoding. In a window of at least two cells, there are fixed initial data for which two out-of-range times share an all-zero tag but give different outputs. [Path witness](../PredictionDepth/FrozenPascal/PathWitness.lean) · [Out-of-range separation](../PredictionDepth/FrozenPascal/Separation.lean)
 
-逐时刻构造 `guardedPrediction` 有显式资源界。设 $`d_s,d_h`$ 是两个控制电路的深度，$`g_s,g_h`$ 是它们的门数，则深度和门数分别至多为
+The separate per-time construction `guardedPrediction` has explicit resource bounds. If $`g_s,g_h`$ are the two guard gate counts, its depth and gate count are bounded respectively by
 
 ```math
 7+33\lceil\log_2(T+2)\rceil+\max(d_s,d_h),\qquad
 113(T+2)^4+(T+1)(g_s+g_h).
 ```
 
-另一构造 `uniformGuardedPrediction` 具有独立的对数空间生成器。用 `UniformWeight.basis` 实例化后，合法时刻的深度界为
+The construction `uniformGuardedPrediction` has its own logspace generator. Instantiating it with `UniformWeight.basis` gives the following depth bound at legal times.
 
 ```math
 104\bigl(\lceil\log_2(T+3)\rceil+1\bigr)+\max(d_s,d_h).
 ```
 
-生成器在只读一元输入 $`1^n`$ 上确定合法性及 $`T`$，用对数位宽的索引生成计数层、系数项、归约树和标签接线。具体计数电路把树中每两个节点的四行压缩成两行，方便统一地排列接线。组合数奇偶性由二进制位扫描生成，工作带只需保存短索引和局部计算状态。形式化证明把各块的序列化程序组合成一台停机的多带转导器，输出完整电路编码，包含门型、前驱编号和输出编号。统一族的多项式规模由该机器的输出长度界推出。`predictionLanguage_mem_uniformNC_one` 将正确性、深度、规模和生成器落实到同一个电路族上。 [逐时刻资源界](../PredictionDepth/FrozenPascal/GuardRules.lean) · [生成器与深度界](../PredictionDepth/FrozenPascal/UniformPrediction.lean) · [系数位的空间证明](../PredictionDepth/FrozenPascal/CoefficientUniform.lean) · [统一 NC 定义](../PredictionDepth/Complexity/UniformNC.lean)
+From the read-only unary input $`1^n`$, the generator checks legality and determines $`T`$. It generates the counting layers, coefficient entries, reduction trees, and tag wiring with logarithmic-width indices. The counting circuit compresses the four rows of two tree nodes into two rows to simplify uniform wiring. The coefficient parity is generated by scanning binary digits, with short indices and local computation state on work tapes. The formal proof composes the block serializers into one halting multitape transducer that emits the entire circuit code, including gate types, predecessor indices, and output indices. Its output-length bound implies polynomial family size. `predictionLanguage_mem_uniformNC_one` combines correctness, depth, size, and the generator in one circuit family. [Per-time resource bounds](../PredictionDepth/FrozenPascal/GuardRules.lean) · [Generator and depth bound](../PredictionDepth/FrozenPascal/UniformPrediction.lean) · [Space bound for coefficient bits](../PredictionDepth/FrozenPascal/CoefficientUniform.lean) · [Definition of uniform NC](../PredictionDepth/Complexity/UniformNC.lean)
 
-## 匹配的深度下界
+## Matching depth lower bound
 
-若有控制字 $`a_{\rm on},a_{\rm off}`$，满足
+Suppose there are control words $`a_{\rm on},a_{\rm off}`$ with
 
 ```math
 (s(a_{\rm on}),h(a_{\rm on}))=(1,1),\qquad
-(s(a_{\rm off}),h(a_{\rm off}))=(0,1),
+(s(a_{\rm off}),h(a_{\rm off}))=(0,1).
 ```
 
-则可把原点设为 $`a_{\rm on}`$，其余格点设为 $`a_{\rm off}`$。这使每个 $`e_k=1`$、每个 $`s_k=1`$，故预测就是 $`T+1`$ 个数据位的奇偶校验。固定这些控制字后，逐一翻转任一数据位都会翻转结果，因而原预测函数至少有 $`T+1`$ 个本质输入。一个二输入门、深度 $`d`$ 的电路从输出回溯至多覆盖 $`2^d`$ 个输入，即使允许内部共享和任意远程接线。因此
+Put $`a_{\rm on}`$ at the origin and $`a_{\rm off}`$ at all other sites. This gives $`e_k=1`$ and $`s_k=1`$ for every $`k`$, so prediction is parity of $`T+1`$ data bits. With controls fixed, flipping any one data bit flips the result. The original prediction function therefore has at least $`T+1`$ essential inputs. The backwards cone of a depth-$`d`$ fan-in-two circuit covers at most $`2^d`$ inputs, even with arbitrary wiring and sharing. Hence
 
 ```math
 d\ge \lceil\log_2(T+1)\rceil.
 ```
 
-AND/OR 控制可分别取 $`a_{\rm on}=(1,1)`$ 和 $`a_{\rm off}=(1,0)`$。结合上界，得到 $`\Theta(\log(T+2))`$ 的渐近最优深度。这里的最优性以二输入门电路深度计量。 [一般下界与 AND/OR 实例](../PredictionDepth/FrozenPascal/LowerBound.lean)
+For AND/OR guards, choose $`a_{\rm on}=(1,1)`$ and $`a_{\rm off}=(1,0)`$. Together with the upper bound, this gives asymptotically optimal $`\Theta(\log(T+2))`$ depth for fan-in-two circuits as $`T`$ grows. [General lower bound and AND/OR example](../PredictionDepth/FrozenPascal/LowerBound.lean)
 
-## 按控制函数分类
+## Proof by regime
 
-`bounded_prediction_depth_iff` 给出了有界深度的充要条件。固定两个控制函数后，存在一族对所有初值正确、且在所有时刻共用一个常数深度界的 De Morgan 电路，当且仅当规则始终禁止传输，或始终传输且始终禁止等待。`classify` 枚举 $`2^q`$ 个控制字并返回下表中的一个分支，`classify_eq_iff` 验证返回值和对应语义条件等价。枚举开销取决于规则描述中的 $`q`$。例如固定 $`s\equiv1`$ 时，判定常数深度等价于判定控制电路 $`h`$ 是否不可满足。 [分类器及有界深度充要条件](../PredictionDepth/FrozenPascal/Classification.lean)
+`classify` tests control words by prefix, stopping each constancy test at its first counterexample. An exhaustive test can still visit $`2^q`$ words. `classify_eq_iff` verifies the returned branch, and `guard_depth_cases` verifies that the four branches cover all fixed guard pairs. For example, when $`s\equiv1`$, deciding whether depth stays constant is equivalent to deciding whether the hop circuit $`h`$ is unsatisfiable. [Classifier and bounded-depth characterization](../PredictionDepth/FrozenPascal/Classification.lean)
 
-逐时刻的深度可进一步分成四类。下界适用于任意扇入至多为二的布尔门，上界由 De Morgan 电路实现。$`T=0`$ 时各类规则都可直接输出 $`x_0(0)`$。`guard_depth_cases` 验证四种情况覆盖全部固定控制函数。 [规则分类](../PredictionDepth/FrozenPascal/Classification.lean)
+If $`h\equiv0`$, the output at positive times is $`s(a_0)x_0(0)`$, so the stay guard and one AND gate suffice. If $`h\equiv1,s\equiv0`$, output the wire $`x_T(0)`$ at zero depth and zero gates. [Constant-depth constructions](../PredictionDepth/FrozenPascal/Classification.lean)
 
-| 控制函数 | 预测深度 |
+If $`h`$ is nonconstant, set the data bits so that only $`x_T(0)=1`$. The output is $`e_T`$, because the furthest input can reach the origin only along the all-hop path. Any two control words are connected by single-bit flips on the Boolean cube, so a nonconstant $`h`$ changes value along some edge. At each of the first $`T`$ sites, that edge witnesses an essential control bit when all other hop flags are enabled. Enabling all hops also makes $`x_T(0)`$ essential. This forces depth at least $`\lceil\log_2(T+1)\rceil`$. If $`h\equiv1`$ and $`s`$ is nonconstant, the parity restriction above gives the same bound. [Lower bound for varying guards](../PredictionDepth/FrozenPascal/Classification.lean)
+
+The lower bound depends on fan-in. For $`s\equiv0, h(a)=a`$ with a one-bit control, prediction is $`x_T(0)\land a_0\land\cdots\land a_{T-1}`$. Binary gates require logarithmic depth. An unbounded-fan-in AND gate computes it in one layer.
+
+If both guards are identically $`1`$, the coefficients reduce to $`\binom{T}{k}\bmod 2`$. Let $`p=\operatorname{popcount}(T)`$. By the Lucas bit test, the odd coefficients correspond to the binary submasks of $`T`$, since each set bit can independently be included or omitted. The $`2^p`$ essential data bits give a depth lower bound of $`p`$. The per-time balanced XOR construction has depth at most $`3p`$ and uses $`5(2^p-1)`$ gates. If XOR is a native binary gate, the optimal depth is exactly $`p`$. At $`T=2^r-1`$ the depth is at least $`r`$, and at the next time $`T=2^r`$ the output is the XOR of two data bits. Thus minimum depth can drop between consecutive times. [Depth bounds for homogeneous Pascal](../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [Classical odd-coefficient count, Rowland §1](https://arxiv.org/pdf/1001.1783)
+
+## Realizing the uniform family
+
+`classifiedPrediction` selects the generator from the fixed rule's classification. The rule is fixed at family definition time, and the generator varies with input length. The no-hop and shift generators emit the complete codes of their specialized circuits, preserving their constant-depth and zero-gate bounds, respectively. Varying guards use the generic path circuit. The homogeneous Pascal generator scans $`k\le T`$, emits wires for odd coefficients using the submask test, and reduces only those inputs. [No-hop and shift generators](../PredictionDepth/FrozenPascal/UniformLocal.lean) · [Pascal generator](../PredictionDepth/FrozenPascal/UniformHomogeneous.lean)
+
+The uniform Pascal reducer uses $`p`$ rounds of fixed-width parallel XOR, with three De Morgan layers per round. This permits direct streaming of the round composition and gives depth $`3p`$ and gate count $`5p2^p`$. Since $`2^p\le T+1`$, the gate count grows at most on the order of $`T\log(T+2)`$. The per-time balanced tree above uses fewer gates. The uniform classification uses the fixed-width construction. [XOR reduction and encoding](../PredictionDepth/FrozenPascal/UniformXor.lean)
+
+## Scope and formal statement map
+
+On an explicit $`n`$-bit input, the essential-input count can give at most the lower bound $`\ell(n)`$. For a polynomial-volume light cone in fixed dimension, counting alone thus yields at most a logarithmic bound in $`T`$. The upper bounds here cover one-sided frozen-control rules and a single output site. The prediction language includes the whole initial window, and the generator receives the input length in unary. The standard P-hardness framework uses a different query encoding with a unary time field. It requires a concrete simulation and a logspace reduction generating the full query. [Limit of dependency counting](../PredictionDepth/DependencyGrowth.lean) · [Obligations for hardness](hardness.md)
+
+| Claim | Lean declaration |
 | --- | --- |
-| $`h\equiv 0`$ | 深度至多 $`d_s+1`$，门数至多 $`g_s+1`$。正时刻输出 $`s(a_0)x_0(0)`$。 |
-| $`h\equiv 1,\ s\equiv 0`$ | 深度和门数都为 $`0`$。输出 $`x_T(0)`$。 |
-| $`h\equiv 1,\ s\equiv 1`$ | 深度随 $`\operatorname{popcount}(T)`$ 增长，见下文。 |
-| $`h`$ 非常值，或 $`h\equiv 1`$ 且 $`s`$ 非常值 | 渐近最优深度为 $`\Theta(\log(T+2))`$。 |
+| Synchronous update and coefficient formula on the infinite lattice | [`iterate_data`](../PredictionDepth/FrozenPascal/Semantics.lean) |
+| Per-time lower bound for arbitrary correct fan-in-two predictors | [`classifiedPrediction_depth_lower_bound`](../PredictionDepth/FrozenPascal/UniformClassification.lean) |
+| Equivalence for a constant depth bound across time indices | [`bounded_prediction_depth_iff`](../PredictionDepth/FrozenPascal/Classification.lean) |
+| Pascal support cardinality and per-time balanced-tree resources | [`pascalSupport_card`, `homogeneousPrediction_depth`, `homogeneousPrediction_size`](../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) |
+| Correctness, logspace uniformity, and branch bounds in the same family | [`uniform_depth_classification`](../PredictionDepth/FrozenPascal/UniformClassification.lean) |
+| Uniform NC⁰ equivalence over all input lengths | [`predictionLanguage_mem_uniformNC_zero_iff`](../PredictionDepth/FrozenPascal/UniformClassification.lean) |
 
-若 $`h`$ 非常值，把数据位固定为仅 $`x_T(0)=1`$。输出为 $`e_T`$，因为最远输入只能沿全移动路径到达原点。布尔超立方体上，任意两个控制字之间都有逐位翻转的路径，因此非常值的 $`h`$ 必在某条边上改变取值。对前 $`T`$ 格分别利用这样一条边，固定其他格点使边通行，即可见每格至少有一个本质控制位。令所有边通行还可见 $`x_T(0)`$ 是本质输入。于是深度至少为 $`\lceil\log_2(T+1)\rceil`$。若 $`h\equiv 1`$ 且 $`s`$ 非常值，则前节的奇偶校验限制直接给出同一个下界。 [两种变化情形的统一下界](../PredictionDepth/FrozenPascal/Classification.lean)
+## Related work
 
-门的扇入决定了这个下界的适用范围。例如 $`s\equiv0, h(a)=a`$ 时，预测就是 $`x_T(0)\land a_0\land\cdots\land a_{T-1}`$。二输入门需要对数深度，允许无界扇入时一个 AND 门即可完成。
+Moore's *Physica D* paper divides time intervals to compute transfer coefficients for non-autonomous additive cellular automata, where coefficients can vary across space and time. Lemma 1 in §3 of the preprint gives ACC¹ circuits with unbounded-fan-in modular sums. Using binary gates gives $`O(\log^2 T)`$ depth. Theorem 1 applies the method to quasidirect products, in which another track controls those coefficients. For homogeneous additive rules, the paper already describes how to generate Pascal rows in logspace and obtain uniform ACC⁰ with unbounded-fan-in modular sums. Glaisher established the odd-coefficient count, and Rowland reviews its relationship to Lucas's theorem. [Journal article](https://doi.org/10.1016/S0167-2789(97)80003-6) · [Preprint §3](https://arxiv.org/pdf/patt-sol/9701008) · [Rowland §1](https://arxiv.org/pdf/1001.1783)
 
-若两个函数恒为 $`1`$，系数化为 $`\binom{T}{k}\bmod 2`$。令 $`p=\operatorname{popcount}(T)`$ 表示 $`T`$ 的二进制置位数。按 Lucas 位测试，奇系数对应的 $`k`$ 恰是 $`T`$ 的所有子掩码，每个置位独立决定取或不取。因此有 $`2^p`$ 个本质数据位，给出 $`p`$ 层的下界。逐时刻的平衡 XOR 构造深度至多 $`3p`$，门数为 $`5(2^p-1)`$。若 XOR 可作为原生二输入门，则最优深度恰为 $`p`$。在 $`T=2^r-1`$ 时至少需要 $`r`$ 层，紧接着的 $`T=2^r`$ 只需异或两位。这给出了逐时刻深度随时间下降的例子。 [齐次规则的精细深度界](../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [经典奇系数计数，见 Rowland §1](https://arxiv.org/pdf/1001.1783)
+With fixed controls, data evolution is an upper bidiagonal operator with diagonal entries $`s(a_i)`$ and superdiagonal entries $`h(a_i)`$. Higham's Theorem 6.1 gives a product and divided-difference formula for functions of upper bidiagonal matrices over the complex numbers. For a power, the divided difference is a complete homogeneous symmetric polynomial. Evaluating its diagonal variables at $`0`$ or $`1`$ counts monomials of total degree $`T-k`$ supported on the enabled stay sites, giving the same multichoose coefficient. The path argument proves the specialization directly over $`\mathbb F_2`$ and supplies the formula for resource analysis and the uniform construction. [Higham, Theorem 6.1](https://doi.org/10.13001/ela.2024.8297)
 
-## 统一的分类定理
-
-`classifiedPrediction` 按固定规则的分类结果选定生成器。规则在电路族定义时固定，生成器随输入长度变化。无传输和纯移位生成器输出原专用电路的完整编码，分别保留常数深度和零门的界。可变控制规则沿用通用路径电路。齐次 Pascal 生成器扫描 $`k\le T`$，用子掩码测试流式输出奇系数的接线，归约电路只处理这些输入。 [无传输和移位生成器](../PredictionDepth/FrozenPascal/UniformLocal.lean) · [Pascal 生成器](../PredictionDepth/FrozenPascal/UniformHomogeneous.lean)
-
-Pascal 归约使用 $`p`$ 轮固定宽度的并行 XOR，每轮三层 De Morgan 门。这样可直接流式串接各轮输出，得到 $`3p`$ 深度上界及 $`5p2^p`$ 个门。由于 $`2^p\le T+1`$，门数至多按 $`T\log(T+2)`$ 增长。前面的逐时刻平衡树有更小的门数，统一总定理采用固定宽度构造。 [XOR 归约及编码](../PredictionDepth/FrozenPascal/UniformXor.lean)
-
-`uniform_depth_classification` 对每对固定控制函数给出一个决定整个预测语言的电路族，同时证明实际 logspace 统一性、多项式门数、关于长度的对数深度和合法时刻的分支深度界。分支下界对所有决定该语言的电路族成立。空串和其他非法长度都由同一统一族拒绝。`predictionLanguage_mem_uniformNC_zero_iff` 将常数深度条件提升为标准统一 NC⁰ 的成员资格充要条件。 [统一分类总定理](../PredictionDepth/FrozenPascal/UniformClassification.lean)
-
-## 文献对照
-
-Moore 与 Pnin 在 *Physica D* 的论文中用时间区间分治求非自治加性元胞自动机的传递系数，允许这些系数同时随时间和位置变化。其 Lemma 1 的算法在二输入门下给出 $`O(\log^2 T)`$ 深度。Theorem 1 再处理由另一条轨控制这些系数的拟直积结构。对于空间齐次加性规则，该论文已说明可在对数空间生成 Pascal 行，并在允许无界扇入模加门时得到统一 ACC⁰。奇系数计数也早已由 Glaisher 给出，Rowland 回顾了它与 Lucas 定理的关系。 [Moore 与 Pnin，§3](https://arxiv.org/pdf/patt-sol/9701008) · [Rowland，§1](https://arxiv.org/pdf/1001.1783)
-
-固定控制后，数据演化是上双对角线性算子。对角元为 $`s(a_i)`$，超对角元为 $`h(a_i)`$。Higham 的 Theorem 6.1 给出复数域上双对角矩阵函数的乘积与差商公式。对于幂函数，相应的差商是完全齐次对称多项式。把对角变量取为 $`0`$ 或 $`1`$ 后，该多项式只计数总次数为 $`T-k`$ 且支撑在允许等待位置的单项式，从而得到同一个多重组合系数。这里用路径计数在 $`\mathbb F_2`$ 中直接证明该特化，进而控制并行资源并验证统一构造。 [Higham，定理 6.1](https://doi.org/10.13001/ela.2024.8297)
-
-本项目把空间上任意变化、时间上固定的一侧控制特化接到机器级统一 NC¹ 上界和四分支深度分类。这里的 $`O(\log T)`$ 界与 Moore–Pnin 的一般分治保证比较。针对这一精确规则族的统一上界和完整分类，现有对照尚不足以确定文献优先权。
+This project connects the one-sided, spatially varying and temporally fixed specialization to a machine-defined uniform NC¹ upper bound and a four-regime depth classification. The $`O(\log T)`$ depth bound is for frozen controls and can be compared with Moore's divide-and-conquer guarantee for more general coefficients. Priority for the exact rule-family classification and uniform upper bound remains undetermined. [Detailed comparison](literature.md)
