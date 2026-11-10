@@ -8,11 +8,11 @@ La projekto fiksas Lean al `v4.36.0-rc2` kaj fiksas la [versiojn de la dependeco
 ./scripts/check.sh
 ```
 
-La skripto kontrolas la modulan kovradon de la defaŭlta enirejo, rulas `lake build --wfail`, kontrolas la transitivajn aksiomajn dependecojn de la projektaj deklaroj kaj rulas negativan regresian teston.
+La skripto unue rulas `lake build --wfail`, poste uzas Lean por ŝargi la kompilitan enirmodulon kaj kontroli ĝian transitivan importaron, kaj fine kontrolas la transitivajn aksiomajn dependecojn de la projektaj deklaroj. La importtesto kontrolas ekskludon de ŝajnaj importoj en ordinaraj kaj nestitaj blokkomentoj kaj inkluzivon de realaj rektaj kaj nerektaj importoj. La aksiomkontrolo havas apartan negativan regresian teston.
 
-## Nuna loka kontrolo
+## Pli frua loka kontrolo
 
-La nuna macOS-kontrolo kovris la minimumajn profundojn de la homogena Pascal-regulo kaj la du novajn modulojn pri branĉa regado. La enirpunkto kovris 99 projektajn modulojn, la strikta kompilo finis 5 008 taskojn, kaj la aksiomkontrolo de 3 383 deklaroj trovis nur `propext`, `Classical.choice`, `Quot.sound`. La negativa regresia testo sukcesis.
+Tiu macOS-kontrolo kovris la minimumajn profundojn de la homogena Pascal-regulo kaj la du modulojn pri branĉa regado. La enirpunkto kovris 99 projektajn modulojn, la strikta kompilo finis 5 008 taskojn, kaj la aksiomkontrolo de 3 383 deklaroj trovis nur `propext`, `Classical.choice`, `Quot.sound`. La negativa regresia testo sukcesis.
 
 ## Registrita baza versio
 
@@ -68,7 +68,7 @@ La aksiomkontrolo ekzamenas la logikajn aksiomojn uzatajn de la projektaj deklar
 - La modelo kun transportata regado derivas konjunkcion sur finia fenestro el sinkrona evoluo sur senfina krado, precize karakterizas la esencajn enirojn kaj atingas optimuman profundon per cirkvito kun lineara nombro da pordegoj. La kongrua malsupra baro kovras cirkvitajn retojn kun du eniroj po pordego kaj komunaj subcirkvitoj. Tiu rezulto validas por la cirkvitoj de ĉiu aparta tempo. [Lean-teoremo](../../../PredictionDepth/TransportedControl.lean)
 - La minimuma profundo de la homogena Pascal-regulo je ĉiu tempo estas $`p`$ kun denaska XOR. En la modelo de De Morgan kun NOT nombrata kiel tavolo, ĝi estas nul por $`p=0`$ kaj $`2p+1`$ por $`p>0`$. La unuforma generilo uzas apartan konstruon kaj donas la supran baron $`3p`$. [Teoremo por denaska XOR](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [Teoremo pri De Morgan-profundo](../../../PredictionDepth/FrozenPascal/PascalExactDepth.lean) · [Unuforma generilo](../../../PredictionDepth/FrozenPascal/UniformHomogeneous.lean)
 - Kiam unuforma ŝovo de la regado konservas la du datumajn branĉojn, Lean kontrolas la fiksiĝon de la regado en moviĝanta referenca kadro kaj la rekonekton de la finia fenestro post interŝanĝo de la gardoj. La reuzata cirkvito je ĉiu tempo konservas la pordegonombron kaj ne pligrandigas la profundon. [Moviĝanta referenca kadro kaj rimedobaroj](../../../PredictionDepth/TransportedBranching.lean)
-- Por la branĉa modelo kun adicia regado, Lean derivas el la sinkrona iteracio la koeficientan formulon kun komuna Pascal-pareco kaj tutnulaj sufiksoj. La artikolo pruvas la linearan pordegonombron kaj la kongruajn logaritmajn profundobarojn. [Iteracia teoremo por adicia regado](../../../PredictionDepth/AdditiveBranching.lean) · [Pruvo en la artikolo](../../../paper/structural-certificates.eo.pdf)
+- Por la branĉa modelo kun adicia regado, Lean derivas el la sinkrona iteracio la koeficientan formulon kun komuna Pascal-pareco kaj tutnulaj sufiksoj. Lean kontrolas la unuforman generadon de la tri-bita prognozilo, ĝiajn linearan grandon kaj logaritman profundon, kaj kongruan logaritman malsupran baron por pordegoj kun maksimume du eniroj. [Iteracia teoremo por adicia regado](../../../PredictionDepth/AdditiveBranching.lean) · [Unuforma prognozilo](../../../PredictionDepth/AdditiveBranching/Summary.lean) · [Malsupra profundobaro](../../../PredictionDepth/AdditiveBranching/LowerBound.lean)
 
 Dum revizio de la teoremaj asertoj, komparu la laborspacan mezuron, finian regadon, nuraldoneblan eliron kaj varilongan eliron kun la norma maŝinmodelo. Kontrolu la kodadon de la demandoj kaj de la tempo, la vojlokajn hipotezojn de A kaj la eksplicitan klasapartigan supozon de B. Por la klasifiko kun fiksita regado, kontrolu, ke ĝusteco, unuformeco, grando kaj la profundaj supraj baroj validas por unu sama cirkvitfamilio, kaj ke la malsupra baro ampleksas ĉiujn prognozilojn en la koncerna modelo. Por la ekzemplo kun transportata regado, kontrolu la projekcion al la finia fenestro kaj la amplekson de la cirkvita baro por ĉiu aparta tempo. [Maŝinmodelo](dependencies.md) · [Formala amplekso](requirements.md)
 

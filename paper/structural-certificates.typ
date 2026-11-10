@@ -17,7 +17,7 @@
 #set math.equation(numbering: "(1)")
 #show heading.where(level: 1): set block(above: 1.2em, below: 0.65em)
 #show heading.where(level: 2): set block(above: 1em, below: 0.5em)
-#show bibliography: set text(size: 10pt)
+#show bibliography: set text(size: 9.5pt)
 
 #let theorem(name, body) = figure(
   kind: "theorem",
@@ -58,9 +58,10 @@ $p(T)$ counts the set bits of $T$. The verified uniform generator uses
 depth at most $3p(T)$.
 As a structural comparison, a separate one-path model with transported
 control has positive-time depth one at equal velocities and exactly
-$ceil(log_2(T+1))$ at unequal velocities. Lean 4 verifies the classification,
-the connection from dynamics to finite prediction, the Pascal optimum,
-and the uniform generators for the frozen rules.
+$ceil(log_2(T+1))$ at unequal velocities. For a branching rule with additive
+controls, a three-bit ordered summary gives a linear-size uniform predictor
+and matching logarithmic depth bounds. Lean 4 verifies these bounds, the
+frozen classification and Pascal optimum, and the uniform circuit generators.
 
 *Keywords.* Cellular automata, circuit depth, logspace uniformity, Lean 4.
 ]
@@ -83,7 +84,9 @@ no-carry test then detects which coefficients survive cancellation
 (@uniform-construction). The homogeneous branch has a nonmonotone depth
 profile governed by the set bits of the observation time. A separate
 one-path rule shows how relative velocity changes the number of distinct
-initial controls read (@transport-depth).
+initial controls read (@transport-depth). The branching examples show
+how to transfer a predictor across a change of frame and how to compile
+a different summary when the frozen statistics fail (@branching-boundary).
 
 = Preliminaries
 
@@ -387,17 +390,20 @@ The frozen control window is $a_(T-1)(0),dots,a_0(0)$ followed by a
 padding word. At the last virtual site no stay can occur, so the padding
 is irrelevant. The two prefix statistics still work in this frame,
 with the roles of stay and hop exchanged. Lean verifies the coordinate
-change and the per-time circuit reduction, including the input rewiring.
+change and a costed reduction with a depth-zero input rewire and identity
+readout. Its logspace serializer transfers the frozen upper bounds to
+the transported rule.
 
 *Additive control evolution.* Now let the control be one bit and evolve
 it by $c_i(t+1)=c_i(t)+c_(i+1)(t)$, with data update
 $x_i(t+1)=c_i(t)x_i(t)+x_(i+1)(t)$. Both updates use $bb(F)_2$.
 At $T=2$, the coefficient of $x_1(0)$ at the origin is
 $(c_0(0)+c_1(0))+c_1(0)=c_0(0)$. The initial pairs $(1,0)$ and $(0,1)$
-have the same stay count and hop flag for this endpoint, but yield
-different coefficients. A stay can now read different guard values
-at the same site. Counting how many sites allow a stay at time zero
-loses the order information needed for cancellation.
+have the same stay count and hop flag for this endpoint. With data
+$(0,1,0)$ they give different predictions, so no readout of that
+summary and the data context can predict every window. Lean checks
+this collision on the actual iterate. A stay can now read different
+guard values at the same site, making the order of controls relevant.
 
 This rule still has a short coefficient description. Put
 $Q_T(i)=c_i(T)+c_(i+T)(0)$, the Pascal parity of the initial controls
@@ -427,28 +433,34 @@ For $k=T$ the stay term is $c_i(T)$ and the shifted term is
 $Q_T(i+1)$, giving the same sum with empty suffix. This also holds
 at $T=0$ since $Q_0(i+1)=0$. The all-hop term is always one. #qed
 
-A block of consecutive sites has summary $(Z,V)$, where $Z$ tests
-whether its controls are all zero and $V$ is the parity of its data
-bits with only zero controls to their right within the block. A single
-site has summary $(1+c_j(0),x_j(0))$. Concatenating blocks combines
-their summaries by
+*The verified predictor.* For the first $T$ sites, the generated circuit
+reduces three-bit summaries $(Z,V,Q)$. The bit $Z$ tests whether the
+block has all-zero controls. The bit $V$ is the parity of its data bits
+with only zero controls to their right within the block. The bit $Q$
+collects the masked control parity. Put $lambda_(T,j)=binom(T,j) mod 2$.
+Site $j$ contributes $(1+c_j(0),x_j(0),lambda_(T,j)c_j(0))$.
+Concatenating adjacent blocks gives the associative merge
 $
-  (Z_L,V_L),(Z_R,V_R) |-> (Z_L Z_R,V_L Z_R+V_R).
+  (Z_L,V_L,Q_L),(Z_R,V_R,Q_R) |-> (Z_L Z_R,V_L Z_R+V_R,Q_L+Q_R).
 $
-A balanced tree computes $V$ on the first $T$ sites, with empty
-summary $(1,0)$. The prediction is $x_T(0)+Q_T(0)V$.
-A second tree computes $Q_T(0)$ on the submask wires. The two trees
-use $O(T+1)$ gates in total and have depth $O(log(T+2))$.
-Their regular layouts can be streamed in logspace.
+The identity is $(1,0,0)$ and the readout is $x_T(0)+Q V$. The input
+interleaves the $T$ control-data pairs and ends with $x_T(0)$.
+The logspace generator obtains $T$ from the odd input length and uses
+the Lucas submask test to hardwire the masks. Even lengths are rejected.
+The ordered-summary compiler pads with identities and halves the active
+width at each level. Lean checks the actual generated family, including
+copy gates, and proves a gate bound of $108(T+1)$ and, for $T>=1$,
+a depth bound of $6+5ell(T)$.
 
-At positive times the essential inputs are exactly the first $T$
-control bits and all $T+1$ data bits. Setting all but $x_0(0)$ to zero
-on the data track gives $x_0(0)c_0(0) product_(j=1)^(T-1)(1+c_j(0))$,
-which witnesses the control bits. Setting $c_0(0)=1$ and
-$c_1(0)=dots=c_(T-1)(0)=0$ gives parity of the data bits. This yields
-the depth lower bound $ell(2T+1)$. Lean verifies the coefficient formula
-for the actual coupled iterate. The circuit bounds follow from the
-argument above.
+*Lower bound.* For $T>0$, set $c_0(0)=1$ and all the other controls
+in the input to zero. Every data coefficient becomes one. All $T+1$
+data bits are then essential, giving the Lean-verified lower bound
+$ell(T+1)$ for any fan-in-two Boolean circuit. Thus the minimum
+De Morgan depth is $Theta(log(T+1))$ as $T$ grows. At time zero the
+prediction is a data projection. The formula also gives a sharper
+count on paper. With only $x_0(0)=1$ on the data track, the output is
+$c_0(0) product_(j=1)^(T-1)(1+c_j(0))$, so all $T$ control bits
+are essential too. This gives the counting bound $ell(2T+1)$.
 
 = Related work
 
@@ -520,11 +532,17 @@ to recover individual references by recomputation in logarithmic space.
 The classification theorem uses the selected circuit family as one witness
 for correctness, size, uniformity and the per-time bound. The transport
 theorem establishes optimal depth separately at each window length.
+The ordered-summary compiler also realizes the additive and OR
+predictors. It charges initialization, merging, and readout, and
+preserves block order while changing the parenthesization.
 
 Each frozen control word selects one of four local data maps
 $0$, $x_i$, $x_(i+1)$ and $x_i+x_(i+1)$. Once the controls are fixed,
 the data dynamics is one-sided and linear. The input is an explicit window
 with length linear in $T$, and the circuit can wire across arbitrary sites.
+Local dynamics and locality of the predictor's wiring are separate
+assumptions. The results here use unrestricted wiring and the full
+explicit input domain of each model.
 
 The accompanying Lean development formalizes three sufficient criteria for
 prediction problems. A compiles resource-bounded composition circuits into
@@ -534,8 +552,12 @@ $"P" != "NC"$ and is a complexity-class statement. C gives an unconditional
 depth lower bound from essential inputs. At fixed
 fan-in, dimension, radius, and bit width, a polynomial-volume light cone
 limits the *counting bound* from C to $O(log(T+2))$. Actual prediction
-depth can exceed this bound. Lean checks supplied witnesses. Finding
-witnesses for arbitrary rules is a separate problem. In the frozen family,
+depth can exceed this bound. The finite summary recognizer checks local
+equations for a supplied evaluator and template. Its conclusion uses
+a proof connecting that evaluator to the prediction task. A collision
+rules out its candidate summary, and the width theorem concerns an
+independent summary at a fixed cut. Both conclusions concern the
+specified summary interface. In the frozen family,
 the executable classifier selects the depth branch by testing guard
 constancy on a fixed finite alphabet.
 
@@ -560,7 +582,7 @@ Use the repository snapshot accompanying this PDF for the declarations
 listed in @lean-map.
 The repository documents the pinned Typst and font inputs for rebuilding
 all four editions. Run #box[`./scripts/check.sh`] for the strict Lean build,
-transitive axiom audit, and negative regression. The repository's
+import coverage check, transitive axiom audit, and regressions. The repository's
 verification guide separates build evidence from review of the model
 assumptions. @lean-map lists the declarations behind the main results.
 
@@ -608,26 +630,27 @@ output lists from the unary length.
 
 #block(breakable: false)[
 #set text(size: 9.5pt)
+#set par(leading: 0.42em, justify: false)
 #heading(supplement: [Appendix])[Lean correspondence] <lean-map>
 
 The paths below are relative to `PredictionDepth/`.
 
 #table(
   columns: (1fr, 2.55fr),
-  inset: (x: 7pt, y: 3pt),
+  inset: (x: 7pt, y: 2pt),
   align: left,
   stroke: none,
   table.hline(stroke: 0.7pt),
   table.header([*Result*], [*Lean module and declaration*]),
   table.hline(stroke: 0.4pt),
-  [Frozen iterate], [`FrozenPascal/Semantics.lean` #linebreak() `iterate_data`],
-  [Window interface], [`FrozenPascal/GuardRules.lean` #linebreak() `rawSample_decodeRaw`],
-  [Executable classifier], [`FrozenPascal/Classification.lean` #linebreak() `classify`, `classify_eq_iff`],
+  [Frozen iterate], [`FrozenPascal/Semantics.lean` · `iterate_data`],
+  [Window interface], [`FrozenPascal/GuardRules.lean` · `rawSample_decodeRaw`],
+  [Executable classifier], [`FrozenPascal/Classification.lean` · `classify`, `classify_eq_iff`],
   [Uniform classification], [`FrozenPascal/UniformClassification.lean` #linebreak()
     `uniform_depth_classification` #linebreak() `predictionLanguage_mem_uniformNC_zero_iff`],
   [Uniform predictor], [`FrozenPascal/UniformPrediction.lean` #linebreak()
     `uniformGuardedPrediction_code_logspace` #linebreak() `uniformGuardedPrediction_depth`],
-  [Code composition], [`Complexity/CodeLogspace.lean` #linebreak() `compCode_logspace`],
+  [Code composition], [`Complexity/CodeLogspace.lean` · `compCode_logspace`],
   [Pascal support and XOR depth], [`FrozenPascal/HomogeneousPascal.lean` #linebreak()
     `pascalSupport_card` #linebreak() `homogeneousNativeXorPrediction_depth`],
   [Exact Pascal De Morgan depth], [`FrozenPascal/PascalExactDepth.lean` #linebreak()
@@ -636,10 +659,18 @@ The paths below are relative to `PredictionDepth/`.
     `iterate_data_true_iff`, `essential_prediction_iff` #linebreak()
     `exact_prediction_depth`, `constant_depth_iff`],
   [Branching under transport], [`TransportedBranching.lean` #linebreak()
-    `reverseFrame_iterate`, `prediction_correct` #linebreak()
-    `prediction_depth`, `prediction_size`],
-  [Additive-control coefficients], [`AdditiveBranching.lean` #linebreak()
-    `trimmedParity_eq_sum`, `iterate_data`],
+    `reduction`, `prediction_correct`, `prediction_uniform`],
+  [Ordered-summary compiler], [`Complexity/BlockSummary.lean` #linebreak()
+    `compile_eval`, `compile_depth`, `compile_size`, `compile_code_logspace`],
+  [Summary recognition and limits], [`BlockSummary.lean` #linebreak()
+    `recognize?`, `findCollision?_sound`, `width_lower_bound`],
+  [OR instance], [`ORAutomaton/Summary.lean` · `summaryFamily_uniform`],
+  [Additive-control coefficients], [`AdditiveBranching.lean` · `trimmedParity_eq_sum`, `iterate_data`],
+  [Additive circuit bounds], [`AdditiveBranching/Summary.lean` #linebreak()
+    `prediction_depth`, `prediction_size`, `predictionFamily_uniform` #linebreak()
+    `AdditiveBranching/LowerBound.lean` · `prediction_depth_lower_bound`],
+  [Additive collision], [`AdditiveBranching/Summary.lean` #linebreak()
+    `frozenEndpointCollision`, `frozenEndpoint_noReadout`],
   table.hline(stroke: 0.7pt),
 )
 

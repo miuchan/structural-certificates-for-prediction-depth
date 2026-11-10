@@ -1,29 +1,90 @@
 #!/usr/bin/env python3
-"""Ensure the default entry point imports every project proof module.
+"""Check the compiled entry point's actual import closure.
 
-This keeps the axiom audit's imported environment aligned with the full source
-tree. It does not infer mathematical correctness from textual proof syntax.
+Run via `lake env python3 scripts/check_imports.py` after building the project.
 """
+
+import os
 from pathlib import Path
-import re
+import subprocess
+from tempfile import TemporaryDirectory
+
 
 ROOT = Path(__file__).resolve().parents[1]
-files = [ROOT / "PredictionDepth.lean", *(ROOT / "PredictionDepth").rglob("*.lean")]
-modules = {str(p.relative_to(ROOT).with_suffix("")).replace("/", "."): p for p in files}
-seen = set()
+CHECKER = ROOT / "scripts" / "ImportClosure.lean"
 
 
-def visit(module):
-    if module in seen or module not in modules:
-        return
-    seen.add(module)
-    for dependency in re.findall(r"^(?:public\s+)?import\s+([A-Za-z0-9_.]+)",
-                                 modules[module].read_text(), re.MULTILINE):
-        visit(dependency)
+def project_modules(root):
+    sources = [root / "PredictionDepth.lean", *(root / "PredictionDepth").rglob("*.lean")]
+    return {".".join(source.relative_to(root).with_suffix("").parts) for source in sources}
 
 
-visit("PredictionDepth")
-missing = sorted(modules.keys() - seen)
-if missing:
-    raise SystemExit("Not covered by the entry point and axiom audit:\n" + "\n".join(missing))
-print(f"Entry point covers all {len(modules)} project modules.")
+def missing_modules(expected, env=None):
+    result = subprocess.run(
+        ["lean", str(CHECKER)], cwd=ROOT, env=env, capture_output=True, text=True,
+    )
+    if result.returncode:
+        raise SystemExit(f"Lean could not read the entry point's imports:\n{result.stdout}{result.stderr}")
+    return sorted(expected - set(result.stdout.splitlines()))
+
+
+def check_regression():
+    with TemporaryDirectory(prefix="prediction-depth-imports-") as directory:
+        scratch = Path(directory)
+        env = {**os.environ, "LEAN_PATH": str(scratch)}
+        fixtures = scratch / "PredictionDepth"
+        fixtures.mkdir()
+
+        def compile_source(path, source):
+            path.write_text(source, encoding="utf-8")
+            subprocess.run(
+                ["lean", "-o", str(path.with_suffix(".olean")), str(path)],
+                cwd=scratch, env=env, check=True,
+            )
+
+        for name in ("Leaf", "Commented", "NestedCommented"):
+            compile_source(fixtures / f"{name}.lean", "")
+        compile_source(fixtures / "Bridge.lean", "import PredictionDepth.Leaf\n")
+
+        # Even built modules named in block comments are absent from the audit.
+        entry = scratch / "PredictionDepth.lean"
+        commented = (
+            "import PredictionDepth.Bridge\n"
+            "/-\n"
+            "import PredictionDepth.Commented\n"
+            "-/\n"
+            "/-\n"
+            "  /-\n"
+            "import PredictionDepth.NestedCommented\n"
+            "  -/\n"
+            "-/\n"
+        )
+        compile_source(entry, commented)
+        modules = project_modules(scratch)
+        expected_missing = ["PredictionDepth.Commented", "PredictionDepth.NestedCommented"]
+        missing = missing_modules(modules, env)
+        if missing != expected_missing:
+            raise SystemExit(
+                f"Import coverage regression: expected missing {expected_missing}, got {missing}."
+            )
+
+        compile_source(
+            entry, "import PredictionDepth.Commented\nimport PredictionDepth.NestedCommented\n" + commented,
+        )
+        missing = missing_modules(modules, env)
+        if missing:
+            raise SystemExit(f"Import coverage regression: valid import closure is missing {missing}.")
+        print("Import coverage regression passed: block comments do not count as imports.")
+
+
+def main():
+    modules = project_modules(ROOT)
+    missing = missing_modules(modules)
+    if missing:
+        raise SystemExit("Not covered by the entry point and axiom audit:\n" + "\n".join(missing))
+    print(f"Entry point covers all {len(modules)} project modules.")
+    check_regression()
+
+
+if __name__ == "__main__":
+    main()

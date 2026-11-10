@@ -8,11 +8,11 @@
 ./scripts/check.sh
 ```
 
-脚本依次检查默认入口的模块覆盖、运行 `lake build --wfail`、审计项目声明的传递公理依赖，并运行负向回归测试。
+脚本先运行 `lake build --wfail`，再用 Lean 加载已编译的入口并检查传递导入范围，最后审计项目声明的传递公理依赖。导入覆盖的回归测试验证普通与嵌套块注释中的伪导入均被排除，同时验证实际的直接和间接导入。公理审计另有负向回归。
 
-## 当前本地检查
+## 早期本地检查
 
-当前 macOS 本地检查覆盖齐次 Pascal 最优深度及两个新的分支控制模块。入口覆盖 99 个项目模块，严格构建完成 5,008 个任务，公理审计检查了 3,383 条项目声明，仅使用 `propext`、`Classical.choice`、`Quot.sound`，负向回归通过。
+该次 macOS 本地检查覆盖齐次 Pascal 最优深度及两个分支控制模块。入口覆盖 99 个项目模块，严格构建完成 5,008 个任务，公理审计检查了 3,383 条项目声明，仅使用 `propext`、`Classical.choice`、`Quot.sound`，负向回归通过。
 
 ## 历史基线
 
@@ -68,7 +68,7 @@ git diff --exit-code HEAD -- lean-toolchain lakefile.toml lake-manifest.json
 - 移动控制模型从无限格点的同步演化推出有限窗口上的合取，精确刻画本质输入，并用线性门数的构造达到最优深度。匹配下界覆盖允许共享的二输入网络。结果属于逐时刻电路模型。[Lean 定理](../../../PredictionDepth/TransportedControl.lean)
 - 齐次 Pascal 的逐时刻最优深度在允许原生 XOR 时为 $`p`$，在 NOT 计作一层的 De Morgan 模型中为零（$`p=0`$）或 $`2p+1`$（$`p>0`$）。统一生成器使用另一构造，实现 $`3p`$ 的上界。 [原生 XOR 定理](../../../PredictionDepth/FrozenPascal/HomogeneousPascal.lean) · [De Morgan 定理](../../../PredictionDepth/FrozenPascal/PascalExactDepth.lean) · [统一生成器](../../../PredictionDepth/FrozenPascal/UniformHomogeneous.lean)
 - 统一平移控制保留两条数据分支时，Lean 验证了移动坐标系下的冻结演化，以及交换控制函数后对有限窗口的重接线。逐时刻电路复用保持门数且不增加深度。 [移动坐标系与资源界](../../../PredictionDepth/TransportedBranching.lean)
-- 在加性控制的分支模型中，Lean 验证了从同步迭代得到的共享 Pascal 奇偶值和全零后缀公式。线性门数和匹配的对数深度界在论文中证明。 [加性控制迭代定理](../../../PredictionDepth/AdditiveBranching.lean) · [论文证明](../../../paper/structural-certificates.zh-CN.pdf)
+- 在加性控制的分支模型中，Lean 验证了从同步迭代得到的共享 Pascal 奇偶值和全零后缀公式。Lean 同时验证三位摘要预测器的统一生成、线性规模、对数深度，以及扇入至多为二时匹配阶数的下界。 [加性控制迭代定理](../../../PredictionDepth/AdditiveBranching.lean) · [统一预测器](../../../PredictionDepth/AdditiveBranching/Summary.lean) · [深度下界](../../../PredictionDepth/AdditiveBranching/LowerBound.lean)
 
 复核定理陈述时，应对照标准机器模型检查工作空间计量、有限控制、只追加的输出及变长输出，并核对查询与时钟编码、A 的路径局部假设及 B 显式使用的复杂性类分离假设。冻结控制分类中，应确认正确性、统一性、规模和分支深度上界由同一电路族实现，下界则适用于所有满足模型条件的预测器。移动控制例子应核对有限窗口投影和逐时刻电路界的范围。[机器模型](dependencies.md) · [形式化范围](requirements.md)
 

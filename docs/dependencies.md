@@ -32,6 +32,6 @@ For uniform NC, one circuit family simultaneously satisfies correctness, size, d
 
 ## What the checks establish
 
-`scripts/check_imports.py` requires the default entry point to cover every project proof file. `lake build` compiles all project modules. `Audit.lean` selects declarations by their defining module, including auxiliary declarations that Lean generates in other namespaces. It checks transitive axiom dependencies and permits only `propext`, `Classical.choice`, and `Quot.sound`.
+After `lake build --wfail`, `scripts/check_imports.py` compares the proof files with the modules Lean actually imported through the default entry point. `Audit.lean` selects declarations by their defining module, including auxiliary declarations that Lean generates in other namespaces. It checks transitive axiom dependencies and permits only `propext`, `Classical.choice`, and `Quot.sound`.
 
 The pinned Lean toolchain and its kernel are part of the trust base. When a build imports cached Mathlib artifacts, those compiled artifacts also enter the trust base. A fresh rebuild from the pinned dependency sources with Lake's caches disabled removes reliance on the prebuilt dependency cache. The axiom audit checks logical dependencies. Assessing whether the formal definitions and assumptions express the intended prediction problem requires a separate statement review. [Build evidence and review procedure](verification.md) · [Formal scope](requirements.md)

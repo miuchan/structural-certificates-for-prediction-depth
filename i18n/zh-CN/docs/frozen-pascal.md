@@ -108,7 +108,7 @@ Pascal 归约使用 $`p`$ 轮固定宽度的并行 XOR，每轮三层 De Morgan 
 
 控制轨统一平移时也可保留等待和传输两条分支。Lean 验证了反射后的移动坐标系把规则化为冻结控制，并交换等待、传输函数。对有限窗口重接输入线即可复用冻结预测电路，门数相同，深度至多相同。 [移动坐标系与有限窗口布线](../../../PredictionDepth/TransportedBranching.lean)
 
-当 $`c'_i=c_i\oplus c_{i+1}`$、$`x'_i=c_ix_i\oplus x_{i+1}`$ 时，冻结前缀计数不足以恢复系数。Lean 验证了一个有序的系数公式。第 $`T`$ 个数据位的系数为 1。对 $`k<T`$，系数等于共享的 Pascal 奇偶值 $`Q_T=c_0(T)\oplus c_T(0)`$ 乘以控制后缀 $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ 全零的指示值。论文用平衡归约证明了线性门数和对数深度，并给出匹配的对数下界。 [Lean 系数公式](../../../PredictionDepth/AdditiveBranching.lean) · [论文中的电路界](../../../paper/structural-certificates.zh-CN.pdf)
+当 $`c'_i=c_i\oplus c_{i+1}`$、$`x'_i=c_ix_i\oplus x_{i+1}`$ 时，冻结前缀计数不足以恢复系数。Lean 验证了一个有序的系数公式。第 $`T`$ 个数据位的系数为 1。对 $`k<T`$，系数等于共享的 Pascal 奇偶值 $`Q_T=c_0(T)\oplus c_T(0)`$ 乘以控制后缀 $`c_{k+1}(0),\ldots,c_{T-1}(0)`$ 全零的指示值。Lean 验证了通用有序区块编译器生成的三位摘要预测器。该对数空间统一电路族具有线性门数和对数深度。对任意布线、门扇入至多为二的正确电路，Lean 还证明了 $`\lceil\log_2(T+1)\rceil`$ 的深度下界。 [Lean 系数公式](../../../PredictionDepth/AdditiveBranching.lean) · [统一预测器](../../../PredictionDepth/AdditiveBranching/Summary.lean) · [深度下界](../../../PredictionDepth/AdditiveBranching/LowerBound.lean)
 
 ## 适用范围与形式化索引
 
