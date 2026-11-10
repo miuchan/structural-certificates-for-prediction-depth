@@ -23,6 +23,8 @@ Audit regression passed: AuditRegressionExternal.unexpectedTheorem transitively 
 
 [GitHub Actions 工作流](../../../.github/workflows/lean.yml) 在 Ubuntu 上运行同一脚本。推送事件检查推送的提交，拉取请求事件检查 GitHub 生成的合并提交。工作流核对检出的 SHA 和触发 SHA，并在成功时把 SHA 写入运行摘要。可用 `gh run list --commit <SHA>` 查找对应的公开记录。
 
+`Rebuild paper PDFs` 作业使用 Typst 0.15.1 和 Noto Serif CJK 2.003 重建四种语言的 PDF，在日志中记录校验和，在运行摘要中记录提交 SHA。在 GitHub 上查看 PDF 时按 `y` 可取得固定到该提交的永久链接。同一个完整 SHA 也确定对应的 Typst 源稿和 Lean 代码。[本地重建说明](../README.md) · [GitHub 永久链接说明](https://docs.github.com/zh/repositories/working-with-files/using-files/getting-permanent-links-to-files)
+
 ## 数学验收
 
 - A 的有限电路构造、路径局部条件、任意全局状态空间、统一生成器和成本条件下的 NC 成员资格，均有对应 Lean 证明。规范化统一编译器的复制门开销显式计入；大时间的二进制编码不会自动被误判为 NC。

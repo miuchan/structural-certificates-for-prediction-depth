@@ -23,6 +23,8 @@ La kontrolo elektas la deklarojn laŭ la moduloj, en kiuj ili estas difinitaj. `
 
 La [laborfluo de GitHub Actions](../../../.github/workflows/lean.yml) rulas la saman skripton en Ubuntu. Puŝa evento kontrolas la puŝitan enmeton, kaj kuniga peto kontrolas la kunigan enmeton generitan de GitHub. La laborfluo komparas la SHA de la elprenita enmeto kun tiu de la ekiginta enmeto kaj, ĉe sukceso, registras la SHA en la rularesumo. `gh run list --commit <SHA>` trovas la respondajn publikajn registrojn.
 
+La tasko `Rebuild paper PDFs` rekonstruas la kvar eldonojn per Typst 0.15.1 kaj Noto Serif CJK 2.003. Ĝi registras la kontrolsumojn en la protokolo kaj la SHA de la enmeto en la rularesumo. Malfermu la PDF-dosieron en GitHub kaj premu `y` por ricevi konstantan ligilon al tiu enmeto. La sama plena SHA identigas la respondajn fontojn en Typst kaj Lean. [Lokaj rekonstruaj instrukcioj](../README.md) · [GitHub-gvidilo pri konstantaj ligiloj](https://docs.github.com/en/repositories/working-with-files/using-files/getting-permanent-links-to-files)
+
 ## Matematika akceptokontrolo
 
 - Por A ekzistas Lean-pruvoj pri la finia cirkvitkonstruo, vojlokaj kondiĉoj, arbitra tutmonda statspaco, unuforma generilo kaj NC-membreco sub kostokondiĉo. La pruvo eksplicite enkalkulas la kopiajn pordegojn de la normaliga unuforma kompililo. Duuma kodo de granda tempo sola estas nesufiĉa por NC-membreco.
