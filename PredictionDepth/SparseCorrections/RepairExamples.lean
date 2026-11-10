@@ -1,4 +1,5 @@
 import PredictionDepth.SparseCorrections.CollisionCertificate
+import PredictionDepth.SparseCorrections.CollisionProperties
 import PredictionDepth.SparseCorrections.RepairUniform
 
 /-! Concrete bit and layer repair predictors for the reversible collision rule. -/
@@ -23,6 +24,18 @@ theorem bitRepairPredictor_correct (k T : ℕ) (u : Layer (coneWidth 3 1 T) 0) :
     (layoutCorrect.event T) (layoutCorrect.state T) (layout.response T) (layout.check T)
     (layoutCorrect.response T) (layoutCorrect.check T) (Cone.eventIndex_chronological 3 1 T)
     (layout.observe T) u k
+
+/-- Two bit-repair rounds suffice for every initial word with at most two particles. -/
+theorem twoParticle_bitRepair_predicts (T : ℕ) (u : Layer (coneWidth 3 1 T) 0)
+    (hu : (Finset.univ.filter fun b => u b = true).card ≤ 2) :
+    let out := (bitRepairPredictor 2 T).eval interpretation u
+    out 0 = true ∧ out 1 = ((bitStep^[T]) (Cone.extend 1 T 0 u)) 0 0 := by
+  have h := bitRepairPredictor_correct 2 T u
+  have ha := h.1.mpr (twoParticle_sparse T u hu)
+  have hv := value_eq_observation T (Cone.extend 1 T 0 u)
+  rw [Cone.restrict_extend] at hv
+  refine ⟨ha, ?_⟩
+  rw [h.2, ha, Bool.true_and, hv]
 
 theorem layerRepairPredictor_correct (k T : ℕ) (u : Layer (coneWidth 3 1 T) 0) :
     let out := (layerRepairPredictor k T).eval interpretation u
