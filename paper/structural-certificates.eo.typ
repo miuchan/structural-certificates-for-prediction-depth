@@ -664,7 +664,7 @@ por homogenaj linearaj fonoj sur la krado. Ĉe lineara fono, kiu dependas
 de tempo aŭ pozicio, @forced-sum plu validas, kaj malprofunda unuforma
 respondo estas aparte liverenda.
 
-== Du konkretaj fonoj
+== Aplikoj kaj limo <sparse-examples>
 
 La unutraka Pascal-referenco $(L x)_i=x_i+x_(i+1)$ post $r$ paŝoj uzas
 ĝuste la delokigojn, kies unubitoj aperas en $r$. Tio estas la duuma
@@ -672,6 +672,15 @@ koeficienttesto en @pascal-exact. La efektiva OR-regulo
 $(F x)_i=x_i or x_(i+1)$ havas restaĵon $x_i x_(i+1)$ ĉe ĉiu ĝisdatigo.
 La aparte konata observado ĉe la pinto estas $or.big_(j=0)^T x_j$,
 per kiu oni povas kontroli la prognozon ĉe akceptitaj eniroj.
+
+*Densaj restaĵoj kun malprofunda prognozo.* El komenca fenestro de
+nur unubitoj, ĉiuj statbitoj en la konuso restas unu. Ĉiu Pascal-ĝisdatigo
+donas nulon, do ĉiuj $M=T^2$ restaĵbitoj estas unu. Por ĉiu eniro la
+rekta OR-formulo tamen donas ekvilibran duuman arbon de profundo $ell(T+1)$.
+Komparu la nulvorton kun vorto havanta nur unu biton de la disjunkcio je
+unu. Tio montras, ke ĉiu el la $T+1$ koncernaj bitoj estas esenca. La
+esenc-enira baro donas la saman malsupran baron por ĉiuj cirkvitoj kun
+enira grado maksimume du.
 
 Por reigebla nelineara ekzemplo, uzu tri trakojn $(a,b,c)$ kaj apliku
 la lokan ciklon $110 -> 101 -> 011 -> 110$, konservante ĉiujn aliajn
@@ -689,6 +698,31 @@ La karakteriza linio por $b$ havas la kontraŭan direkton kaj tiu por
 $c$ restas ĉe $i$. Ĉiu eliro uzas maksimume $T+1$ termojn. La
 transporta respondo do havas grandon $O(V(T+1))$ kaj profundon
 $O(log(T+2))$.
+
+*Ĉiuj eniroj kun maksimume du partikloj.* Prenu ajnan validan komencan
+fenestron kun maksimume du okupitaj trakbitoj kaj etendu ĝin per nuloj.
+Se okazas unua netriviala kolizio, ambaŭ partikloj estas ĉe tiu ĉelo.
+Ili foriras laŭ malsamaj trakoj kun malsamaj rapidoj el ${-1,0,1}$.
+Iliaj liberaj vojoj poste monotone disiĝas, do dua kolizio ne povas okazi.
+Netriviala kolizio inversigas ĝuste du bitojn rilate al la identeco antaŭ
+la transporto. Transporto permutas la bitkoordinatojn, do la tuta konuso
+enhavas maksimume du nenulajn restaĵbitojn. Du raŭndoj de tempa
+bitriparo do prognozas $a_(0)(T)$ ĝuste sur ĉiu fenestro de la promeso.
+Kun la respondo de libera transporto, la logspac-unuforma cirkvito
+havas $O((T+1)^3)$ pordegojn kaj profundon $O(log(T+2))$.
+
+*Profundo sub la dupartikla promeso.* Por $T>=1$ kaj ĉiu
+$z in {-T,dots,-1}$, metu nur partiklon $b$ ĉe $T+2z$ kaj partiklon $c$
+ĉe $z$. Ambaŭ ĉeloj estas en la komenca fenestro. Ili renkontiĝas ĉe $z$
+je tempo $T+z$, kie la kolizio $011 -> 110$ lanĉas partiklon $a$, kiu
+atingas la originon je tempo $T$. Forigi unu el la partikloj konservas la
+promeson kaj nuligas la observon. Tio atestas po $T$ malsamajn esencajn
+dratojn por $b$ kaj por $c$. Komparo de sola partiklo $a$ ĉe $-T$ kun
+malplena eniro atestas unu plian draton. Ĉiu distinganta paro
+kontentigas la promeson, do la retroa konuso de ĉiu ĝusta cirkvito kun
+enira grado maksimume du devas enhavi ĉiujn $2T+1$ dratojn. La malsupra
+baro estas $ell(2T+1)$. Kun la unuforma supra baro, la optimuma ordo
+sub la promeso estas $Theta(log(T+1))$.
 
 Por ajna entjero $h>=1$, metu unun nur ĉe $a_0$, $c_0$ kaj $c_(-h)$
 kaj observu $a_(0)(2h)$. Je tempo nulo la stato $101$ ĉe la origino
@@ -802,8 +836,11 @@ $0$, $x_i$, $x_(i+1)$ kaj $x_i+x_(i+1)$. Post fiksado de la regvortoj
 la datuma dinamiko estas unuflanka kaj lineara. La eniro estas eksplicita
 fenestro kun longo lineara laŭ $T$, kaj la cirkvito povas kunligi
 arbitrajn ĉelojn. La lokeco de la dinamiko kaj tiu de la prognozila
-drataro estas apartaj kondiĉoj. La rezultoj uzas senliman drataron
-kaj la tutan eksplicitan enirdomajnon de ĉiu modelo.
+drataro estas apartaj kondiĉoj. La rezultoj uzas senliman drataron.
+La kolizia profundobaro en @sparse-examples koncernas la promeson
+pri maksimume du okupitaj bitoj en la komenca fenestro. La OR-ekzemplo
+montras, ke malprofunda prognozo povas kunekzisti kun kvadrata restaĵpezo
+rilate al la elektita referenco.
 
 La akompana Lean-projekto formaligas tri sufiĉajn kriteriojn. A konstruas
 prognozilon el kunmetaj cirkvitoj kun limigitaj rimedoj. B transdonas
@@ -833,7 +870,10 @@ unuformajn $"NC"^1$ kaj $"NC"^2$. La pelataj respondoj por Pascal kaj
 libera transporto havas kontrolitajn cirkvitojn kaj logspacajn generilojn.
 Lean pruvas unuformecon de la kompletaj prognoziloj por OR kaj kolizio,
 la rektan disjunkcion por OR kaj la precizajn koliziajn sojlojn de tri
-bitaj raŭndoj kaj du tavolaj raŭndoj. La teksto pruvas la ĝeneralan
+bitaj raŭndoj kaj du tavolaj raŭndoj. Lean ankaŭ kontrolas la nombron
+de densaj OR-restaĵoj kaj la riparan prognozilon por du partikloj.
+La malsupra profundobaro sub la promeso sekvas en la teksto el la
+eksplicitaj distingantaj paroj. La teksto pruvas la ĝeneralan
 homogenan koeficientgenerilon per sekciaj operatoroj. Vidu @sparse-lean-map.
 
 = Konkludo
@@ -1007,12 +1047,15 @@ La vojoj estas relativaj al `PredictionDepth/SparseCorrections/`.
     `circuit_correct`, `circuit_code_logspace` #linebreak()
     `circuit_size_quadratic`, `circuit_depth_logarithmic`],
   [Unuforma OR-prognozo], [`PascalOR.lean` #linebreak()
-    `orPredictor_correct`, `orPrediction_mem_uniformNC_one`],
+    `orPredictor_correct`, `orPrediction_mem_uniformNC_one` #linebreak()
+    `orResidual_allOnes_card`],
   [Kolizia ekzemplo], [`Collision.lean` #linebreak() `step_reversible`, `returning_observation` #linebreak() `exampleResidual_card`],
   [Provoj por OR kaj tempo nulo], [`CompilerExamples.lean` #linebreak()
     `ORFixture.oneCorrection`, `ORFixture.code_agrees` #linebreak() `emptyHorizon_predicts`],
   [Unuforma kolizia prognozo], [`CollisionCertificate.lean` #linebreak()
     `sparsePrediction_mem_uniformNC_one` #linebreak() `example_accepts_and_predicts`],
+  [Dupartikla prognozo], [`CollisionProperties.lean` #linebreak() `twoParticle_sparse` #linebreak()
+    `RepairExamples.lean` #linebreak() `twoParticle_bitRepair_predicts`],
   table.hline(stroke: 0.7pt),
 )
 ]

@@ -657,7 +657,7 @@ certificates for the stated lattice model. For a time-dependent or
 position-dependent linear background, @forced-sum still holds, and
 a shallow uniform response must be supplied separately.
 
-== Two concrete backgrounds
+== Applications and a limit <sparse-examples>
 
 For the one-track Pascal reference $(L x)_i=x_i+x_(i+1)$, an interval of
 $r$ steps uses exactly the offsets whose set bits occur in $r$. This is
@@ -665,6 +665,15 @@ the binary coefficient test from @pascal-exact. The actual OR rule
 $(F x)_i=x_i or x_(i+1)$ has residual $x_i x_(i+1)$ on each update.
 Its independently known apex is $or.big_(j=0)^T x_j$. This supplies a
 check of the gated output on accepted inputs.
+
+*Dense residuals with shallow prediction.* On the all-one initial window,
+every state bit in the cone remains one. The Pascal update is zero at
+each of these updates, so all $M=T^2$ residual bits are one. Yet on all
+inputs the direct OR formula gives a balanced binary OR tree of depth
+$ell(T+1)$. Each of the $T+1$ bits in the disjunction is essential, by
+comparing the zero word with a word having just that bit set. The
+essential-input bound gives the same lower bound for arbitrary fan-in-two
+circuits.
 
 For a reversible nonlinear example, use tracks $(a,b,c)$ and cycle the
 local triples $110 -> 101 -> 011 -> 110$, fixing all other triples. Then
@@ -681,6 +690,31 @@ The $b$ characteristic has the opposite direction and the $c$
 characteristic stays at $i$. Each output uses at most $T+1$ terms.
 The streaming response therefore has size $O(V(T+1))$ and depth
 $O(log(T+2))$.
+
+*All inputs with at most two particles.* Take any legal initial window
+with at most two occupied track bits and extend it by zero. If a first
+nontrivial collision occurs, both particles are at that site. They
+leave on distinct tracks with distinct velocities in ${-1,0,1}$.
+Their subsequent free paths separate monotonically, so no second
+collision can occur. A nontrivial collision flips exactly two bits
+relative to the identity before streaming. Streaming permutes the bit
+coordinates, so the whole cone has at most two nonzero residual bits.
+Two chronological bit-repair rounds therefore predict $a_(0)(T)$
+on every window in this promise. With the streaming response, this
+logspace-uniform circuit has $O((T+1)^3)$ gates and depth $O(log(T+2))$.
+
+*Depth on the two-particle promise.* For $T>=1$ and each
+$z in {-T,dots,-1}$, put a $b$ particle at $T+2z$ and a $c$ particle at
+$z$, with every other bit zero. Both sites belong to the initial window.
+They meet at site $z$ at time $T+z$, where $011 -> 110$ launches an
+$a$ particle that reaches the origin at time $T$. Removing either
+particle gives a promised input with observation zero. This witnesses
+$T$ distinct essential $b$ wires and $T$ distinct essential $c$ wires.
+The single $a$ particle at $-T$, compared with the empty input, witnesses
+one more wire. The backwards cone of any correct fan-in-two circuit
+must include all $2T+1$ of these wires because each distinguishing pair
+lies in the promise. Thus its depth is at least $ell(2T+1)$, and the
+uniform upper bound gives optimal order $Theta(log(T+1))$ on the promise.
 
 Put ones at $a_0$, $c_0$ and $c_(-h)$ for any integer $h>=1$, with all
 other bits zero, and query $a_(0)(2h)$. At time zero the local state $101$
@@ -793,8 +827,11 @@ $0$, $x_i$, $x_(i+1)$ and $x_i+x_(i+1)$. Once the controls are fixed,
 the data dynamics is one-sided and linear. The input is an explicit window
 with length linear in $T$, and the circuit can wire across arbitrary sites.
 Local dynamics and locality of the predictor's wiring are separate
-assumptions. The results here use unrestricted wiring and the full
-explicit input domain of each model.
+assumptions. The results here use unrestricted wiring. The collision
+depth result in @sparse-examples concerns the promise of at most two
+occupied bits in the initial window. The OR example shows that shallow
+prediction can coexist with a quadratic residual relative to the chosen
+reference.
 
 The accompanying Lean development also formalizes three general criteria for
 prediction problems. A compiles resource-bounded composition circuits into
@@ -823,7 +860,9 @@ $"NC"^1$ and $"NC"^2$, respectively. The Pascal and free streaming responses
 have checked circuits and logspace generators. The OR and collision
 predictors have end-to-end uniformity proofs. Lean verifies the direct
 disjunction for OR and the exact collision thresholds of three bit rounds
-and two layer rounds. The text proves the general homogeneous coefficient
+and two layer rounds. It also verifies the dense OR residual count and
+the two-particle repair predictor. The promise depth lower bound follows
+in the text from the explicit distinguishing pairs. The text proves the general homogeneous coefficient
 generator using section operators. See @sparse-lean-map.
 
 = Conclusion
@@ -984,12 +1023,15 @@ Paths are relative to `PredictionDepth/SparseCorrections/`.
     `circuit_correct`, `circuit_code_logspace` #linebreak()
     `circuit_size_quadratic`, `circuit_depth_logarithmic`],
   [Uniform OR prediction], [`PascalOR.lean` #linebreak()
-    `orPredictor_correct`, `orPrediction_mem_uniformNC_one`],
+    `orPredictor_correct`, `orPrediction_mem_uniformNC_one` #linebreak()
+    `orResidual_allOnes_card`],
   [Collision example], [`Collision.lean` #linebreak() `step_reversible`, `returning_observation` #linebreak() `exampleResidual_card`],
   [OR and empty-horizon fixtures], [`CompilerExamples.lean` #linebreak()
     `ORFixture.oneCorrection`, `ORFixture.code_agrees` #linebreak() `emptyHorizon_predicts`],
   [Uniform collision prediction], [`CollisionCertificate.lean` #linebreak()
     `sparsePrediction_mem_uniformNC_one` #linebreak() `example_accepts_and_predicts`],
+  [Two-particle prediction], [`CollisionProperties.lean` #linebreak() `twoParticle_sparse` #linebreak()
+    `RepairExamples.lean` #linebreak() `twoParticle_bitRepair_predicts`],
   table.hline(stroke: 0.7pt),
 )
 ]

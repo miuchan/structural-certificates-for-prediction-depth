@@ -2,7 +2,7 @@
 
 [Formal scope](requirements.md) · [Related work](literature.md) · [Verification](verification.md)
 
-**Status:** Lean verifies the enumeration certificate, both uniform NC¹ regimes, and the concrete examples. The chronological repair extension has checked bit and layer circuits, including complete logspace generation. Section 11 records the original design. Section 16 maps the completion items to their evidence.
+**Status:** The sparse phase is complete against the three criteria in §1.1. Lean verifies the enumeration and repair compilers and their logspace generators. Section 11 records the original design, and §16 maps its implementation items to evidence.
 
 **Scope:** Exact prediction for fixed deterministic local Boolean dynamics on explicit finite dependency regions, with circuit size, depth, and logspace uniformity accounted for.
 
@@ -41,6 +41,12 @@ The resulting circuits compute two bits: whether the support condition holds, an
 The first regime does not require the correction locations to be known in advance. The second regime permits more possible locations because their addresses are already supplied by a uniform structural description.
 
 The intended contribution is a precise certificate, its resource accounting, and useful dynamical applications. Parallel enumeration of short certificates and decomposition around a tractable background have substantial precedents; Section 14 records the relevant comparisons.
+
+### 1.1 Completion criteria
+
+1. **Certificate.** Fix the deterministic local rule, linear reference, radius, track count, and observed track. Use explicit initial words of length $n=q(2RT+1)$. Assume a logspace-uniform full forced-response circuit of size $S_{\rm ref}$ and depth $D_{\rm ref}$ with the complete cone layout and local checks. For $N$ indexed correction candidates the compiler returns $(A,A\land g_T)$, where $A$ tests membership of the actual residual in the candidate family. It uses $O(N(S_{\rm ref}+V+1))$ gates and depth $D_{\rm ref}+O(\log(V+1)+\log(N+1))$. The two enumeration regimes and the repair bounds follow from the same response and verifier. The length wrapper rejects illegal lengths. [Compiler](../PredictionDepth/SparseCorrections/Compiler.lean) · [Uniform certificate](../PredictionDepth/SparseCorrections/Certificate.lean) · [Repair bounds](../PredictionDepth/SparseCorrections/RepairUniform.lean)
+2. **System-level application.** For the fixed reversible three-track rule, every legal window with at most two occupied bits has residual weight at most two. The fixed-budget certificate therefore gives exact prediction on the entire promised class. [Application](#104-all-two-particle-initial-windows)
+3. **Boundary.** The certificate gives sufficient upper bounds. OR has a quadratic residual on an explicit family of inputs while its unrestricted prediction has logarithmic depth. A separate fan-in-two lower bound gives the optimal depth order on the two-particle promise. [Counterexample and lower bound](#132-limits-of-the-statement)
 
 ## 2. Model and input encoding
 
@@ -797,6 +803,16 @@ Removing either stationary particle makes the queried returning a-particle absen
 
 This family witnesses nonempty, interacting admissible trajectories at arbitrarily large horizons. It does not establish a lower bound for unrestricted prediction of this collision rule. The certificate applies to every input of this fixed rule satisfying the residual budget, not only to this explicitly solvable family.
 
+### 10.4 All two-particle initial windows
+
+Use the same fixed collision and streaming rules as in §10.2. For every horizon $T$, consider **all** length-$3(2T+1)$ initial words with at most two occupied track bits. The particles can occupy arbitrary sites and tracks in the initial window. Extend the word by zero outside the window.
+
+**Budget theorem.** Every word in this class has at most two nonzero residual bits in the complete dependency cone.
+
+**Proof.** The global particle count is conserved. If a first nontrivial collision occurs, both particles must be at its site because a collision requires local weight two. The permutation leaves them on distinct tracks. These tracks have distinct velocities in $\{-1,0,1\}$, so after streaming they lie at different sites. Under subsequent free streaming their positions are $i+r v_1$ and $i+r v_2$ for $r\ge1$, which are unequal. Induction on $r$ therefore gives free streaming forever after the collision. The one collision changes two bits before streaming, which permutes their addresses. All other updates have zero global residual. By cone closure, each cone residual equals the corresponding global residual for the chosen extension. Restricting to the cone can only discard residual bits. [Lean budget theorem](../PredictionDepth/SparseCorrections/CollisionProperties.lean) · [Cone restriction](../PredictionDepth/SparseCorrections/Semantics.lean)
+
+With $k=2$, the existing certificate accepts every word in the class and returns the actual $a$ bit at the origin. The streaming response uses $O(V(T+1))$ gates and logarithmic depth. Two bit-repair rounds plus the final check give a logspace-uniform predictor of size $O((T+1)^3)$ and depth $O(\log(T+2))$, since $V=3(T+1)^2$. The applicability bit continues to test the residual budget on every legal word. [Two-round correctness](../PredictionDepth/SparseCorrections/RepairExamples.lean) · [Fixed-round uniformity](../PredictionDepth/SparseCorrections/RepairUniform.lean)
+
 ## 11. Lean formalization plan
 
 ### 11.1 Module responsibilities
@@ -889,7 +905,7 @@ Run the repository's documented build and audit gates once the corresponding mod
 
 ### 13.1 What the result establishes
 
-The certificate gives an exact upper bound for prediction under an explicit structural condition. It can also recognize that condition in the same resource regime.
+The certificate gives exact predictions and upper bounds on circuit resources under a sufficient structural condition. It recognizes that condition in the same resource regime. Optimal depth requires a separate argument.
 
 No prior procedure for finding the actual sparse support is required in the fixed-k theorem. Enumeration and complete verification perform that task implicitly.
 
@@ -904,22 +920,31 @@ The bounds depend on the reference response, the number of candidates, and the s
 - A shallow unforced final observation does not by itself provide the required full forced-response interface.
 - Unknown logarithmically many positions do not yield polynomial size by the stated enumeration.
 - A compact symbolic expression does not guarantee a shallow uniform circuit unless its operations and coefficient generation are costed.
-- These are upper bounds; no intrinsic linear-time prediction lower bound follows.
 - The construction uses exact Boolean states. Analog precision, stochastic noise, and distributional approximation require additional definitions.
 - The bit-residual measure depends on the chosen reference and encoding. Invertible sitewise linear changes of a fixed-width state can change its weight by a constant factor, so an invariance claim must state the allowed encoding transformations.
 
-### 13.3 Questions opened by the certificate
+#### Dense residuals with shallow prediction
 
-The next research tasks are concrete:
+Take the OR rule and Pascal reference from §10.1. The all-one initial window stays all one throughout the cone under OR. On each predecessor pair Pascal outputs $1\oplus1=0$, so every correction bit is one and the residual weight is $M=T^2$. For every input of the same system, however, the observation is the OR of the $T+1$ initial sites $0,\ldots,T$. A balanced OR tree has depth $\lceil\log_2(T+1)\rceil$. Each of those $T+1$ inputs is essential by comparison with the all-zero word, which gives the same lower bound for fan-in two. A fixed residual budget can thus reject inputs of a system whose unrestricted observation has exact logarithmic depth. [Residual weight and OR semantics](../PredictionDepth/SparseCorrections/PascalOR.lean) · [Balanced OR family](../PredictionDepth/Complexity/UniformOROptimal.lean)
 
-1. Find natural initial-state classes whose residual budget follows from geometric or dynamical conditions.
+#### Separate lower bound on the two-particle promise
+
+Fix $T\ge1$. For each integer $z\in[-T,-1]$, put a $c$ particle at $z$ and a $b$ particle at $y=T+2z$, with all other bits zero. Both positions are in the initial window. The left-moving $b$ reaches $c$ at time $\tau=y-z=T+z\in[0,T-1]$. The collision $011\mapsto110$ sends an $a$ particle right from $z$, so at time $T$ its position is $z+(T-\tau)=0$. Removing either initial particle gives observation zero. These pairs witness $T$ distinct essential $c$ wires and $T$ distinct essential $b$ wires, with both words of every pair in the promise. The word with only an $a$ particle at $-T$ and the empty word witness one more essential wire.
+
+A fan-in-two output of depth $d$ can depend on at most $2^d$ input wires even with sharing. Thus every circuit correct on the promised class has depth at least $\lceil\log_2(2T+1)\rceil$. With §10.4, this gives optimal depth order $\Theta(\log(T+1))$ for the two-particle promise. At $T=0$, the observation is an input projection. [Essential-input bound](../PredictionDepth/Circuit.lean)
+
+### 13.3 Further research outside the completion criteria
+
+The following questions concern stronger results or different models.
+
+1. Find additional initial-state classes whose residual budget follows from geometry or dynamics.
 2. Identify systems for which this certificate proves prediction bounds beyond an already available unrestricted predictor.
 3. Improve depth as the unknown support grows. Chronological repair replaces the enumeration exponent with a factor of $k+1$ in size and depth. For a logarithmic, logspace-computable budget it gives the paper’s uniform NC² upper bound. Obtaining comparable size with logarithmic depth for such budgets remains open in this project.
 4. Characterize when candidate positions can be generated shallowly from the input, with that generation included in the circuit.
 5. Extend the response interface to other fixed finite fields, bounded-width state spaces, or selected affine backgrounds.
 6. Determine when a smaller verified dependency region preserves soundness and materially reduces the resource bound.
 
-These questions are separate from the correctness of the enumeration compiler.
+These research questions are outside the three completion criteria in §1.1.
 
 ## 14. Related work and contribution boundaries
 

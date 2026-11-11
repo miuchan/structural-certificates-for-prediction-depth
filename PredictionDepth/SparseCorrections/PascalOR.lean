@@ -52,6 +52,33 @@ theorem orResidual_eq (T : ℕ) (u : Layer (Width T) 0) (t : Fin T)
     cases actualLayer (Cone.transition 1 T (applyNeighbors (· || ·))) u t.val
       (predecessor t.isLt j 1) <;> rfl
 
+/-- An all-one window disagrees with Pascal at every update-output bit. -/
+theorem orResidual_allOnes (T : ℕ) (v : Event (Width T) T) :
+    UniformLayout.residual (R := 1) orRule rule T (fun _ => true) v = true := by
+  have hone (t : ℕ) (ht : t ≤ T) :
+      actualLayer (Cone.transition 1 T orRule) (fun _ => true) t = fun _ => true := by
+    induction t with
+    | zero => rfl
+    | succ t ih =>
+      funext j
+      change Cone.transition 1 T (applyNeighbors (· || ·)) t
+        (actualLayer (Cone.transition 1 T orRule) (fun _ => true) t) j = true
+      rw [transition_applyNeighbors (by omega), ih (by omega)]
+      rfl
+  obtain ⟨t, j⟩ := v
+  rw [UniformLayout.residual, orResidual_eq]
+  simp [hone t.val t.isLt.le]
+
+theorem orResidual_allOnes_card (T : ℕ) :
+    (support (UniformLayout.residual (R := 1) orRule rule T (fun _ => true))).card = T ^ 2 := by
+  have h : support (UniformLayout.residual (R := 1) orRule rule T (fun _ => true)) =
+      Finset.univ := by
+    ext v
+    simp [orResidual_allOnes]
+  rw [h, Finset.card_univ, Fintype.card_congr (Cone.eventIndex 1 1 T),
+    Fintype.card_fin, Cone.eventCount_eq]
+  cases T <;> simp [pow_two]
+
 private abbrev encEvent := encPair encUnary encUnary
 
 private def rawPredecessor (p : ℕ × ℕ) (d : Fin 2) : ℕ :=
