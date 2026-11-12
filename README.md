@@ -1,5 +1,10 @@
 # Structural Certificates for Prediction Depth
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24097436.svg)](https://doi.org/10.5281/zenodo.24097436)
+[![aiXiv](https://img.shields.io/badge/aiXiv-2611.01158-a12c23?style=flat)](https://aixiv.online/abs/2611.01158)
+[![Lean 4.36.0-rc2](https://img.shields.io/badge/Lean-4.36.0--rc2-007ec6?style=flat)](https://github.com/leanprover/lean4/releases/tag/v4.36.0-rc2)
+[![Lean verification](https://github.com/miuchan/structural-certificates-for-prediction-depth/actions/workflows/lean.yml/badge.svg?branch=main)](https://github.com/miuchan/structural-certificates-for-prediction-depth/actions/workflows/lean.yml)
+
 **English** · [简体中文](i18n/zh-CN/README.md) · [日本語](i18n/ja/README.md) · [Esperanto](i18n/eo/README.md)
 
 The research question is which verifiable structural conditions on a dynamical system yield bounds on the circuit depth of predicting an observation. A prediction problem fixes the evolution, observation, input encoding, and allowed circuits. Lean 4 checks reusable upper and lower bound criteria and concrete circuit families.

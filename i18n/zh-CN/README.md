@@ -1,5 +1,10 @@
 # 动力系统预测深度的结构性判据
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24097436.svg)](https://doi.org/10.5281/zenodo.24097436)
+[![aiXiv](https://img.shields.io/badge/aiXiv-2611.01158-a12c23?style=flat)](https://aixiv.online/abs/2611.01158)
+[![Lean 4.36.0-rc2](https://img.shields.io/badge/Lean-4.36.0--rc2-007ec6?style=flat)](https://github.com/leanprover/lean4/releases/tag/v4.36.0-rc2)
+[![Lean verification](https://github.com/miuchan/structural-certificates-for-prediction-depth/actions/workflows/lean.yml/badge.svg?branch=main)](https://github.com/miuchan/structural-certificates-for-prediction-depth/actions/workflows/lean.yml)
+
 [English](../../README.md) · **简体中文** · [日本語](../ja/README.md) · [Esperanto](../eo/README.md)
 
 本项目研究动力系统的哪些可验证结构条件能够限定观测预测的电路深度。一个预测问题由演化规则、观测、输入编码和允许的电路共同确定。项目在 Lean 4 中验证了三类可复用判据。

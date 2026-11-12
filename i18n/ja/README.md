@@ -1,5 +1,10 @@
 # 力学系の予測深さに対する構造的証明書
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24097436.svg)](https://doi.org/10.5281/zenodo.24097436)
+[![aiXiv](https://img.shields.io/badge/aiXiv-2611.01158-a12c23?style=flat)](https://aixiv.online/abs/2611.01158)
+[![Lean 4.36.0-rc2](https://img.shields.io/badge/Lean-4.36.0--rc2-007ec6?style=flat)](https://github.com/leanprover/lean4/releases/tag/v4.36.0-rc2)
+[![Lean verification](https://github.com/miuchan/structural-certificates-for-prediction-depth/actions/workflows/lean.yml/badge.svg?branch=main)](https://github.com/miuchan/structural-certificates-for-prediction-depth/actions/workflows/lean.yml)
+
 [English](../../README.md) · [简体中文](../zh-CN/README.md) · **日本語** · [Esperanto](../eo/README.md)
 
 本プロジェクトの問いは、力学系について検証可能などのような構造条件から、観測値を予測する回路の深さを評価できるかである。予測問題は発展規則、観測、入力の符号化、使用できる回路によって定まる。Lean 4 で三つの再利用可能な判定基準を検証する。
