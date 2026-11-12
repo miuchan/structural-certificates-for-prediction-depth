@@ -1,5 +1,10 @@
 # Strukturaj atestiloj pri la prognoza profundo de dinamikaj sistemoj
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24097436.svg)](https://doi.org/10.5281/zenodo.24097436)
+[![aiXiv](https://img.shields.io/badge/aiXiv-2611.01158-a12c23?style=flat)](https://aixiv.online/abs/2611.01158)
+[![Lean 4.36.0-rc2](https://img.shields.io/badge/Lean-4.36.0--rc2-007ec6?style=flat)](https://github.com/leanprover/lean4/releases/tag/v4.36.0-rc2)
+[![Lean verification](https://github.com/miuchan/structural-certificates-for-prediction-depth/actions/workflows/lean.yml/badge.svg?branch=main)](https://github.com/miuchan/structural-certificates-for-prediction-depth/actions/workflows/lean.yml)
+
 [English](../../README.md) · [简体中文](../zh-CN/README.md) · [日本語](../ja/README.md) · **Esperanto**
 
 La esplora demando estas, kiuj kontroleblaj strukturaj kondiĉoj pri dinamika sistemo donas barojn por la cirkvita profundo de prognozo. Prognozproblemon difinas la evoluregulo, observado, enirkodado kaj permesataj cirkvitoj. La projekto kontrolas tri reuzeblajn kriteriojn en Lean 4.
